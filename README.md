@@ -48,3 +48,8 @@ array (size=2)
   'user_online' => int 39
 ```
 
+## Todo
+
+- Tests
+- Changelog
+- Request Error Handling
