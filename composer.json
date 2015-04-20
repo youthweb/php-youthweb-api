@@ -1,0 +1,27 @@
+{
+    "name": "youthweb/php-youthweb-api",
+    "type": "library",
+    "description": "Youthweb API client",
+    "homepage": "https://github.com/youthweb/php-youthweb-api",
+    "keywords": ["youthweb", "api"],
+    "license": "GPL2",
+    "authors": [
+        {
+            "name": "Artur Weigandt",
+            "email": "art4@youthweb.net",
+            "homepage": "http://wlabs.de"
+        }
+    ],
+    "require": {
+        "php": ">=5.4",
+        "guzzlehttp/guzzle": "~5.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "~4.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Youthweb\\Api\\": "src"
+        }
+    }
+}
