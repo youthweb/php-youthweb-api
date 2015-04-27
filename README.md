@@ -48,8 +48,11 @@ array (size=2)
   'user_online' => int 39
 ```
 
+## [Changelog](https://github.com/youthweb/php-youthweb-api/blob/master/CHANGELOG.md)
+
+Der Changelog ist [hier](https://github.com/youthweb/php-youthweb-api/blob/master/CHANGELOG.md) zu finden und folgt den Empfehlungen von [keepachangelog.com](http://keepachangelog.com/).
+
 ## Todo
 
 - Tests
-- Changelog
 - Request Error Handling
