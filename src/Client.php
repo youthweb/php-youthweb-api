@@ -3,7 +3,7 @@
 namespace Youthweb\Api;
 
 /**
- * Simple PHP Youthweb client.
+ * Simple PHP Youthweb client
  *
  * Website: http://github.com/youthweb/php-youthweb-api
  */
@@ -18,7 +18,7 @@ class Client
 	/**
 	 * @param string $name
 	 *
-	 * @return Api\AbstractApi
+	 * @return Resource\AbstractResource
 	 *
 	 * @throws \InvalidArgumentException
 	 */
@@ -45,7 +45,7 @@ class Client
 	}
 
 	/**
-	 * Returns Url.
+	 * Returns the Url
 	 *
 	 * @return string
 	 */
@@ -68,7 +68,7 @@ class Client
 	}
 
 	/**
-	 * HTTP GETs a json $path and tries to decode it.
+	 * HTTP GETs a json $path and decodes it to an array
 	 *
 	 * @param string  $path
 	 * @param array   $data
@@ -100,10 +100,20 @@ class Client
 	 *
 	 * @return mixed
 	 *
-	 * @throws \Exception If anything goes wrong on curl request
+	 * @throws \Exception If anything goes wrong on the request
+	 * @throws \InvalidArgumentException If the method is not supported
 	 */
 	protected function runRequest($path, $method = 'GET', array $data = array())
 	{
+		$methods = array(
+			'GET' => 'get',
+		);
+
+		if ( ! isset($methods[$method]) )
+		{
+			throw new \InvalidArgumentException('The method "' . $method . '" is not supported.');
+		}
+
 		$client = $this->getHttpClient();
 
 		$request = $client->createRequest($method, $this->getUrl() . $path, array(
