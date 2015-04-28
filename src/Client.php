@@ -83,10 +83,10 @@ class Client
 	/**
 	 * Set a http client
 	 *
-	 * @param object $client the http client
+	 * @param HttpClientInterface $client the http client
 	 * @return self
 	 */
-	public function setHttpClient($client)
+	public function setHttpClient(HttpClientInterface $client)
 	{
 		$this->http_client = $client;
 
@@ -114,27 +114,22 @@ class Client
 			throw new \InvalidArgumentException('The method "' . $method . '" is not supported.');
 		}
 
-		$client = $this->getHttpClient();
+		$method = $methods[$method];
 
-		$request = $client->createRequest($method, $this->getUrl() . $path, array(
-			'query' => $data,
-		));
-
-		$response = $client->send($request);
-
-		return $response->json();
+		return $this->getHttpClient()
+			->$method($this->getUrl() . $path, array('query' => $data));
 	}
 
 	/**
 	 * Returns the http client
 	 *
-	 * @return HttpClient The Http client
+	 * @return HttpClientInterface The Http client
 	 */
 	protected function getHttpClient()
 	{
 		if ( $this->http_client === null )
 		{
-			$this->setHttpClient(new \GuzzleHttp\Client());
+			$this->setHttpClient(new HttpClient());
 		}
 
 		return $this->http_client;
