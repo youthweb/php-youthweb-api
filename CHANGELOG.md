@@ -3,6 +3,7 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased][unreleased]
 ### Added
+- Youthweb API 0.2 Support
 - phpunit tests
 - Travis-CI Support
 - this CHANGELOG.md
