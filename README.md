@@ -1,8 +1,13 @@
 # PHP Youthweb API
 
-PHP Youthweb API ist ein objektorientierter Wrapper in PHP für die [Youthweb API](https://github.com/youthweb/youthweb-api).
+[![Latest Version](https://img.shields.io/github/release/youthweb/php-youthweb-api.svg?style=flat-square)](https://github.com/youthweb/php-youthweb-api/releases)
+[![Software License GLPv2](http://img.shields.io/badge/License-GPLv2-brightgreen.svg?style=flat-square)](LICENSE)
+[![Build Status](http://img.shields.io/travis/youthweb/php-youthweb-api.svg?style=flat-square)](https://travis-ci.org/youthweb/php-youthweb-api)
+[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/youthweb/youthweb-api?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-API Version: [0.1](https://github.com/youthweb/youthweb-api/releases/tag/0.1)
+PHP Youthweb API ist ein objektorientierter Wrapper in PHP 5.4+ für die [Youthweb API](https://github.com/youthweb/youthweb-api).
+
+Unterstütze API Version: [0.1](https://github.com/youthweb/youthweb-api/releases/tag/0.1)
 
 ## Installation
 
