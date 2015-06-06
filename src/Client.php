@@ -26,6 +26,7 @@ class Client
 	{
 		$classes = array(
 			'account' => 'Account',
+			'stats'   => 'Stats',
 		);
 
 		if ( ! isset($classes[$name]) )
