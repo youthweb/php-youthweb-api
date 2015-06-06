@@ -33,13 +33,11 @@ class Client
 			throw new \InvalidArgumentException('The ressource "' . $name . '" does not exists.');
 		}
 
-		if ( isset($this->resources[$name]) )
+		if ( ! isset($this->resources[$name]) )
 		{
-			return $this->resources[$name];
+			$resource = 'Youthweb\\Api\\Resource\\'.$classes[$name];
+			$this->resources[$name] = new $resource($this);
 		}
-
-		$resource = 'Youthweb\\Api\\Resource\\'.$classes[$name];
-		$this->resources[$name] = new $resource($this);
 
 		return $this->resources[$name];
 	}
