@@ -54,5 +54,4 @@ Der Changelog ist [hier](https://github.com/youthweb/php-youthweb-api/blob/maste
 
 ## Todo
 
-- Tests
 - Request Error Handling

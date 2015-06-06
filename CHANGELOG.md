@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased][unreleased]
 ### Added
+- phpunit tests
+- Travis-CI Support
 - this CHANGELOG.md
 
 ## 0.1 - 2015-04-20
