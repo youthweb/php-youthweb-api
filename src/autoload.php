@@ -15,4 +15,12 @@ spl_autoload_register(function ($class)
 	{
 		require_once $path;
 	}
+
+	// Text classes
+	$path = dirname(__FILE__).'/../tests/'.$class.'.php';
+
+	if ( file_exists($path) )
+	{
+		require_once $path;
+	}
 });
