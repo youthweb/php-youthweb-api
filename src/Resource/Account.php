@@ -23,6 +23,11 @@ class Account extends AbstractResource
 			'cat' => 'stats',
 		);
 
-		return $this->get('', $params);
+		$stats = $this->get('', $params);
+
+		return array(
+			'user_total' => $stats->user_total,
+			'user_online' => $stats->user_online,
+		);
 	}
 }
