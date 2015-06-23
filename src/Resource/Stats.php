@@ -30,11 +30,6 @@ class Stats extends AbstractResource
 			throw new \InvalidArgumentException('The ressource id "' . $id . '" does not exists.');
 		}
 
-		$params = array(
-			'action' => 'stats',
-			'cat' => $id,
-		);
-
-		return $this->get('', $params);
+		return $this->get('/stats/' . $id);
 	}
 }
