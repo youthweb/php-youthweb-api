@@ -39,19 +39,9 @@ Ansonsten funktioniert auch jeder andere [PSR-4](http://www.php-fig.org/psr/psr-
 require_once 'src/autoload.php';
 
 $client = new \Youthweb\Api\Client();
-
-$account = $client->getResource('account');
-
-var_dump($account->stats());
 ```
 
-Response:
-
-```
-array (size=2)
-  'user_total' => int 5727
-  'user_online' => int 39
-```
+Weitere Informationen zur Anwendung gibt es in der [Dokumentation](docs/README.md).
 
 ## [Changelog](https://github.com/youthweb/php-youthweb-api/blob/master/CHANGELOG.md)
 
