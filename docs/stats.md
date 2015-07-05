@@ -9,7 +9,7 @@ Lädt statistische Daten. Umfasst die [Youthweb Stats API](http://docs.youthweb.
 $account_stats = $client->getResource('stats')->show('account');
 ```
 
-Liefert ein `StdObject` mit den Daten als JSON API.
+Liefert ein `stdClass` mit den Daten als JSON API.
 
 ### Lädt Statistiken zum Forum
 
@@ -17,7 +17,7 @@ Liefert ein `StdObject` mit den Daten als JSON API.
 $account_stats = $client->getResource('stats')->show('forum');
 ```
 
-Liefert ein `StdObject` mit den Daten als JSON API.
+Liefert ein `stdClass` mit den Daten als JSON API.
 
 ### Lädt Statistiken zu den Gruppen
 
@@ -25,4 +25,4 @@ Liefert ein `StdObject` mit den Daten als JSON API.
 $account_stats = $client->getResource('stats')->show('groups');
 ```
 
-Liefert ein `StdObject` mit den Daten als JSON API.
+Liefert ein `stdClass` mit den Daten als JSON API.
