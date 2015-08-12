@@ -18,12 +18,7 @@ class Account extends AbstractResource
 	 */
 	public function stats()
 	{
-		$params = array(
-			'action' => 'account',
-			'cat' => 'stats',
-		);
-
-		$stats = $this->get('', $params);
+		$stats = $this->get('/account/stats');
 
 		return array(
 			'user_total' => $stats->user_total,

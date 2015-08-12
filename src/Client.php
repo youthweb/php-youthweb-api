@@ -2,6 +2,9 @@
 
 namespace Youthweb\Api;
 
+use GuzzleHttp\Psr7\Request;
+use GuzzleHttp\Psr7\Response;
+
 /**
  * Simple PHP Youthweb client
  *
@@ -9,9 +12,9 @@ namespace Youthweb\Api;
  */
 class Client
 {
-	protected $api_version = '0.1';
+	protected $api_version = '0.2.1';
 
-	protected $url = 'https://youthweb.net/index.php';
+	protected $url = 'https://youthweb.net';
 
 	protected $http_client = null;
 
@@ -100,23 +103,53 @@ class Client
 	 * @return mixed
 	 *
 	 * @throws \Exception If anything goes wrong on the request
-	 * @throws \InvalidArgumentException If the method is not supported
 	 */
 	protected function runRequest($path, $method = 'GET', array $data = array())
 	{
-		$methods = array(
-			'GET' => 'get',
+		$request = new Request($method, $this->getUrl() . $path);
+
+		$response = $this->getHttpClient()->send($request);
+
+		return $this->parseResponse($response);
+	}
+
+	/**
+	 * @param Response $response
+	 *
+	 * @return mixed
+	 *
+	 * @throws \Exception If anything goes wrong on the request
+	 */
+	protected function parseResponse(Response $response)
+	{
+		// 8388608 == 8mb
+		$body = $response->getBody()->read(8388608);
+
+		$jsonErrors = array(
+			JSON_ERROR_DEPTH => 'JSON_ERROR_DEPTH - Maximum stack depth exceeded',
+			JSON_ERROR_STATE_MISMATCH => 'JSON_ERROR_STATE_MISMATCH - Underflow or the modes mismatch',
+			JSON_ERROR_CTRL_CHAR => 'JSON_ERROR_CTRL_CHAR - Unexpected control character found',
+			JSON_ERROR_SYNTAX => 'JSON_ERROR_SYNTAX - Syntax error, malformed JSON',
+			JSON_ERROR_UTF8 => 'JSON_ERROR_UTF8 - Malformed UTF-8 characters, possibly incorrectly encoded'
 		);
 
-		if ( ! isset($methods[$method]) )
+		$data = \json_decode($body, false, 512, JSON_BIGINT_AS_STRING);
+
+		if (  \json_last_error() !== JSON_ERROR_NONE )
 		{
-			throw new \InvalidArgumentException('The method "' . $method . '" is not supported.');
+			$last = json_last_error();
+
+			$error = 'Unknown error';
+
+			if (isset($jsonErrors[$last]))
+			{
+				$error = $jsonErrors[$last];
+			}
+
+			throw new \InvalidArgumentException('Unable to parse JSON data: ' . $error);
 		}
 
-		$method = $methods[$method];
-
-		return $this->getHttpClient()
-			->$method($this->getUrl() . $path, array('query' => $data));
+		return $data;
 	}
 
 	/**
