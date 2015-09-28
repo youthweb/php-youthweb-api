@@ -12,7 +12,7 @@ use GuzzleHttp\Psr7\Response;
  */
 class Client
 {
-	protected $api_version = '0.2.1';
+	protected $api_version = '0.3';
 
 	protected $url = 'https://youthweb.net';
 
@@ -28,13 +28,12 @@ class Client
 	public function getResource($name)
 	{
 		$classes = array(
-			'account' => 'Account',
 			'stats'   => 'Stats',
 		);
 
 		if ( ! isset($classes[$name]) )
 		{
-			throw new \InvalidArgumentException('The ressource "' . $name . '" does not exists.');
+			throw new \InvalidArgumentException('The resource "' . $name . '" does not exists.');
 		}
 
 		if ( ! isset($this->resources[$name]) )
