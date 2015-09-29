@@ -105,7 +105,12 @@ class Client
 	 */
 	protected function runRequest($path, $method = 'GET', array $data = array())
 	{
-		$request = new Request($method, $this->getUrl() . $path);
+		$headers = [
+			'Content-Type' => 'application/vnd.api+json',
+			'Accept' => 'application/vnd.api+json, application/vnd.api+json; net.youthweb.api.version=' . $this->api_version,
+		];
+
+		$request = new Request($method, $this->getUrl() . $path, $headers);
 
 		$response = $this->getHttpClient()->send($request);
 
