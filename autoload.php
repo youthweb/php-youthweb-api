@@ -9,7 +9,7 @@ spl_autoload_register(function ($class)
 	$class = str_replace('\\', '/', $class);
 	$class = str_replace('Youthweb/Api/', '', $class);
 
-	$path = dirname(__FILE__).'/'.$class.'.php';
+	$path = dirname(__FILE__).'/src/'.$class.'.php';
 
 	if ( file_exists($path) )
 	{
@@ -17,7 +17,7 @@ spl_autoload_register(function ($class)
 	}
 
 	// Text classes
-	$path = dirname(__FILE__).'/../tests/'.$class.'.php';
+	$path = dirname(__FILE__).'/tests/'.$class.'.php';
 
 	if ( file_exists($path) )
 	{
