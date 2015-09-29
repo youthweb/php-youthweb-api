@@ -74,4 +74,44 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 
 		$client->getResource('foobar');
 	}
+
+	/**
+	 * @test
+	 */
+	public function testParseResponseReturnsObject()
+	{
+		$body = $this->getMockBuilder('Psr\Http\Message\StreamInterface')
+			->disableOriginalConstructor()
+			->getMock();
+
+		$body->expects($this->any())
+			->method('read')
+			->with($this->equalTo('8388608'))
+			->willReturn('{"meta":{"this":"that"}}');
+
+		$response = $this->getMockBuilder('GuzzleHttp\Psr7\Response')
+			->disableOriginalConstructor()
+			->getMock();
+
+		$response->expects($this->any())
+			->method('getBody')
+			->willReturn($body);
+
+		$http_client = $this->getMockBuilder('Youthweb\Api\HttpClientInterface')
+			->disableOriginalConstructor()
+			->getMock();
+
+		$http_client->expects($this->any())
+			->method('send')
+			->willReturn($response);
+
+		$client = new Client();
+		$client->setHttpClient($http_client);
+
+		$document = $client->get('foobar');
+
+		$this->assertCount(1, get_object_vars($document));
+		$this->assertCount(1, get_object_vars($document->meta));
+		$this->assertSame('that', $document->meta->this);
+	}
 }
