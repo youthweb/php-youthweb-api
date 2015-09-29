@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased][unreleased]
+### Changed
+- [Youthweb API 0.3](https://github.com/youthweb/youthweb-api/releases/tag/0.3) Support
+### Removed
+- Drop PHP 5.4 support
 
 ## 0.2 - 2015-06-21
 ### Added
