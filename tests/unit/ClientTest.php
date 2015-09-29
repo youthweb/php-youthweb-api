@@ -50,10 +50,28 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 		$this->assertInstanceOf($class_name, $client->getResource($resource_name));
 	}
 
+	/**
+	 * Resources DataProvider
+	 */
 	public function getResoursesClassesProvider()
 	{
 		return array(
 			array('stats', 'Youthweb\Api\Resource\Stats'),
 		);
+	}
+
+	/**
+	 * @test
+	 */
+	public function testGetUnknownResourceThrowsException()
+	{
+		$client = new Client();
+
+		$this->setExpectedException(
+			'InvalidArgumentException',
+			'The resource "foobar" does not exists.'
+		);
+
+		$client->getResource('foobar');
 	}
 }
