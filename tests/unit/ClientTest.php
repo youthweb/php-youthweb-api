@@ -30,6 +30,20 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	/**
 	 * @test
 	 */
+	public function testGetHttpClientReturnsHttpClient()
+	{
+		$method = new \ReflectionMethod(
+			'Youthweb\Api\Client', 'getHttpClient'
+		);
+
+		$method->setAccessible(true);
+
+		$this->assertInstanceOf('Youthweb\Api\HttpClientInterface', $method->invoke(new Client));
+	}
+
+	/**
+	 * @test
+	 */
 	public function testSetHttpClientReturnsClient()
 	{
 		$client = new Client();
