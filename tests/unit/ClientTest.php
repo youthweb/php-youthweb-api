@@ -30,6 +30,20 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	/**
 	 * @test
 	 */
+	public function testGetHttpClientReturnsHttpClient()
+	{
+		$method = new \ReflectionMethod(
+			'Youthweb\Api\Client', 'getHttpClient'
+		);
+
+		$method->setAccessible(true);
+
+		$this->assertInstanceOf('Youthweb\Api\HttpClientInterface', $method->invoke(new Client));
+	}
+
+	/**
+	 * @test
+	 */
 	public function testSetHttpClientReturnsClient()
 	{
 		$client = new Client();
@@ -50,11 +64,68 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 		$this->assertInstanceOf($class_name, $client->getResource($resource_name));
 	}
 
+	/**
+	 * Resources DataProvider
+	 */
 	public function getResoursesClassesProvider()
 	{
 		return array(
-			array('account', 'Youthweb\Api\Resource\Account'),
 			array('stats', 'Youthweb\Api\Resource\Stats'),
 		);
+	}
+
+	/**
+	 * @test
+	 */
+	public function testGetUnknownResourceThrowsException()
+	{
+		$client = new Client();
+
+		$this->setExpectedException(
+			'InvalidArgumentException',
+			'The resource "foobar" does not exists.'
+		);
+
+		$client->getResource('foobar');
+	}
+
+	/**
+	 * @test
+	 */
+	public function testParseResponseReturnsObject()
+	{
+		$body = $this->getMockBuilder('Psr\Http\Message\StreamInterface')
+			->disableOriginalConstructor()
+			->getMock();
+
+		$body->expects($this->any())
+			->method('read')
+			->with($this->equalTo('8388608'))
+			->willReturn('{"meta":{"this":"that"}}');
+
+		$response = $this->getMockBuilder('GuzzleHttp\Psr7\Response')
+			->disableOriginalConstructor()
+			->getMock();
+
+		$response->expects($this->any())
+			->method('getBody')
+			->willReturn($body);
+
+		$http_client = $this->getMockBuilder('Youthweb\Api\HttpClientInterface')
+			->disableOriginalConstructor()
+			->getMock();
+
+		$http_client->expects($this->any())
+			->method('send')
+			->willReturn($response);
+
+		$client = new Client();
+		$client->setHttpClient($http_client);
+
+		$document = $client->get('foobar');
+
+		$this->assertCount(1, get_object_vars($document));
+		$this->assertCount(1, get_object_vars($document->meta));
+		$this->assertSame('that', $document->meta->this);
 	}
 }
