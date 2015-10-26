@@ -122,10 +122,6 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 		$client = new Client();
 		$client->setHttpClient($http_client);
 
-		$document = $client->get('foobar');
-
-		$this->assertCount(1, get_object_vars($document));
-		$this->assertCount(1, get_object_vars($document->meta));
-		$this->assertSame('that', $document->meta->this);
+		$this->assertInstanceOf('\Art4\JsonApiClient\Document', $client->get('foobar'));
 	}
 }
