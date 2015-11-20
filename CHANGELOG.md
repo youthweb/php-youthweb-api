@@ -8,6 +8,10 @@ All notable changes to this project will be documented in this file.
 
 - [Youthweb API 0.3](https://github.com/youthweb/youthweb-api/releases/tag/0.3) Support
 
+### Breaking
+
+- API Resources return the data as `Art4\JsonApiClient\Document` object instead of `stdClass`
+
 ### Removed
 
 - Drop PHP 5.4 support
