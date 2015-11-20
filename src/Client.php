@@ -2,6 +2,10 @@
 
 namespace Youthweb\Api;
 
+use GuzzleHttp\Psr7\Request;
+use GuzzleHttp\Psr7\Response;
+use Art4\JsonApiClient\Utils\Manager;
+
 /**
  * Simple PHP Youthweb client
  *
@@ -9,9 +13,9 @@ namespace Youthweb\Api;
  */
 class Client
 {
-	protected $api_version = '0.1';
+	protected $api_version = '0.3';
 
-	protected $url = 'https://youthweb.net/index.php';
+	protected $url = 'https://youthweb.net';
 
 	protected $http_client = null;
 
@@ -25,13 +29,12 @@ class Client
 	public function getResource($name)
 	{
 		$classes = array(
-			'account' => 'Account',
 			'stats'   => 'Stats',
 		);
 
 		if ( ! isset($classes[$name]) )
 		{
-			throw new \InvalidArgumentException('The ressource "' . $name . '" does not exists.');
+			throw new \InvalidArgumentException('The resource "' . $name . '" does not exists.');
 		}
 
 		if ( ! isset($this->resources[$name]) )
@@ -100,23 +103,34 @@ class Client
 	 * @return mixed
 	 *
 	 * @throws \Exception If anything goes wrong on the request
-	 * @throws \InvalidArgumentException If the method is not supported
 	 */
 	protected function runRequest($path, $method = 'GET', array $data = array())
 	{
-		$methods = array(
-			'GET' => 'get',
-		);
+		$headers = [
+			'Content-Type' => 'application/vnd.api+json',
+			'Accept' => 'application/vnd.api+json, application/vnd.api+json; net.youthweb.api.version=' . $this->api_version,
+		];
 
-		if ( ! isset($methods[$method]) )
-		{
-			throw new \InvalidArgumentException('The method "' . $method . '" is not supported.');
-		}
+		$request = new Request($method, $this->getUrl() . $path, $headers);
 
-		$method = $methods[$method];
+		$response = $this->getHttpClient()->send($request);
 
-		return $this->getHttpClient()
-			->$method($this->getUrl() . $path, array('query' => $data));
+		return $this->parseResponse($response);
+	}
+
+	/**
+	 * @param Response $response
+	 *
+	 * @return \Art4\JsonApiClient\Document
+	 *
+	 * @throws \Exception If anything goes wrong on the request
+	 */
+	protected function parseResponse(Response $response)
+	{
+		// 8388608 == 8mb
+		$body = $response->getBody()->read(8388608);
+
+		return (new Manager())->parse($body);
 	}
 
 	/**
