@@ -12,29 +12,11 @@ Unterstütze API Version: 0.3
 
 ## Installation
 
-### Composer (empfohlen)
+[Composer](http://getcomposer.org/):
 
 ```
-$ php composer.phar require youthweb/php-youthweb-api
+$ composer require youthweb/php-youthweb-api
 ```
-
-```php
-<?php
-
-require 'vendor/autoload.php';
-```
-
-### Manuell
-
-Dieser Library liegt ein kleiner Autoloader bei, der verwendet werden kann.
-
-```php
-<?php
-
-require 'vendor/php-youthweb-api/autoload.php';
-```
-
-Ansonsten funktioniert auch jeder andere [PSR-4](http://www.php-fig.org/psr/psr-4/) Autoloader.
 
 ## [Dokumentation](docs/README.md) / Anwendung
 
@@ -43,6 +25,12 @@ $client = new \Youthweb\Api\Client();
 ```
 
 Weitere Informationen zur Anwendung gibt es in der [Dokumentation](docs/README.md).
+
+## Tests
+
+```
+phpunit
+```
 
 ## [Changelog](CHANGELOG.md)
 
