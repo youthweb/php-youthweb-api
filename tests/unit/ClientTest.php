@@ -93,6 +93,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	{
 		return array(
 			array('stats', 'Youthweb\Api\Resource\Stats'),
+			array('auth', 'Youthweb\Api\Resource\Auth'),
 		);
 	}
 
