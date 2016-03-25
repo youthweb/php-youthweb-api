@@ -32,8 +32,21 @@ abstract class AbstractResource
 	 *
 	 * @return array
 	 */
-	protected function get($path, array $data = array())
+	protected function get($path, $data = [])
 	{
 		return $this->client->get($path, $data);
+	}
+
+	/**
+	 * Perform the client post() method.
+	 *
+	 * @param string $path
+	 * @param array  $data
+	 *
+	 * @return array
+	 */
+	protected function post($path, $data = [])
+	{
+		return $this->client->post($path, $data);
 	}
 }

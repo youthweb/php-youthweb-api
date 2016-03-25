@@ -31,7 +31,7 @@ class MockClient extends Client
 	 *
 	 * @return array
 	 */
-	public function get($path, array $data = array())
+	public function get($path, $data = [])
 	{
 		if ( $this->useOriginalGetMethod )
 		{
@@ -50,7 +50,7 @@ class MockClient extends Client
 	 *
 	 * @throws \Exception If anything goes wrong on curl request
 	 */
-	protected function runRequest($path, $method = 'GET', array $data = array())
+	protected function runRequest($path, $method = 'GET', $data = [])
 	{
 		if ( $this->runRequestReturnValue !== null )
 		{

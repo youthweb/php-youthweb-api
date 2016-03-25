@@ -5,14 +5,14 @@ namespace Youthweb\Api\Resource;
 /**
  * Get the stats
  *
- * @link https://github.com/youthweb/youthweb-api#stats
+ * @link docs.youthweb.apiary.io/#reference/stats
  */
 class Stats extends AbstractResource
 {
 	/**
 	 * Get the stats
 	 *
-	 * @link https://github.com/youthweb/youthweb-api#stats
+	 * @link docs.youthweb.apiary.io/#reference/stats
 	 *
 	 * @param string $id
 	 * @return array the stats
