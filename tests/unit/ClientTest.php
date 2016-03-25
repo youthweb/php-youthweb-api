@@ -55,6 +55,28 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 
 	/**
 	 * @test
+	 */
+	public function testGetCacheProviderReturnsPsrCacheItemPool()
+	{
+		$client = new Client();
+
+		$this->assertInstanceOf('Psr\Cache\CacheItemPoolInterface', $client->getCacheProvider());
+	}
+
+	/**
+	 * @test
+	 */
+	public function testSetCacheProviderReturnsClient()
+	{
+		$client = new Client();
+
+		$stub = $this->getMock('Psr\Cache\CacheItemPoolInterface');
+
+		$this->assertInstanceOf('Youthweb\Api\Client', $client->setCacheProvider($stub));
+	}
+
+	/**
+	 * @test
 	 * @dataProvider getResoursesClassesProvider
 	 */
 	public function testGetApiInstance($resource_name, $class_name)

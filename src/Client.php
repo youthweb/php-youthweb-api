@@ -2,9 +2,11 @@
 
 namespace Youthweb\Api;
 
+use Art4\JsonApiClient\Utils\Manager;
+use Cache\Adapter\Void\VoidCachePool;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
-use Art4\JsonApiClient\Utils\Manager;
+use Psr\Cache\CacheItemPoolInterface;
 
 /**
  * Simple PHP Youthweb client
@@ -18,6 +20,8 @@ class Client
 	protected $url = 'https://youthweb.net';
 
 	protected $http_client = null;
+
+	protected $cache_provider = null;
 
 	/**
 	 * @param string $name
@@ -93,6 +97,34 @@ class Client
 		$this->http_client = $client;
 
 		return $this;
+	}
+
+	/**
+	 * Set a cache provider
+	 *
+	 * @param Psr\Cache\CacheItemPoolInterface $cache_provider the cache provider
+	 * @return self
+	 */
+	public function setCacheProvider(CacheItemPoolInterface $cache_provider)
+	{
+		$this->cache_provider = $cache_provider;
+
+		return $this;
+	}
+
+	/**
+	 * Get the cache provider
+	 *
+	 * @return Psr\Cache\CacheItemPoolInterface the cache provider
+	 */
+	public function getCacheProvider()
+	{
+		if ( $this->cache_provider === null )
+		{
+			$this->setCacheProvider(new VoidCachePool());
+		}
+
+		return $this->cache_provider;
 	}
 
 	/**
