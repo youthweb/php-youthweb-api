@@ -6,8 +6,8 @@ use Art4\JsonApiClient\Utils\Manager;
 use Cache\Adapter\Void\VoidCachePool;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Psr7\Request;
-use GuzzleHttp\Psr7\Response;
 use Psr\Cache\CacheItemPoolInterface;
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * Simple PHP Youthweb client
@@ -225,13 +225,13 @@ class Client
 	}
 
 	/**
-	 * @param Response $response
+	 * @param ResponseInterface $response
 	 *
 	 * @return \Art4\JsonApiClient\Document
 	 *
 	 * @throws \Exception If anything goes wrong on the request
 	 */
-	protected function parseResponse(Response $response)
+	protected function parseResponse(ResponseInterface $response)
 	{
 		// 8388608 == 8mb
 		$body = $response->getBody()->read(8388608);
@@ -276,7 +276,7 @@ class Client
 			$response = $e->getResponse();
 		}
 
-		if ( is_object($response) and $response instanceof Response )
+		if ( is_object($response) and $response instanceof ResponseInterface )
 		{
 			$document = $this->parseResponse($response);
 

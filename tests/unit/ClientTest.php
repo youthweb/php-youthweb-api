@@ -193,4 +193,50 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 
 		$this->assertInstanceOf('\Art4\JsonApiClient\Document', $client->get('foobar'));
 	}
+
+	/**
+	 * @test
+	 */
+	public function testHandleClientExceptionWithException()
+	{
+		$body = $this->getMockBuilder('Psr\Http\Message\StreamInterface')
+			->getMock();
+
+		$body->expects($this->any())
+			->method('read')
+			->with($this->equalTo('8388608'))
+			->willReturn('{"meta":{"error":"foobar"}}');
+
+		$response = $this->getMockBuilder('Psr\Http\Message\ResponseInterface')
+			->getMock();
+
+		$response->expects($this->any())
+			->method('getBody')
+			->willReturn($body);
+
+		$exception = $this->getMockBuilder('\Exception')
+			->disableOriginalConstructor()
+			->getMock();
+
+		$exception->expects($this->any())
+			->method('getResponse')
+			->willReturn($response);
+
+		$http_client = $this->getMockBuilder('Youthweb\Api\HttpClientInterface')
+			->getMock();
+
+		$http_client->expects($this->any())
+			->method('send')
+			->will($this->throwException($exception));
+
+		$client = new Client();
+		$client->setHttpClient($http_client);
+
+		$this->setExpectedException(
+			'Exception',
+			'The server responses with an unknown error.'
+		);
+
+		$client->get('foobar');
+	}
 }
