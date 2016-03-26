@@ -16,7 +16,7 @@ use Psr\Cache\CacheItemPoolInterface;
  */
 class Client
 {
-	protected $api_version = '0.3';
+	protected $api_version = '0.4';
 
 	protected $url = 'https://youthweb.net';
 

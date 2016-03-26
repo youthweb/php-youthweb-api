@@ -3,6 +3,7 @@
 namespace Youthweb\Api\Tests\Resource;
 
 use Youthweb\Api\Fixtures\MockClient;
+use Youthweb\Api\Resource\Stats;
 use InvalidArgumentException;
 
 class StatsTest extends \PHPUnit_Framework_TestCase
@@ -10,16 +11,19 @@ class StatsTest extends \PHPUnit_Framework_TestCase
 	/**
 	 * @test
 	 */
-	public function testShowAccountReturnsObject()
+	public function testShowAccountReturnsDocumentInterface()
 	{
+		$document = $this->getMock('\Art4\JsonApiClient\DocumentInterface');
+
 		$client = new MockClient();
 		$client->useOriginalGetMethod = false;
-		$client->runRequestReturnValue = json_decode('{"data":{"type":"stats","id":"account","attributes":{"user_total":5503,"user_total_female":2831, "user_total_male":2672,"user_online":74,"user_online_24h":629,"user_online_7d":1035,"user_online_30d":1600,"userpics":3441}}}', false);
+		$client->runRequestReturnValue = $document;
 
-		$response = $client->getResource('stats')->show('account');
+		$stats = new Stats($client);
 
-		$this->assertTrue(is_object($response));
-		$this->assertSame($client->runRequestReturnValue, $response);
+		$response = $stats->show('account');
+
+		$this->assertInstanceOf('\Art4\JsonApiClient\DocumentInterface', $response);
 	}
 
 	/**
@@ -27,14 +31,17 @@ class StatsTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testShowForumReturnsObject()
 	{
+		$document = $this->getMock('\Art4\JsonApiClient\DocumentInterface');
+
 		$client = new MockClient();
 		$client->useOriginalGetMethod = false;
-		$client->runRequestReturnValue = json_decode('{"data":{"type":"stats","id":"forum","attributes":{"authors_total":1480,"threads_total":2094,"posts_total":121387}}}', false);
+		$client->runRequestReturnValue = $document;
 
-		$response = $client->getResource('stats')->show('forum');
+		$stats = new Stats($client);
 
-		$this->assertTrue(is_object($response));
-		$this->assertSame($client->runRequestReturnValue, $response);
+		$response = $stats->show('forum');
+
+		$this->assertInstanceOf('\Art4\JsonApiClient\DocumentInterface', $response);
 	}
 
 	/**
@@ -42,24 +49,30 @@ class StatsTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testShowGroupsReturnsObject()
 	{
+		$document = $this->getMock('\Art4\JsonApiClient\DocumentInterface');
+
 		$client = new MockClient();
 		$client->useOriginalGetMethod = false;
-		$client->runRequestReturnValue = json_decode('{"data":{"type":"stats","id":"groups","attributes":{"groups_total":614,"users_total":2073}}}', false);
+		$client->runRequestReturnValue = $document;
 
-		$response = $client->getResource('stats')->show('groups');
+		$stats = new Stats($client);
 
-		$this->assertTrue(is_object($response));
-		$this->assertSame($client->runRequestReturnValue, $response);
+		$response = $stats->show('groups');
+
+		$this->assertInstanceOf('\Art4\JsonApiClient\DocumentInterface', $response);
 	}
 
 	/**
 	 * @test
-	 * @expectedException InvalidArgumentException
-	 * @expectedExceptionMessage The ressource id "foobar" does not exists.
 	 */
 	public function testShowFoobarThrowsException()
 	{
 		$client = new MockClient();
+
+		$this->setExpectedException(
+			'InvalidArgumentException',
+			'The ressource id "foobar" does not exists.'
+		);
 
 		$response = $client->getResource('stats')->show('foobar');
 	}
