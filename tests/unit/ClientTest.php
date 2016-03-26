@@ -30,6 +30,42 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	/**
 	 * @test
 	 */
+	public function testSetUserCredentialsReturnsClient()
+	{
+		$client = new Client();
+
+		$this->assertInstanceOf('Youthweb\Api\Client', $client->setUserCredentials('Username', 'User-Token'));
+	}
+
+	/**
+	 * @test
+	 */
+	public function testGetUserCredentialReturnsValueFromSetUserCredentials()
+	{
+		$client = (new Client())->setUserCredentials('Username', 'User-Token');
+
+		$this->assertSame('Username', $client->getUserCredential('username'));
+		$this->assertSame('User-Token', $client->getUserCredential('token_secret'));
+	}
+
+	/**
+	 * @test
+	 */
+	public function testGetUserCredentialWithWrongKeyThrowsException()
+	{
+		$client = (new Client())->setUserCredentials('Username', 'User-Token');
+
+		$this->setExpectedException(
+			'UnexpectedValueException',
+			'"foobar" is not a valid key for user credentials.'
+		);
+
+		$foo = $client->getUserCredential('foobar');
+	}
+
+	/**
+	 * @test
+	 */
 	public function testGetHttpClientReturnsHttpClient()
 	{
 		$method = new \ReflectionMethod(
@@ -73,6 +109,16 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 		$stub = $this->getMock('Psr\Cache\CacheItemPoolInterface');
 
 		$this->assertInstanceOf('Youthweb\Api\Client', $client->setCacheProvider($stub));
+	}
+
+	/**
+	 * @test
+	 */
+	public function testBuildCacheKeyReturnsString()
+	{
+		$client = new Client();
+
+		$this->assertSame('php_youthweb_api.foobar', $client->buildCacheKey('foobar'));
 	}
 
 	/**

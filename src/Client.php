@@ -104,12 +104,14 @@ class Client
 	 */
 	public function getUserCredential($key)
 	{
-		if ( ! in_array(strval($key), ['username', 'token_secret']) )
+		$key = strval($key);
+
+		if ( ! in_array($key, ['username', 'token_secret']) )
 		{
-			throw new \UnexpectedValueException();
+			throw new \UnexpectedValueException('"' . $key . '" is not a valid key for user credentials.');
 		}
 
-		$key = strval($key);
+
 
 		return $this->$key;
 	}
