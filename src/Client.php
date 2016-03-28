@@ -271,7 +271,7 @@ class Client
 		$response = null;
 
 		// Try to get the response
-		if ( method_exists($e, 'getResponse') )
+		if ( $e instanceof ClientException or is_callable([$e, 'getResponse']) )
 		{
 			$response = $e->getResponse();
 		}
