@@ -243,6 +243,52 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	/**
 	 * @test
 	 */
+	public function testHandleClientExceptionWithDetailResponseException()
+	{
+		$body = $this->getMockBuilder('Psr\Http\Message\StreamInterface')
+			->getMock();
+
+		$body->expects($this->any())
+			->method('read')
+			->with($this->equalTo('8388608'))
+			->willReturn('{"errors":[{"status":"401","title":"Unauthorized","detail":"Detailed error message"}]}');
+
+		$response = $this->getMockBuilder('Psr\Http\Message\ResponseInterface')
+			->getMock();
+
+		$response->expects($this->any())
+			->method('getBody')
+			->willReturn($body);
+
+		$exception = $this->getMockBuilder('GuzzleHttp\Exception\ClientException')
+			->disableOriginalConstructor()
+			->getMock();
+
+		$exception->expects($this->any())
+			->method('getResponse')
+			->willReturn($response);
+
+		$http_client = $this->getMockBuilder('Youthweb\Api\HttpClientInterface')
+			->getMock();
+
+		$http_client->expects($this->any())
+			->method('send')
+			->will($this->throwException($exception));
+
+		$client = new Client();
+		$client->setHttpClient($http_client);
+
+		$this->setExpectedException(
+			'Exception',
+			'Detailed error message'
+		);
+
+		$client->get('foobar');
+	}
+
+	/**
+	 * @test
+	 */
 	public function testHandleClientExceptionWithException()
 	{
 		$body = $this->getMockBuilder('Psr\Http\Message\StreamInterface')
