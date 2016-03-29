@@ -148,19 +148,6 @@ class Client
 	}
 
 	/**
-	 * HTTP POSTs a json $path and decodes it to an object
-	 *
-	 * @param string  $path
-	 * @param array   $data
-	 *
-	 * @return array
-	 */
-	public function post($path, $data = [])
-	{
-		return $this->runRequest($path, 'POST', $data);
-	}
-
-	/**
 	 * HTTP POSTs a json $path without Authorization and decodes it to an object
 	 *
 	 * @param string  $path

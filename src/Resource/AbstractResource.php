@@ -51,19 +51,6 @@ abstract class AbstractResource
 	}
 
 	/**
-	 * Perform the client post() method.
-	 *
-	 * @param string $path
-	 * @param array  $data
-	 *
-	 * @return array
-	 */
-	protected function post($path, $data = [])
-	{
-		return $this->client->post($path, $data);
-	}
-
-	/**
 	 * Perform the client post() method without Authorization.
 	 *
 	 * @param string $path
