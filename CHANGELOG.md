@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased][unreleased]
 
+### Changed
+
+- [Youthweb API 0.4](https://github.com/youthweb/youthweb-api/releases/tag/0.4) Support
+
+### Added
+
+- set user credentials with `setUserCredentials('Username', 'User-Token')`
+- new resources `users/<user_id>` and `auth/token` added
+
 ## [0.3] - 2015-11-20
 
 ### Changed

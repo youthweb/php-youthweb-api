@@ -21,7 +21,16 @@ $ composer require youthweb/php-youthweb-api
 ## [Dokumentation](docs/README.md) / Anwendung
 
 ```php
+// Create a Client
 $client = new \Youthweb\Api\Client();
+// Add your credentials
+$client->setUserCredentials('Username', 'lp4LExKDYug5ARka6ckgkbRCzOzdd6Mo');
+
+// Request a user
+$response = $client->getResource('users')->show(123456);
+
+echo $response->get('data.attributes.username');
+// echoes 'Username'
 ```
 
 Weitere Informationen zur Anwendung gibt es in der [Dokumentation](docs/README.md).
