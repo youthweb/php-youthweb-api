@@ -40,8 +40,9 @@ class Client
 	public function getResource($name)
 	{
 		$classes = array(
-			'stats' => 'Stats',
 			'auth'  => 'Auth',
+			'stats' => 'Stats',
+			'users' => 'Users',
 		);
 
 		if ( ! isset($classes[$name]) )
@@ -117,7 +118,7 @@ class Client
 	}
 
 	/**
-	 * HTTP GETs a json $path and decodes it to an array
+	 * HTTP GETs a json $path and decodes it to an object
 	 *
 	 * @param string  $path
 	 * @param array   $data
@@ -130,7 +131,24 @@ class Client
 	}
 
 	/**
-	 * HTTP POSTs a json $path and decodes it to an array
+	 * HTTP GETs a json $path without Authorization and decodes it to an object
+	 *
+	 * @param string  $path
+	 * @param array   $data
+	 *
+	 * @return array
+	 */
+	public function getUnauthorized($path, $data = [])
+	{
+		$config = [
+			'authorize' => false,
+		];
+
+		return $this->runRequest($path, 'GET', $data, $config);
+	}
+
+	/**
+	 * HTTP POSTs a json $path and decodes it to an object
 	 *
 	 * @param string  $path
 	 * @param array   $data
@@ -140,6 +158,23 @@ class Client
 	public function post($path, $data = [])
 	{
 		return $this->runRequest($path, 'POST', $data);
+	}
+
+	/**
+	 * HTTP POSTs a json $path without Authorization and decodes it to an object
+	 *
+	 * @param string  $path
+	 * @param array   $data
+	 *
+	 * @return array
+	 */
+	public function postUnauthorized($path, $data = [])
+	{
+		$config = [
+			'authorize' => false,
+		];
+
+		return $this->runRequest($path, 'POST', $data, $config);
 	}
 
 	/**
@@ -203,12 +238,25 @@ class Client
 	 *
 	 * @throws \Exception If anything goes wrong on the request
 	 */
-	protected function runRequest($path, $method = 'GET', $data = [])
+	protected function runRequest($path, $method = 'GET', $data = [], array $config = [])
 	{
+		$default_config = [
+			'authorize' => true,
+		];
+
+		$config = array_merge($default_config, $config);
+
 		$headers = [
 			'Content-Type' => 'application/vnd.api+json',
 			'Accept' => 'application/vnd.api+json, application/vnd.api+json; net.youthweb.api.version=' . $this->api_version,
 		];
+
+		if ( $config['authorize'] === true )
+		{
+			$bearer_token = $this->getResource('auth')->getBearerToken();
+
+			$headers['Authorization'] = strval($bearer_token);
+		}
 
 		$request = new Request($method, $this->getUrl() . $path, $headers, $data);
 

@@ -34,7 +34,7 @@ class Auth extends AbstractResource
 			$body = new JsonObject;
 			$body->meta = $meta;
 
-			$document = $this->post('/auth/token', $body);
+			$document = $this->postUnauthorized('/auth/token', $body);
 
 			if ( $document->has('meta.token') and $document->has('meta.token_type') )
 			{

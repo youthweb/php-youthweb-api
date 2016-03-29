@@ -38,6 +38,19 @@ abstract class AbstractResource
 	}
 
 	/**
+	 * Perform the client get() method without Authorization.
+	 *
+	 * @param string $path
+	 * @param array  $data
+	 *
+	 * @return array
+	 */
+	protected function getUnauthorized($path, $data = [])
+	{
+		return $this->client->getUnauthorized($path, $data);
+	}
+
+	/**
 	 * Perform the client post() method.
 	 *
 	 * @param string $path
@@ -48,5 +61,18 @@ abstract class AbstractResource
 	protected function post($path, $data = [])
 	{
 		return $this->client->post($path, $data);
+	}
+
+	/**
+	 * Perform the client post() method without Authorization.
+	 *
+	 * @param string $path
+	 * @param array  $data
+	 *
+	 * @return array
+	 */
+	protected function postUnauthorized($path, $data = [])
+	{
+		return $this->client->postUnauthorized($path, $data);
 	}
 }

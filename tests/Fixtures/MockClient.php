@@ -50,7 +50,7 @@ class MockClient extends Client
 	 *
 	 * @throws \Exception If anything goes wrong on curl request
 	 */
-	protected function runRequest($path, $method = 'GET', $data = [])
+	protected function runRequest($path, $method = 'GET', $data = [], $config = [])
 	{
 		if ( $this->runRequestReturnValue !== null )
 		{
@@ -61,6 +61,7 @@ class MockClient extends Client
 			'path' => $path,
 			'method' => $method,
 			'data' => $data,
+			'config' => $config,
 		);
 	}
 }
