@@ -8,7 +8,7 @@
 
 PHP Youthweb API ist ein objektorientierter Wrapper in PHP 5.5+ für die [Youthweb API](https://github.com/youthweb/youthweb-api).
 
-Unterstütze API Version: 0.4
+Unterstütze API Version: 0.5
 
 ## Installation
 
