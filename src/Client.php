@@ -125,7 +125,7 @@ class Client
 	 *
 	 * @return array
 	 */
-	public function get($path, $data = [])
+	public function get($path, $data = null)
 	{
 		return $this->runRequest($path, 'GET', $data);
 	}
@@ -138,7 +138,7 @@ class Client
 	 *
 	 * @return array
 	 */
-	public function getUnauthorized($path, $data = [])
+	public function getUnauthorized($path, $data = null)
 	{
 		$config = [
 			'authorize' => false,
@@ -155,7 +155,7 @@ class Client
 	 *
 	 * @return array
 	 */
-	public function postUnauthorized($path, $data = [])
+	public function postUnauthorized($path, $data = null)
 	{
 		$config = [
 			'authorize' => false,
@@ -225,7 +225,7 @@ class Client
 	 *
 	 * @throws \Exception If anything goes wrong on the request
 	 */
-	protected function runRequest($path, $method = 'GET', $data = [], array $config = [])
+	protected function runRequest($path, $method = 'GET', $data = null, array $config = [])
 	{
 		$default_config = [
 			'authorize' => true,
