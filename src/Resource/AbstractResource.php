@@ -32,7 +32,7 @@ abstract class AbstractResource
 	 *
 	 * @return array
 	 */
-	protected function get($path, $data = [])
+	protected function get($path, $data = null)
 	{
 		return $this->client->get($path, $data);
 	}
@@ -45,7 +45,7 @@ abstract class AbstractResource
 	 *
 	 * @return array
 	 */
-	protected function getUnauthorized($path, $data = [])
+	protected function getUnauthorized($path, $data = null)
 	{
 		return $this->client->getUnauthorized($path, $data);
 	}
@@ -58,7 +58,7 @@ abstract class AbstractResource
 	 *
 	 * @return array
 	 */
-	protected function postUnauthorized($path, $data = [])
+	protected function postUnauthorized($path, $data = null)
 	{
 		return $this->client->postUnauthorized($path, $data);
 	}
