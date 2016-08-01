@@ -138,8 +138,9 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	public function getResoursesClassesProvider()
 	{
 		return array(
-			array('stats', 'Youthweb\Api\Resource\Stats'),
 			array('auth', 'Youthweb\Api\Resource\Auth'),
+			array('stats', 'Youthweb\Api\Resource\Stats'),
+			array('users', 'Youthweb\Api\Resource\Users'),
 		);
 	}
 

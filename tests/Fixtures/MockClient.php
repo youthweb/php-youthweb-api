@@ -27,11 +27,11 @@ class MockClient extends Client
 	 * Just return the data from runRequest().
 	 *
 	 * @param string $path
-	 * @param array  $data
+	 * @param mixed  $data
 	 *
 	 * @return array
 	 */
-	public function get($path, $data = [])
+	public function get($path, $data = null)
 	{
 		if ( $this->useOriginalGetMethod )
 		{
@@ -44,13 +44,13 @@ class MockClient extends Client
 	/**
 	 * @param string $path
 	 * @param string $method
-	 * @param array  $data
+	 * @param mixed  $data
 	 *
 	 * @return string
 	 *
 	 * @throws \Exception If anything goes wrong on curl request
 	 */
-	protected function runRequest($path, $method = 'GET', $data = [], array $config = [])
+	protected function runRequest($path, $method = 'GET', $data = null, array $config = [])
 	{
 		if ( $this->runRequestReturnValue !== null )
 		{
