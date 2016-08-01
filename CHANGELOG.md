@@ -1,8 +1,10 @@
-# Change Log
+# Changelog
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased][unreleased]
+## [Unreleased]
+
+## [0.4] - 2016-08-01
 
 ### Changed
 
@@ -37,13 +39,15 @@ All notable changes to this project will be documented in this file.
 - Travis-CI Support
 - this CHANGELOG.md
 
-## 0.1 - 2015-04-20
+## [0.1] - 2015-04-20
 
 ### Added
 
 - First workable client for Youthweb API  [Version 0.1](https://github.com/youthweb/youthweb-api/releases/tag/0.1)
 - Http client based on [guzzlehttp/guzzle ~5.0](https://github.com/guzzle/guzzle)
 
-[unreleased]: https://github.com/youthweb/php-youthweb-api/compare/0.3...HEAD
+[Unreleased]: https://github.com/youthweb/php-youthweb-api/compare/0.4...HEAD
+[0.4]: https://github.com/youthweb/php-youthweb-api/compare/0.3...0.4
 [0.3]: https://github.com/youthweb/php-youthweb-api/compare/0.2...0.3
 [0.2]: https://github.com/youthweb/php-youthweb-api/compare/0.1...0.2
+[0.1]: https://github.com/youthweb/php-youthweb-api/compare/4edfb72fb1c989ac4ee91d8ed7d68d4b32c4a143...0.1
