@@ -16,7 +16,7 @@ use Psr\Http\Message\ResponseInterface;
  */
 class Client
 {
-	protected $api_version = '0.4';
+	protected $api_version = '0.5';
 
 	protected $url = 'https://youthweb.net';
 

@@ -2,7 +2,9 @@
 
 ## APIs:
 
+* [Auth](auth.md)
 * [Stats](stats.md)
+* [Users](users.md)
 
 ## Schnellstart
 
