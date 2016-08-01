@@ -8,7 +8,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- [Youthweb API 0.4](https://github.com/youthweb/youthweb-api/releases/tag/0.4) Support
+- [Youthweb API 0.5](https://github.com/youthweb/youthweb-api/releases/tag/0.5) Support
 
 ### Added
 
