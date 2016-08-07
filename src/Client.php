@@ -268,8 +268,7 @@ class Client
 	 */
 	protected function parseResponse(ResponseInterface $response)
 	{
-		// 8388608 == 8mb
-		$body = $response->getBody()->read(8388608);
+		$body = $response->getBody()->getContents();
 
 		return (new Manager())->parse($body);
 	}
