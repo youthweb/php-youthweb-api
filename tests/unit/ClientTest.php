@@ -169,8 +169,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			->getMock();
 
 		$body->expects($this->any())
-			->method('read')
-			->with($this->equalTo('8388608'))
+			->method('getContents')
 			->willReturn('{"meta":{"this":"that"}}');
 
 		$response = $this->getMockBuilder('GuzzleHttp\Psr7\Response')
@@ -204,8 +203,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			->getMock();
 
 		$body->expects($this->any())
-			->method('read')
-			->with($this->equalTo('8388608'))
+			->method('getContents')
 			->willReturn('{"errors":[{"status":"401","title":"Unauthorized"}]}');
 
 		$response = $this->getMockBuilder('Psr\Http\Message\ResponseInterface')
@@ -250,8 +248,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			->getMock();
 
 		$body->expects($this->any())
-			->method('read')
-			->with($this->equalTo('8388608'))
+			->method('getContents')
 			->willReturn('{"errors":[{"status":"401","title":"Unauthorized","detail":"Detailed error message"}]}');
 
 		$response = $this->getMockBuilder('Psr\Http\Message\ResponseInterface')
@@ -296,8 +293,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			->getMock();
 
 		$body->expects($this->any())
-			->method('read')
-			->with($this->equalTo('8388608'))
+			->method('getContents')
 			->willReturn('{"meta":{"error":"foobar"}}');
 
 		$response = $this->getMockBuilder('Psr\Http\Message\ResponseInterface')
