@@ -2,6 +2,7 @@
 
 namespace Youthweb\Api\Tests\Resource;
 
+use Youthweb\Api\Client;
 use Youthweb\Api\Fixtures\MockClient;
 use Youthweb\Api\Resource\Stats;
 use InvalidArgumentException;
@@ -13,11 +14,29 @@ class StatsTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testShowAccountReturnsDocumentInterface()
 	{
-		$document = $this->getMock('\Art4\JsonApiClient\DocumentInterface');
+		$body = $this->getMockBuilder('Psr\Http\Message\StreamInterface')
+			->getMock();
 
-		$client = new MockClient();
-		$client->useOriginalGetMethod = false;
-		$client->runRequestReturnValue = $document;
+		$body->expects($this->once())
+			->method('getContents')
+			->willReturn('{"data":{"type":"users","id":"1"}}');
+
+		$response = $this->getMockBuilder('Psr\Http\Message\ResponseInterface')
+			->getMock();
+
+		$response->expects($this->once())
+			->method('getBody')
+			->willReturn($body);
+
+		$http_client = $this->getMockBuilder('Youthweb\Api\HttpClientInterface')
+			->getMock();
+
+		$http_client->expects($this->once())
+			->method('send')
+			->willReturn($response);
+
+		$client = new Client();
+		$client->setHttpClient($http_client);
 
 		$stats = new Stats($client);
 

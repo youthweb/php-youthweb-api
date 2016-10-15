@@ -2,7 +2,10 @@
 
 namespace Youthweb\Api\Tests\Resource;
 
-use Youthweb\Api\Fixtures\MockClient;
+use Youthweb\Api\Client;
+use Youthweb\Api\HttpClientInterface;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\StreamInterface;
 use Youthweb\Api\Resource\Auth;
 use InvalidArgumentException;
 
@@ -13,25 +16,29 @@ class AuthTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testGetBearerTokenReturnsToken()
 	{
-		$document = $this->getMockBuilder('Art4\JsonApiClient\DocumentInterface')
+		$body = $this->getMockBuilder('Psr\Http\Message\StreamInterface')
 			->getMock();
 
-		$document->expects($this->any())
-			->method('has')
-			->will($this->returnValueMap([
-				['meta.token', true],
-				['meta.token_type', true],
-			]));
+		$body->expects($this->once())
+			->method('getContents')
+			->willReturn('{"meta":{"token_type":"Bearer","token":"JWT"}}');
 
-		$document->expects($this->any())
-			->method('get')
-			->will($this->returnValueMap([
-				['meta.token', 'JWT'],
-				['meta.token_type', 'Bearer'],
-			]));
+		$response = $this->getMockBuilder('Psr\Http\Message\ResponseInterface')
+			->getMock();
 
-		$client = new MockClient();
-		$client->runRequestReturnValue = $document;
+		$response->expects($this->once())
+			->method('getBody')
+			->willReturn($body);
+
+		$http_client = $this->getMockBuilder('Youthweb\Api\HttpClientInterface')
+			->getMock();
+
+		$http_client->expects($this->once())
+			->method('send')
+			->willReturn($response);
+
+		$client = new Client();
+		$client->setHttpClient($http_client);
 
 		$auth = new Auth($client);
 

@@ -5,7 +5,7 @@ namespace Youthweb\Api;
 /**
  * Json Object class
  */
-class JsonObject implements \JsonSerializable
+final class JsonObject implements \JsonSerializable
 {
 	/**
 	 * serialize the object to a JSON string

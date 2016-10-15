@@ -7,7 +7,7 @@ namespace Youthweb\Api\Resource;
  *
  * @link docs.youthweb.apiary.io/#reference/stats
  */
-class Stats extends AbstractResource
+final class Stats extends AbstractResource
 {
 	/**
 	 * Get the stats

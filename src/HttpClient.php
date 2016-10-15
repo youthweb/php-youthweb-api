@@ -3,9 +3,9 @@
 namespace Youthweb\Api;
 
 use Exception;
-use GuzzleHttp;
+use GuzzleHttp\Client as GuzzleClient;
 
 /**
  * Http client based on GuzzleHttp
  */
-class HttpClient extends GuzzleHttp\Client implements HttpClientInterface { }
+final class HttpClient extends GuzzleClient implements HttpClientInterface { }

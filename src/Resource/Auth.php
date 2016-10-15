@@ -9,7 +9,7 @@ use Youthweb\Api\JsonObject;
  *
  * @link http://docs.youthweb.apiary.io/#reference/auth
  */
-class Auth extends AbstractResource
+final class Auth extends AbstractResource
 {
 	/**
 	 * Get the Bearer Token

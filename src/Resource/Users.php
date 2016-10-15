@@ -7,7 +7,7 @@ namespace Youthweb\Api\Resource;
  *
  * @link docs.youthweb.apiary.io/#reference/users
  */
-class Users extends AbstractResource
+final class Users extends AbstractResource
 {
 	/**
 	 * Get a user

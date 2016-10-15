@@ -16,19 +16,19 @@ use Psr\Http\Message\ResponseInterface;
  */
 class Client
 {
-	protected $api_version = '0.6';
+	private $api_version = '0.6';
 
-	protected $url = 'https://api.youthweb.net';
+	private $url = 'https://api.youthweb.net';
 
-	protected $http_client = null;
+	private $http_client = null;
 
-	protected $cache_provider = null;
+	private $cache_provider = null;
 
-	protected $cache_namespace = 'php_youthweb_api.';
+	private $cache_namespace = 'php_youthweb_api.';
 
-	protected $username = '';
+	private $username = '';
 
-	protected $token_secret = '';
+	private $token_secret = '';
 
 	/**
 	 * @param string $name
@@ -225,7 +225,7 @@ class Client
 	 *
 	 * @throws \Exception If anything goes wrong on the request
 	 */
-	protected function runRequest($path, $method = 'GET', $data = null, array $config = [])
+	private function runRequest($path, $method = 'GET', $data = null, array $config = [])
 	{
 		$default_config = [
 			'authorize' => true,
@@ -266,7 +266,7 @@ class Client
 	 *
 	 * @throws \Exception If anything goes wrong on the request
 	 */
-	protected function parseResponse(ResponseInterface $response)
+	private function parseResponse(ResponseInterface $response)
 	{
 		$body = $response->getBody()->getContents();
 
@@ -278,7 +278,7 @@ class Client
 	 *
 	 * @return HttpClientInterface The Http client
 	 */
-	protected function getHttpClient()
+	private function getHttpClient()
 	{
 		if ( $this->http_client === null )
 		{
@@ -299,7 +299,7 @@ class Client
 	 * @param \Exception $e The exception
 	 * @return \Exception An exception for re-throwing
 	 **/
-	protected function handleClientException(\Exception $e)
+	private function handleClientException(\Exception $e)
 	{
 		$message = null;
 		$response = null;
