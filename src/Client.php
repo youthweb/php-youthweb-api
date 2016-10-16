@@ -2,7 +2,7 @@
 
 namespace Youthweb\Api;
 
-use Art4\JsonApiClient\Utils\Manager;
+use Art4\JsonApiClient\Utils\Manager as JsonApiClientManager;
 use Cache\Adapter\Void\VoidCachePool;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Psr7\Request;
@@ -14,7 +14,7 @@ use Psr\Http\Message\ResponseInterface;
  *
  * Website: http://github.com/youthweb/php-youthweb-api
  */
-class Client
+class Client implements ClientInterface
 {
 	private $api_version = '0.6';
 
@@ -40,9 +40,9 @@ class Client
 	public function getResource($name)
 	{
 		$classes = array(
-			'auth'  => 'Auth',
-			'stats' => 'Stats',
-			'users' => 'Users',
+			'auth'  => 'Youthweb\\Api\\Resource\\Auth',
+			'stats' => 'Youthweb\\Api\\Resource\\Stats',
+			'users' => 'Youthweb\\Api\\Resource\\Users',
 		);
 
 		if ( ! isset($classes[$name]) )
@@ -52,7 +52,7 @@ class Client
 
 		if ( ! isset($this->resources[$name]) )
 		{
-			$resource = 'Youthweb\\Api\\Resource\\'.$classes[$name];
+			$resource = $classes[$name];
 			$this->resources[$name] = new $resource($this);
 		}
 
@@ -111,8 +111,6 @@ class Client
 		{
 			throw new \UnexpectedValueException('"' . $key . '" is not a valid key for user credentials.');
 		}
-
-
 
 		return $this->$key;
 	}
@@ -270,7 +268,7 @@ class Client
 	{
 		$body = $response->getBody()->getContents();
 
-		return (new Manager())->parse($body);
+		return (new JsonApiClientManager())->parse($body);
 	}
 
 	/**
