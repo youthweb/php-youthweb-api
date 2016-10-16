@@ -3,7 +3,6 @@
 namespace Youthweb\Api\Tests\Resource;
 
 use Youthweb\Api\Client;
-use Youthweb\Api\Fixtures\MockClient;
 use Youthweb\Api\Resource\Stats;
 use InvalidArgumentException;
 
