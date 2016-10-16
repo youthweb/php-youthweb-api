@@ -19,7 +19,7 @@ class StatsTest extends \PHPUnit_Framework_TestCase
 
 		$body->expects($this->once())
 			->method('getContents')
-			->willReturn('{"data":{"type":"users","id":"1"}}');
+			->willReturn('{"data":{"type":"stats","id":"account"}}');
 
 		$response = $this->getMockBuilder('Psr\Http\Message\ResponseInterface')
 			->getMock();
@@ -50,11 +50,29 @@ class StatsTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testShowForumReturnsObject()
 	{
-		$document = $this->getMock('\Art4\JsonApiClient\DocumentInterface');
+		$body = $this->getMockBuilder('Psr\Http\Message\StreamInterface')
+			->getMock();
 
-		$client = new MockClient();
-		$client->useOriginalGetMethod = false;
-		$client->runRequestReturnValue = $document;
+		$body->expects($this->once())
+			->method('getContents')
+			->willReturn('{"data":{"type":"stats","id":"forum"}}');
+
+		$response = $this->getMockBuilder('Psr\Http\Message\ResponseInterface')
+			->getMock();
+
+		$response->expects($this->once())
+			->method('getBody')
+			->willReturn($body);
+
+		$http_client = $this->getMockBuilder('Youthweb\Api\HttpClientInterface')
+			->getMock();
+
+		$http_client->expects($this->once())
+			->method('send')
+			->willReturn($response);
+
+		$client = new Client();
+		$client->setHttpClient($http_client);
 
 		$stats = new Stats($client);
 
@@ -68,11 +86,29 @@ class StatsTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testShowGroupsReturnsObject()
 	{
-		$document = $this->getMock('\Art4\JsonApiClient\DocumentInterface');
+		$body = $this->getMockBuilder('Psr\Http\Message\StreamInterface')
+			->getMock();
 
-		$client = new MockClient();
-		$client->useOriginalGetMethod = false;
-		$client->runRequestReturnValue = $document;
+		$body->expects($this->once())
+			->method('getContents')
+			->willReturn('{"data":{"type":"stats","id":"groups"}}');
+
+		$response = $this->getMockBuilder('Psr\Http\Message\ResponseInterface')
+			->getMock();
+
+		$response->expects($this->once())
+			->method('getBody')
+			->willReturn($body);
+
+		$http_client = $this->getMockBuilder('Youthweb\Api\HttpClientInterface')
+			->getMock();
+
+		$http_client->expects($this->once())
+			->method('send')
+			->willReturn($response);
+
+		$client = new Client();
+		$client->setHttpClient($http_client);
 
 		$stats = new Stats($client);
 
@@ -86,13 +122,16 @@ class StatsTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testShowFoobarThrowsException()
 	{
-		$client = new MockClient();
+		$client = $this->getMockBuilder('Youthweb\Api\Client')
+			->getMock();
+
+		$stats = new Stats($client);
 
 		$this->setExpectedException(
 			'InvalidArgumentException',
 			'The ressource id "foobar" does not exists.'
 		);
 
-		$response = $client->getResource('stats')->show('foobar');
+		$response = $stats->show('foobar');
 	}
 }
