@@ -2,7 +2,6 @@
 
 namespace Youthweb\Api\Tests\Resource;
 
-use Youthweb\Api\Client;
 use Youthweb\Api\Resource\Users;
 use InvalidArgumentException;
 
@@ -13,29 +12,15 @@ class UsersTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testShowUserReturnsDocumentInterface()
 	{
-		$body = $this->getMockBuilder('Psr\Http\Message\StreamInterface')
+		$document = $this->getMockBuilder('\Art4\JsonApiClient\DocumentInterface')
 			->getMock();
 
-		$body->expects($this->exactly(2))
-			->method('getContents')
-			->willReturn('{"data":{"type":"users","id":"123456"}}');
-
-		$response = $this->getMockBuilder('Psr\Http\Message\ResponseInterface')
+		$client = $this->getMockBuilder('Youthweb\Api\ClientInterface')
 			->getMock();
 
-		$response->expects($this->exactly(2))
-			->method('getBody')
-			->willReturn($body);
-
-		$http_client = $this->getMockBuilder('Youthweb\Api\HttpClientInterface')
-			->getMock();
-
-		$http_client->expects($this->exactly(2))
-			->method('send')
-			->willReturn($response);
-
-		$client = new Client();
-		$client->setHttpClient($http_client);
+		$client->expects($this->once())
+			->method('get')
+			->willReturn($document);
 
 		$users = new Users($client);
 
@@ -53,7 +38,7 @@ class UsersTest extends \PHPUnit_Framework_TestCase
 	{
 		$exception = new \Exception('Resource not found', 404);
 
-		$client = $this->getMockBuilder('Youthweb\Api\Client')
+		$client = $this->getMockBuilder('Youthweb\Api\ClientInterface')
 			->disableOriginalConstructor()
 			->getMock();
 

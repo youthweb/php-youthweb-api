@@ -2,7 +2,6 @@
 
 namespace Youthweb\Api\Tests\Resource;
 
-use Youthweb\Api\Client;
 use Youthweb\Api\Resource\Stats;
 use InvalidArgumentException;
 
@@ -13,29 +12,15 @@ class StatsTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testShowAccountReturnsDocumentInterface()
 	{
-		$body = $this->getMockBuilder('Psr\Http\Message\StreamInterface')
+		$document = $this->getMockBuilder('\Art4\JsonApiClient\DocumentInterface')
 			->getMock();
 
-		$body->expects($this->once())
-			->method('getContents')
-			->willReturn('{"data":{"type":"stats","id":"account"}}');
-
-		$response = $this->getMockBuilder('Psr\Http\Message\ResponseInterface')
+		$client = $this->getMockBuilder('Youthweb\Api\ClientInterface')
 			->getMock();
 
-		$response->expects($this->once())
-			->method('getBody')
-			->willReturn($body);
-
-		$http_client = $this->getMockBuilder('Youthweb\Api\HttpClientInterface')
-			->getMock();
-
-		$http_client->expects($this->once())
-			->method('send')
-			->willReturn($response);
-
-		$client = new Client();
-		$client->setHttpClient($http_client);
+		$client->expects($this->once())
+			->method('getUnauthorized')
+			->willReturn($document);
 
 		$stats = new Stats($client);
 
@@ -49,29 +34,15 @@ class StatsTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testShowForumReturnsObject()
 	{
-		$body = $this->getMockBuilder('Psr\Http\Message\StreamInterface')
+		$document = $this->getMockBuilder('\Art4\JsonApiClient\DocumentInterface')
 			->getMock();
 
-		$body->expects($this->once())
-			->method('getContents')
-			->willReturn('{"data":{"type":"stats","id":"forum"}}');
-
-		$response = $this->getMockBuilder('Psr\Http\Message\ResponseInterface')
+		$client = $this->getMockBuilder('Youthweb\Api\ClientInterface')
 			->getMock();
 
-		$response->expects($this->once())
-			->method('getBody')
-			->willReturn($body);
-
-		$http_client = $this->getMockBuilder('Youthweb\Api\HttpClientInterface')
-			->getMock();
-
-		$http_client->expects($this->once())
-			->method('send')
-			->willReturn($response);
-
-		$client = new Client();
-		$client->setHttpClient($http_client);
+		$client->expects($this->once())
+			->method('getUnauthorized')
+			->willReturn($document);
 
 		$stats = new Stats($client);
 
@@ -85,29 +56,15 @@ class StatsTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testShowGroupsReturnsObject()
 	{
-		$body = $this->getMockBuilder('Psr\Http\Message\StreamInterface')
+		$document = $this->getMockBuilder('\Art4\JsonApiClient\DocumentInterface')
 			->getMock();
 
-		$body->expects($this->once())
-			->method('getContents')
-			->willReturn('{"data":{"type":"stats","id":"groups"}}');
-
-		$response = $this->getMockBuilder('Psr\Http\Message\ResponseInterface')
+		$client = $this->getMockBuilder('Youthweb\Api\ClientInterface')
 			->getMock();
 
-		$response->expects($this->once())
-			->method('getBody')
-			->willReturn($body);
-
-		$http_client = $this->getMockBuilder('Youthweb\Api\HttpClientInterface')
-			->getMock();
-
-		$http_client->expects($this->once())
-			->method('send')
-			->willReturn($response);
-
-		$client = new Client();
-		$client->setHttpClient($http_client);
+		$client->expects($this->once())
+			->method('getUnauthorized')
+			->willReturn($document);
 
 		$stats = new Stats($client);
 
@@ -121,7 +78,7 @@ class StatsTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testShowFoobarThrowsException()
 	{
-		$client = $this->getMockBuilder('Youthweb\Api\Client')
+		$client = $this->getMockBuilder('Youthweb\Api\ClientInterface')
 			->getMock();
 
 		$stats = new Stats($client);

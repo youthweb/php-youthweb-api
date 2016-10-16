@@ -2,7 +2,7 @@
 
 namespace Youthweb\Api\Resource;
 
-use Youthweb\Api\Client;
+use Youthweb\Api\ClientInterface;
 
 /**
  * Abstract class for Api resources.
@@ -19,7 +19,7 @@ abstract class AbstractResource
 	/**
 	 * @param Client $client
 	 */
-	public function __construct(Client $client)
+	public function __construct(ClientInterface $client)
 	{
 		$this->client = $client;
 	}
