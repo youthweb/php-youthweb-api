@@ -63,7 +63,7 @@ interface ClientInterface
 	 *
 	 * @return array
 	 */
-	public function get($path, $data = null);
+	public function get($path, array $data = []);
 
 	/**
 	 * HTTP GETs a json $path without Authorization and decodes it to an object
@@ -73,7 +73,7 @@ interface ClientInterface
 	 *
 	 * @return array
 	 */
-	public function getUnauthorized($path, $data = null);
+	public function getUnauthorized($path, array $data = []);
 
 	/**
 	 * HTTP POSTs a json $path without Authorization and decodes it to an object
@@ -83,7 +83,7 @@ interface ClientInterface
 	 *
 	 * @return array
 	 */
-	public function postUnauthorized($path, $data = null);
+	public function postUnauthorized($path, array $data = []);
 
 	/**
 	 * Set a http client

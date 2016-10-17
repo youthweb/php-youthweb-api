@@ -66,20 +66,6 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	/**
 	 * @test
 	 */
-	public function testGetHttpClientReturnsHttpClient()
-	{
-		$method = new \ReflectionMethod(
-			'Youthweb\Api\Client', 'getHttpClient'
-		);
-
-		$method->setAccessible(true);
-
-		$this->assertInstanceOf('Youthweb\Api\HttpClientInterface', $method->invoke(new Client));
-	}
-
-	/**
-	 * @test
-	 */
 	public function testSetHttpClientReturnsClient()
 	{
 		$client = new Client();
@@ -127,9 +113,24 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testGetApiInstance($resource_name, $class_name)
 	{
-		$client = new Client();
+		$resource = $this->getMockBuilder($class_name)
+			->disableOriginalConstructor()
+			->getMock();
 
-		$this->assertInstanceOf($class_name, $client->getResource($resource_name));
+		$resource_factory = $this->getMockBuilder('Youthweb\Api\ResourceFactoryInterface')
+			->getMock();
+
+		$resource_factory->expects($this->once())
+			->method('createResource')
+			->with($resource_name)
+			->willReturn($resource);
+
+		$client = new Client(
+			[],
+			['resource_factory' => $resource_factory]
+		);
+
+		$this->assertSame($resource, $client->getResource($resource_name));
 	}
 
 	/**
@@ -184,12 +185,33 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			->disableOriginalConstructor()
 			->getMock();
 
-		$http_client->expects($this->any())
+		$http_client->expects($this->once())
 			->method('send')
 			->willReturn($response);
 
-		$client = new Client();
-		$client->setHttpClient($http_client);
+		$auth_resource = $this->getMockBuilder('Youthweb\Api\Resource\Auth')
+			->disableOriginalConstructor()
+			->getMock();
+
+		$auth_resource->expects($this->once())
+			->method('getBearerToken')
+			->willReturn('Bearer JWT');
+
+		$resource_factory = $this->getMockBuilder('Youthweb\Api\ResourceFactoryInterface')
+			->getMock();
+
+		$resource_factory->expects($this->once())
+			->method('createResource')
+			->with('auth')
+			->willReturn($auth_resource);
+
+		$client = new Client(
+			[],
+			[
+				'resource_factory' => $resource_factory,
+				'http_client' => $http_client,
+			]
+		);
 
 		$this->assertInstanceOf('\Art4\JsonApiClient\Document', $client->get('foobar'));
 	}

@@ -16,19 +16,104 @@ use Psr\Http\Message\ResponseInterface;
  */
 class Client implements ClientInterface
 {
+	/**
+	 * @var string
+	 */
 	private $api_version = '0.6';
 
+	/**
+	 * @var string
+	 */
 	private $url = 'https://api.youthweb.net';
 
-	private $http_client = null;
+	/**
+	 * @var HttpClientInterface
+	 */
+	private $http_client;
 
-	private $cache_provider = null;
+	/**
+	 * @var CacheItemPoolInterface
+	 */
+	private $cache_provider;
 
+	/**
+	 * @var string
+	 */
 	private $cache_namespace = 'php_youthweb_api.';
 
+	/**
+	 * @var array
+	 */
+	private $resources = [];
+
+	/**
+	 * @var RequestFactoryInterface
+	 */
+	private $request_factory;
+
+	/**
+	 * @var string
+	 * @deprecated Since Youthweb-API 0.6
+	 */
 	private $username = '';
 
+	/**
+	 * @var string
+	 * @deprecated Since Youthweb-API 0.6
+	 */
 	private $token_secret = '';
+
+	/**
+	 * Constructs the Client.
+	 *
+	 * @param array $options An array of options to set on the client.
+	 *     Options include `api_version`, `url` and `cache_namespace`.
+	 * @param array $collaborators An array of collaborators that may be used to
+	 *     override this provider's default behavior. Collaborators include
+	 *     http_client` and `cache_provider`.
+	 */
+	public function __construct(array $options = [], array $collaborators = [])
+	{
+		foreach ($options as $option => $value)
+		{
+			if (in_array($option, ['api_version', 'url', 'cache_namespace']))
+			{
+				$this->{$option} = (string) $value;
+			}
+		}
+
+		if (empty($collaborators['http_client']))
+		{
+			$collaborators['http_client'] = new HttpClient(
+				[
+					// Guzzle config
+				]
+			);
+		}
+
+		$this->setHttpClient($collaborators['http_client']);
+
+		if (empty($collaborators['cache_provider']))
+		{
+			$collaborators['cache_provider'] = new VoidCachePool();
+		}
+
+		$this->setCacheProvider($collaborators['cache_provider']);
+
+		if (empty($collaborators['request_factory']))
+		{
+			$collaborators['request_factory'] = new RequestFactory();
+		}
+
+		$this->setRequestFactory($collaborators['request_factory']);
+
+		if (empty($collaborators['resource_factory']))
+		{
+			$collaborators['resource_factory'] = new ResourceFactory();
+		}
+
+		$this->setResourceFactory($collaborators['resource_factory']);
+	}
 
 	/**
 	 * @param string $name
@@ -39,21 +124,9 @@ class Client implements ClientInterface
 	 */
 	public function getResource($name)
 	{
-		$classes = array(
-			'auth'  => 'Youthweb\\Api\\Resource\\Auth',
-			'stats' => 'Youthweb\\Api\\Resource\\Stats',
-			'users' => 'Youthweb\\Api\\Resource\\Users',
-		);
-
-		if ( ! isset($classes[$name]) )
-		{
-			throw new \InvalidArgumentException('The resource "' . $name . '" does not exists.');
-		}
-
 		if ( ! isset($this->resources[$name]) )
 		{
-			$resource = $classes[$name];
-			$this->resources[$name] = new $resource($this);
+			$this->resources[$name] = $this->getResourceFactory()->createResource($name, $this);
 		}
 
 		return $this->resources[$name];
@@ -85,6 +158,8 @@ class Client implements ClientInterface
 	/**
 	 * Set the User Credentials
 	 *
+	 * @deprecated Since Youthweb-API 0.6
+	 *
 	 * @param string $username The username
 	 * @param string $token_secret The Token-Secret
 	 * @return self
@@ -99,6 +174,8 @@ class Client implements ClientInterface
 
 	/**
 	 * Get a User Credentials
+	 *
+	 * @deprecated Since Youthweb-API 0.6
 	 *
 	 * @param string $key 'username' or 'token_secret'
 	 * @return string the requested user credential
@@ -123,8 +200,12 @@ class Client implements ClientInterface
 	 *
 	 * @return array
 	 */
-	public function get($path, $data = null)
+	public function get($path, array $data = [])
 	{
+		$bearer_token = $this->getResource('auth')->getBearerToken();
+
+		$data['headers']['Authorization'] = strval($bearer_token);
+
 		return $this->runRequest($path, 'GET', $data);
 	}
 
@@ -136,13 +217,9 @@ class Client implements ClientInterface
 	 *
 	 * @return array
 	 */
-	public function getUnauthorized($path, $data = null)
+	public function getUnauthorized($path, array $data = [])
 	{
-		$config = [
-			'authorize' => false,
-		];
-
-		return $this->runRequest($path, 'GET', $data, $config);
+		return $this->runRequest($path, 'GET', $data);
 	}
 
 	/**
@@ -153,13 +230,9 @@ class Client implements ClientInterface
 	 *
 	 * @return array
 	 */
-	public function postUnauthorized($path, $data = null)
+	public function postUnauthorized($path, array $data = [])
 	{
-		$config = [
-			'authorize' => false,
-		];
-
-		return $this->runRequest($path, 'POST', $data, $config);
+		return $this->runRequest($path, 'POST', $data);
 	}
 
 	/**
@@ -195,11 +268,6 @@ class Client implements ClientInterface
 	 */
 	public function getCacheProvider()
 	{
-		if ( $this->cache_provider === null )
-		{
-			$this->setCacheProvider(new VoidCachePool());
-		}
-
 		return $this->cache_provider;
 	}
 
@@ -223,27 +291,9 @@ class Client implements ClientInterface
 	 *
 	 * @throws \Exception If anything goes wrong on the request
 	 */
-	private function runRequest($path, $method = 'GET', $data = null, array $config = [])
+	private function runRequest($path, $method = 'GET', array $data = [])
 	{
-		$default_config = [
-			'authorize' => true,
-		];
-
-		$config = array_merge($default_config, $config);
-
-		$headers = [
-			'Content-Type' => 'application/vnd.api+json',
-			'Accept' => 'application/vnd.api+json, application/vnd.api+json; net.youthweb.api.version=' . $this->api_version,
-		];
-
-		if ( $config['authorize'] === true )
-		{
-			$bearer_token = $this->getResource('auth')->getBearerToken();
-
-			$headers['Authorization'] = strval($bearer_token);
-		}
-
-		$request = new Request($method, $this->getUrl() . $path, $headers, $data);
+		$request = $this->createRequest($method, $this->getUrl() . $path, $data);
 
 		try
 		{
@@ -255,6 +305,47 @@ class Client implements ClientInterface
 		}
 
 		return $this->parseResponse($response);
+	}
+
+	/**
+	 * Creates a PSR-7 request instance.
+	 *
+	 * @param  string $method
+	 * @param  string $url
+	 * @param  array $options
+	 * @return RequestInterface
+	 */
+	private function createRequest($method, $url, array $options)
+	{
+		$options = $this->parseOptions($options);
+
+		$default_headers = [
+			'Content-Type' => 'application/vnd.api+json',
+			'Accept' => 'application/vnd.api+json, application/vnd.api+json; net.youthweb.api.version=' . $this->api_version,
+		];
+
+		$headers = array_merge($default_headers, $options['headers']);
+
+		return $this->getRequestFactory()->createRequest($method, $url, $headers, $options['body'], $options['version']);
+	}
+
+	/**
+	 * Parses simplified options.
+	 *
+	 * @param array $options Simplified options.
+	 *
+	 * @return array Extended options for use with getRequest.
+	 */
+	private function parseOptions(array $options)
+	{
+		// Should match default values for getRequest
+		$defaults = [
+			'headers' => [],
+			'body'    => null,
+			'version' => '1.1',
+		];
+
+		return array_merge($defaults, $options);
 	}
 
 	/**
@@ -278,17 +369,53 @@ class Client implements ClientInterface
 	 */
 	private function getHttpClient()
 	{
-		if ( $this->http_client === null )
-		{
-			$client = new HttpClient([
-				// Guzzle Configuration
-				//'http_errors' => false,
-			]);
-
-			$this->setHttpClient($client);
-		}
-
 		return $this->http_client;
+	}
+
+	/**
+	 * Set a request_factory
+	 *
+	 * @param RequestFactoryInterface $request_factory the request factory
+	 * @return self
+	 */
+	private function setRequestFactory(RequestFactoryInterface $request_factory)
+	{
+		$this->request_factory = $request_factory;
+
+		return $this;
+	}
+
+	/**
+	 * Get the request factory
+	 *
+	 * @return RequestFactoryInterface the request factory
+	 */
+	private function getRequestFactory()
+	{
+		return $this->request_factory;
+	}
+
+	/**
+	 * Set a resource_factory
+	 *
+	 * @param ResourceFactoryInterface $resource_factory the resource factory
+	 * @return self
+	 */
+	private function setResourceFactory(ResourceFactoryInterface $resource_factory)
+	{
+		$this->resource_factory = $resource_factory;
+
+		return $this;
+	}
+
+	/**
+	 * Get the resource factory
+	 *
+	 * @return ResourceFactoryInterface the resource factory
+	 */
+	private function getResourceFactory()
+	{
+		return $this->resource_factory;
 	}
 
 	/**
