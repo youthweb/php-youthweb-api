@@ -10,6 +10,20 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	/**
 	 * @test
 	 */
+	public function testSetOptionsThroughConstructor()
+	{
+		$url = 'http://test.local';
+
+		$client = new Client([
+			'url' => $url,
+		]);
+
+		$this->assertSame($url, $client->getUrl());
+	}
+
+	/**
+	 * @test
+	 */
 	public function testSetUrlReturnsClient()
 	{
 		$client = new Client();
@@ -163,13 +177,13 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	/**
 	 * @test
 	 */
-	public function testParseResponseReturnsObject()
+	public function testGetUnauthorizedReturnsObject()
 	{
 		$body = $this->getMockBuilder('Psr\Http\Message\StreamInterface')
 			->disableOriginalConstructor()
 			->getMock();
 
-		$body->expects($this->any())
+		$body->expects($this->once())
 			->method('getContents')
 			->willReturn('{"meta":{"this":"that"}}');
 
@@ -177,7 +191,46 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			->disableOriginalConstructor()
 			->getMock();
 
-		$response->expects($this->any())
+		$response->expects($this->once())
+			->method('getBody')
+			->willReturn($body);
+
+		$http_client = $this->getMockBuilder('Youthweb\Api\HttpClientInterface')
+			->disableOriginalConstructor()
+			->getMock();
+
+		$http_client->expects($this->once())
+			->method('send')
+			->willReturn($response);
+
+		$client = new Client(
+			[],
+			[
+				'http_client' => $http_client,
+			]
+		);
+
+		$this->assertInstanceOf('\Art4\JsonApiClient\Document', $client->getUnauthorized('foobar'));
+	}
+
+	/**
+	 * @test
+	 */
+	public function testParseResponseReturnsObject()
+	{
+		$body = $this->getMockBuilder('Psr\Http\Message\StreamInterface')
+			->disableOriginalConstructor()
+			->getMock();
+
+		$body->expects($this->once())
+			->method('getContents')
+			->willReturn('{"meta":{"this":"that"}}');
+
+		$response = $this->getMockBuilder('GuzzleHttp\Psr7\Response')
+			->disableOriginalConstructor()
+			->getMock();
+
+		$response->expects($this->once())
 			->method('getBody')
 			->willReturn($body);
 
@@ -224,14 +277,14 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 		$body = $this->getMockBuilder('Psr\Http\Message\StreamInterface')
 			->getMock();
 
-		$body->expects($this->any())
+		$body->expects($this->once())
 			->method('getContents')
 			->willReturn('{"errors":[{"status":"401","title":"Unauthorized"}]}');
 
 		$response = $this->getMockBuilder('Psr\Http\Message\ResponseInterface')
 			->getMock();
 
-		$response->expects($this->any())
+		$response->expects($this->once())
 			->method('getBody')
 			->willReturn($body);
 
@@ -239,14 +292,14 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			->disableOriginalConstructor()
 			->getMock();
 
-		$exception->expects($this->any())
+		$exception->expects($this->once())
 			->method('getResponse')
 			->willReturn($response);
 
 		$http_client = $this->getMockBuilder('Youthweb\Api\HttpClientInterface')
 			->getMock();
 
-		$http_client->expects($this->any())
+		$http_client->expects($this->once())
 			->method('send')
 			->will($this->throwException($exception));
 
@@ -271,14 +324,14 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 		$body = $this->getMockBuilder('Psr\Http\Message\StreamInterface')
 			->getMock();
 
-		$body->expects($this->any())
+		$body->expects($this->once())
 			->method('getContents')
 			->willReturn('{"errors":[{"status":"401","title":"Unauthorized","detail":"Detailed error message"}]}');
 
 		$response = $this->getMockBuilder('Psr\Http\Message\ResponseInterface')
 			->getMock();
 
-		$response->expects($this->any())
+		$response->expects($this->once())
 			->method('getBody')
 			->willReturn($body);
 
@@ -286,14 +339,14 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			->disableOriginalConstructor()
 			->getMock();
 
-		$exception->expects($this->any())
+		$exception->expects($this->once())
 			->method('getResponse')
 			->willReturn($response);
 
 		$http_client = $this->getMockBuilder('Youthweb\Api\HttpClientInterface')
 			->getMock();
 
-		$http_client->expects($this->any())
+		$http_client->expects($this->once())
 			->method('send')
 			->will($this->throwException($exception));
 
@@ -315,32 +368,14 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testHandleClientExceptionWithException()
 	{
-		$body = $this->getMockBuilder('Psr\Http\Message\StreamInterface')
-			->getMock();
-
-		$body->expects($this->any())
-			->method('getContents')
-			->willReturn('{"meta":{"error":"foobar"}}');
-
-		$response = $this->getMockBuilder('Psr\Http\Message\ResponseInterface')
-			->getMock();
-
-		$response->expects($this->any())
-			->method('getBody')
-			->willReturn($body);
-
 		$exception = $this->getMockBuilder('\Exception')
 			->disableOriginalConstructor()
 			->getMock();
 
-		$exception->expects($this->any())
-			->method('getResponse')
-			->willReturn($response);
-
 		$http_client = $this->getMockBuilder('Youthweb\Api\HttpClientInterface')
 			->getMock();
 
-		$http_client->expects($this->any())
+		$http_client->expects($this->once())
 			->method('send')
 			->will($this->throwException($exception));
 
@@ -354,6 +389,6 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			'The server responses with an unknown error.'
 		);
 
-		$client->get('foobar');
+		$client->getUnauthorized('foobar');
 	}
 }
