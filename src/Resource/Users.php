@@ -23,4 +23,16 @@ final class Users implements UsersInterface
 	{
 		return $this->client->get('/users/' . $id);
 	}
+
+	/**
+	 * Get the resource owner
+	 *
+	 * @link http://docs.youthweb.apiary.io/#reference/users/me
+	 *
+	 * @return  Art4\JsonApiClient\Document
+	 */
+	public function showMe()
+	{
+		return $this->client->get('/me');
+	}
 }

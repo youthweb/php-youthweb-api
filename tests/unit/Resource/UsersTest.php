@@ -8,7 +8,7 @@ use InvalidArgumentException;
 class UsersTest extends \PHPUnit_Framework_TestCase
 {
 	/**
-	 * @test
+	 * @test show()
 	 */
 	public function testShowUserReturnsDocumentInterface()
 	{
@@ -26,13 +26,11 @@ class UsersTest extends \PHPUnit_Framework_TestCase
 
 		$user_id = 123456;
 
-		$response = $users->show($user_id);
-
-		$this->assertInstanceOf('\Art4\JsonApiClient\DocumentInterface', $response);
+		$this->assertSame($document, $users->show($user_id));
 	}
 
 	/**
-	 * @test
+	 * @test show() with Exception
 	 */
 	public function testShowFoobarThrowsException()
 	{
@@ -54,5 +52,25 @@ class UsersTest extends \PHPUnit_Framework_TestCase
 		);
 
 		$response = $users->show('invalid_user_id');
+	}
+
+	/**
+	 * @test showMe()
+	 */
+	public function testShowMeReturnsDocumentInterface()
+	{
+		$document = $this->getMockBuilder('\Art4\JsonApiClient\DocumentInterface')
+			->getMock();
+
+		$client = $this->getMockBuilder('Youthweb\Api\ClientInterface')
+			->getMock();
+
+		$client->expects($this->once())
+			->method('get')
+			->willReturn($document);
+
+		$users = new Users($client);
+
+		$this->assertSame($document, $users->showMe());
 	}
 }
