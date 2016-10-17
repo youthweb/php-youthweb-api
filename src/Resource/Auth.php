@@ -9,8 +9,10 @@ use Youthweb\Api\JsonObject;
  *
  * @link http://docs.youthweb.apiary.io/#reference/auth
  */
-class Auth extends AbstractResource
+final class Auth implements AuthInterface
 {
+	use ClientTrait;
+
 	/**
 	 * Get the Bearer Token
 	 *
@@ -34,7 +36,7 @@ class Auth extends AbstractResource
 			$body = new JsonObject;
 			$body->meta = $meta;
 
-			$document = $this->postUnauthorized('/auth/token', ['body' => $body]);
+			$document = $this->client->postUnauthorized('/auth/token', ['body' => $body]);
 
 			if ( $document->has('meta.token') and $document->has('meta.token_type') )
 			{

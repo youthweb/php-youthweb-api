@@ -139,9 +139,9 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	public function getResoursesClassesProvider()
 	{
 		return array(
-			array('auth', 'Youthweb\Api\Resource\Auth'),
-			array('stats', 'Youthweb\Api\Resource\Stats'),
-			array('users', 'Youthweb\Api\Resource\Users'),
+			array('auth', 'Youthweb\Api\Resource\AuthInterface'),
+			array('stats', 'Youthweb\Api\Resource\StatsInterface'),
+			array('users', 'Youthweb\Api\Resource\UsersInterface'),
 		);
 	}
 
@@ -189,7 +189,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			->method('send')
 			->willReturn($response);
 
-		$auth_resource = $this->getMockBuilder('Youthweb\Api\Resource\Auth')
+		$auth_resource = $this->getMockBuilder('Youthweb\Api\Resource\AuthInterface')
 			->disableOriginalConstructor()
 			->getMock();
 
@@ -250,8 +250,10 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			->method('send')
 			->will($this->throwException($exception));
 
-		$client = new Client();
-		$client->setHttpClient($http_client);
+		$client = new Client(
+			[],
+			['http_client' => $http_client]
+		);
 
 		$this->setExpectedException(
 			'Exception',
@@ -295,8 +297,10 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			->method('send')
 			->will($this->throwException($exception));
 
-		$client = new Client();
-		$client->setHttpClient($http_client);
+		$client = new Client(
+			[],
+			['http_client' => $http_client]
+		);
 
 		$this->setExpectedException(
 			'Exception',
@@ -340,8 +344,10 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			->method('send')
 			->will($this->throwException($exception));
 
-		$client = new Client();
-		$client->setHttpClient($http_client);
+		$client = new Client(
+			[],
+			['http_client' => $http_client]
+		);
 
 		$this->setExpectedException(
 			'Exception',

@@ -14,7 +14,7 @@ use Psr\Http\Message\ResponseInterface;
  *
  * Website: http://github.com/youthweb/php-youthweb-api
  */
-class Client implements ClientInterface
+final class Client implements ClientInterface
 {
 	/**
 	 * @var string

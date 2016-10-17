@@ -7,8 +7,10 @@ namespace Youthweb\Api\Resource;
  *
  * @link docs.youthweb.apiary.io/#reference/stats
  */
-class Stats extends AbstractResource
+final class Stats implements StatsInterface
 {
+	use ClientTrait;
+
 	/**
 	 * Get the stats
 	 *
@@ -30,6 +32,6 @@ class Stats extends AbstractResource
 			throw new \InvalidArgumentException('The ressource id "' . $id . '" does not exists.');
 		}
 
-		return $this->getUnauthorized('/stats/' . $ids[$id]);
+		return $this->client->getUnauthorized('/stats/' . $ids[$id]);
 	}
 }

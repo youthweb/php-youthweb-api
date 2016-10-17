@@ -7,10 +7,8 @@ namespace Youthweb\Api\Resource;
  *
  * @link docs.youthweb.apiary.io/#reference/users
  */
-final class Users implements UsersInterface
+interface UsersInterface extends ResourceInterface
 {
-	use ClientTrait;
-
 	/**
 	 * Get a user
 	 *
@@ -19,8 +17,5 @@ final class Users implements UsersInterface
 	 * @param string $id
 	 * @return array the stats
 	 */
-	public function show($id)
-	{
-		return $this->client->get('/users/' . $id);
-	}
+	public function show($id);
 }
