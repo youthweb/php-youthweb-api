@@ -39,6 +39,27 @@ interface ClientInterface
 	public function setUrl($url);
 
 	/**
+	 * Set the User Credentials
+	 *
+	 * @deprecated Since Youthweb-API 0.6
+	 *
+	 * @param string $username The username
+	 * @param string $token_secret The Token-Secret
+	 * @return self
+	 */
+	public function setUserCredentials($username, $token_secret);
+
+	/**
+	 * Get a User Credentials
+	 *
+	 * @deprecated Since Youthweb-API 0.6
+	 *
+	 * @param string $key 'username' or 'token_secret'
+	 * @return string the requested user credential
+	 */
+	public function getUserCredential($key);
+
+	/**
 	 * HTTP GETs a json $path and decodes it to an object
 	 *
 	 * @param string  $path
