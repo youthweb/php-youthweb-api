@@ -238,6 +238,8 @@ final class Client implements ClientInterface
 	/**
 	 * Set a http client
 	 *
+	 * @deprecated Since Youthweb-API 0.6
+	 *
 	 * @param HttpClientInterface $client the http client
 	 * @return self
 	 */
@@ -250,6 +252,8 @@ final class Client implements ClientInterface
 
 	/**
 	 * Set a cache provider
+	 *
+	 * @deprecated Since Youthweb-API 0.6
 	 *
 	 * @param Psr\Cache\CacheItemPoolInterface $cache_provider the cache provider
 	 * @return self

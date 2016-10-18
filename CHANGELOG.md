@@ -4,6 +4,26 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- New setting for config and collaborators through `Client::__construct($config, $collaborators)`.
+- New method Resource\Users::showMe()` for new API endpoint `/me`.
+- New factories for `Resource` and PSR-7 `Request` creation.
+
+### Changed
+
+- [Youthweb API 0.6](https://github.com/youthweb/youthweb-api/releases/tag/0.6) Support.
+- **Breaking:** All classes are set to `final` and implement interfaces. All protected methods are now private. If you had extend some classes, implement the interface instead.
+- **Breaking:** `$data` in `Client::getUnauthorized()`, `Client::getUnauthorized()` and `Client::postUnauthorized()` must be an array. It cannot be `null` anymore.
+- Switch LICENSE from GPLv2 to GPLv3.
+
+### Deprecated
+
+- `Client::setUserCredentials()` is deprecated and will be replaced with OAuth2 client.
+- `Client::getUserCredential()` is deprecated and will be replaced with OAuth2 client.
+- `Client::setHttpClient()` is deprecated. Use `Client::__construct()` instead.
+- `Client::setCacheProvider()` is deprecated. Use `Client::__construct()` instead.
+
 ## [0.4] - 2016-08-01
 
 ### Changed
@@ -20,15 +40,12 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - [Youthweb API 0.3](https://github.com/youthweb/youthweb-api/releases/tag/0.3) Support
-
-### Breaking
-
-- API Resources return the data as `Art4\JsonApiClient\Document` object instead of `stdClass`
+- **Breaking:** API Resources return the data as `Art4\JsonApiClient\Document` object instead of `stdClass`
 
 ### Removed
 
-- Drop PHP 5.4 support
-- Manuel installation via `autoload.php`. Use composer instead
+- **Breaking:** Drop PHP 5.4 support
+- **Breaking:** Manuel installation via `autoload.php`. Use composer instead
 
 ## [0.2] - 2015-06-21
 

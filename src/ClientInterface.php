@@ -39,23 +39,6 @@ interface ClientInterface
 	public function setUrl($url);
 
 	/**
-	 * Set the User Credentials
-	 *
-	 * @param string $username The username
-	 * @param string $token_secret The Token-Secret
-	 * @return self
-	 */
-	public function setUserCredentials($username, $token_secret);
-
-	/**
-	 * Get a User Credentials
-	 *
-	 * @param string $key 'username' or 'token_secret'
-	 * @return string the requested user credential
-	 */
-	public function getUserCredential($key);
-
-	/**
 	 * HTTP GETs a json $path and decodes it to an object
 	 *
 	 * @param string  $path
@@ -84,22 +67,6 @@ interface ClientInterface
 	 * @return array
 	 */
 	public function postUnauthorized($path, array $data = []);
-
-	/**
-	 * Set a http client
-	 *
-	 * @param HttpClientInterface $client the http client
-	 * @return self
-	 */
-	public function setHttpClient(HttpClientInterface $client);
-
-	/**
-	 * Set a cache provider
-	 *
-	 * @param Psr\Cache\CacheItemPoolInterface $cache_provider the cache provider
-	 * @return self
-	 */
-	public function setCacheProvider(CacheItemPoolInterface $cache_provider);
 
 	/**
 	 * Get the cache provider
