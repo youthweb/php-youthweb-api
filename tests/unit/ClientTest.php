@@ -84,7 +84,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	{
 		$client = new Client();
 
-		$stub = $this->getMock('Youthweb\Api\HttpClientInterface');
+		$stub = $this->createMock('Youthweb\Api\HttpClientInterface');
 
 		$this->assertInstanceOf('Youthweb\Api\Client', $client->setHttpClient($stub));
 	}
@@ -106,7 +106,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	{
 		$client = new Client();
 
-		$stub = $this->getMock('Psr\Cache\CacheItemPoolInterface');
+		$stub = $this->createMock('Psr\Cache\CacheItemPoolInterface');
 
 		$this->assertInstanceOf('Youthweb\Api\Client', $client->setCacheProvider($stub));
 	}
@@ -127,12 +127,9 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testGetApiInstance($resource_name, $class_name)
 	{
-		$resource = $this->getMockBuilder($class_name)
-			->disableOriginalConstructor()
-			->getMock();
+		$resource = $this->createMock($class_name);
 
-		$resource_factory = $this->getMockBuilder('Youthweb\Api\ResourceFactoryInterface')
-			->getMock();
+		$resource_factory = $this->createMock('Youthweb\Api\ResourceFactoryInterface');
 
 		$resource_factory->expects($this->once())
 			->method('createResource')
@@ -179,25 +176,19 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testGetUnauthorizedReturnsObject()
 	{
-		$body = $this->getMockBuilder('Psr\Http\Message\StreamInterface')
-			->disableOriginalConstructor()
-			->getMock();
+		$body = $this->createMock('Psr\Http\Message\StreamInterface');
 
 		$body->expects($this->once())
 			->method('getContents')
 			->willReturn('{"meta":{"this":"that"}}');
 
-		$response = $this->getMockBuilder('GuzzleHttp\Psr7\Response')
-			->disableOriginalConstructor()
-			->getMock();
+		$response = $this->createMock('GuzzleHttp\Psr7\Response');
 
 		$response->expects($this->once())
 			->method('getBody')
 			->willReturn($body);
 
-		$http_client = $this->getMockBuilder('Youthweb\Api\HttpClientInterface')
-			->disableOriginalConstructor()
-			->getMock();
+		$http_client = $this->createMock('Youthweb\Api\HttpClientInterface');
 
 		$http_client->expects($this->once())
 			->method('send')
@@ -218,40 +209,31 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testParseResponseReturnsObject()
 	{
-		$body = $this->getMockBuilder('Psr\Http\Message\StreamInterface')
-			->disableOriginalConstructor()
-			->getMock();
+		$body = $this->createMock('Psr\Http\Message\StreamInterface');
 
 		$body->expects($this->once())
 			->method('getContents')
 			->willReturn('{"meta":{"this":"that"}}');
 
-		$response = $this->getMockBuilder('GuzzleHttp\Psr7\Response')
-			->disableOriginalConstructor()
-			->getMock();
+		$response = $this->createMock('GuzzleHttp\Psr7\Response');
 
 		$response->expects($this->once())
 			->method('getBody')
 			->willReturn($body);
 
-		$http_client = $this->getMockBuilder('Youthweb\Api\HttpClientInterface')
-			->disableOriginalConstructor()
-			->getMock();
+		$http_client = $this->createMock('Youthweb\Api\HttpClientInterface');
 
 		$http_client->expects($this->once())
 			->method('send')
 			->willReturn($response);
 
-		$auth_resource = $this->getMockBuilder('Youthweb\Api\Resource\AuthInterface')
-			->disableOriginalConstructor()
-			->getMock();
+		$auth_resource = $this->createMock('Youthweb\Api\Resource\AuthInterface');
 
 		$auth_resource->expects($this->once())
 			->method('getBearerToken')
 			->willReturn('Bearer JWT');
 
-		$resource_factory = $this->getMockBuilder('Youthweb\Api\ResourceFactoryInterface')
-			->getMock();
+		$resource_factory = $this->createMock('Youthweb\Api\ResourceFactoryInterface');
 
 		$resource_factory->expects($this->once())
 			->method('createResource')
@@ -274,30 +256,25 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testHandleClientExceptionWithResponseException()
 	{
-		$body = $this->getMockBuilder('Psr\Http\Message\StreamInterface')
-			->getMock();
+		$body = $this->createMock('Psr\Http\Message\StreamInterface');
 
 		$body->expects($this->once())
 			->method('getContents')
 			->willReturn('{"errors":[{"status":"401","title":"Unauthorized"}]}');
 
-		$response = $this->getMockBuilder('Psr\Http\Message\ResponseInterface')
-			->getMock();
+		$response = $this->createMock('Psr\Http\Message\ResponseInterface');
 
 		$response->expects($this->once())
 			->method('getBody')
 			->willReturn($body);
 
-		$exception = $this->getMockBuilder('GuzzleHttp\Exception\ClientException')
-			->disableOriginalConstructor()
-			->getMock();
+		$exception = $this->createMock('GuzzleHttp\Exception\ClientException');
 
 		$exception->expects($this->once())
 			->method('getResponse')
 			->willReturn($response);
 
-		$http_client = $this->getMockBuilder('Youthweb\Api\HttpClientInterface')
-			->getMock();
+		$http_client = $this->createMock('Youthweb\Api\HttpClientInterface');
 
 		$http_client->expects($this->once())
 			->method('send')
@@ -321,30 +298,25 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testHandleClientExceptionWithDetailResponseException()
 	{
-		$body = $this->getMockBuilder('Psr\Http\Message\StreamInterface')
-			->getMock();
+		$body = $this->createMock('Psr\Http\Message\StreamInterface');
 
 		$body->expects($this->once())
 			->method('getContents')
 			->willReturn('{"errors":[{"status":"401","title":"Unauthorized","detail":"Detailed error message"}]}');
 
-		$response = $this->getMockBuilder('Psr\Http\Message\ResponseInterface')
-			->getMock();
+		$response = $this->createMock('Psr\Http\Message\ResponseInterface');
 
 		$response->expects($this->once())
 			->method('getBody')
 			->willReturn($body);
 
-		$exception = $this->getMockBuilder('GuzzleHttp\Exception\ClientException')
-			->disableOriginalConstructor()
-			->getMock();
+		$exception = $this->createMock('GuzzleHttp\Exception\ClientException');
 
 		$exception->expects($this->once())
 			->method('getResponse')
 			->willReturn($response);
 
-		$http_client = $this->getMockBuilder('Youthweb\Api\HttpClientInterface')
-			->getMock();
+		$http_client = $this->createMock('Youthweb\Api\HttpClientInterface');
 
 		$http_client->expects($this->once())
 			->method('send')
@@ -368,12 +340,9 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testHandleClientExceptionWithException()
 	{
-		$exception = $this->getMockBuilder('\Exception')
-			->disableOriginalConstructor()
-			->getMock();
+		$exception = $this->createMock('\Exception');
 
-		$http_client = $this->getMockBuilder('Youthweb\Api\HttpClientInterface')
-			->getMock();
+		$http_client = $this->createMock('Youthweb\Api\HttpClientInterface');
 
 		$http_client->expects($this->once())
 			->method('send')

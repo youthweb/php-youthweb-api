@@ -12,11 +12,9 @@ class UsersTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testShowUserReturnsDocumentInterface()
 	{
-		$document = $this->getMockBuilder('\Art4\JsonApiClient\DocumentInterface')
-			->getMock();
+		$document = $this->createMock('\Art4\JsonApiClient\DocumentInterface');
 
-		$client = $this->getMockBuilder('Youthweb\Api\ClientInterface')
-			->getMock();
+		$client = $this->createMock('Youthweb\Api\ClientInterface');
 
 		$client->expects($this->once())
 			->method('get')
@@ -36,9 +34,7 @@ class UsersTest extends \PHPUnit_Framework_TestCase
 	{
 		$exception = new \Exception('Resource not found', 404);
 
-		$client = $this->getMockBuilder('Youthweb\Api\ClientInterface')
-			->disableOriginalConstructor()
-			->getMock();
+		$client = $this->createMock('Youthweb\Api\ClientInterface');
 
 		$client->expects($this->any())
 			->method('get')
@@ -59,11 +55,9 @@ class UsersTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testShowMeReturnsDocumentInterface()
 	{
-		$document = $this->getMockBuilder('\Art4\JsonApiClient\DocumentInterface')
-			->getMock();
+		$document = $this->createMock('\Art4\JsonApiClient\DocumentInterface');
 
-		$client = $this->getMockBuilder('Youthweb\Api\ClientInterface')
-			->getMock();
+		$client = $this->createMock('Youthweb\Api\ClientInterface');
 
 		$client->expects($this->once())
 			->method('get')

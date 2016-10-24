@@ -24,6 +24,10 @@ All notable changes to this project will be documented in this file.
 - `Client::setHttpClient()` is deprecated. Use `Client::__construct()` instead.
 - `Client::setCacheProvider()` is deprecated. Use `Client::__construct()` instead.
 
+### Removed
+
+- **Breaking:** Support for PHP 5.5 was dropped. Minimum requirement is now PHP 5.6.
+
 ## [0.4] - 2016-08-01
 
 ### Changed

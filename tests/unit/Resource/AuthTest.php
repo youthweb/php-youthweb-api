@@ -11,8 +11,7 @@ class AuthTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testGetBearerTokenReturnsToken()
 	{
-		$cache_item = $this->getMockBuilder('Psr\Cache\CacheItemInterface')
-			->getMock();
+		$cache_item = $this->createMock('Psr\Cache\CacheItemInterface');
 
 		$cache_item->expects($this->once())
 			->method('isHit')
@@ -22,16 +21,14 @@ class AuthTest extends \PHPUnit_Framework_TestCase
 			->method('get')
 			->willReturn('Bearer JWT');
 
-		$cache_pool = $this->getMockBuilder('Psr\Cache\CacheItemPoolInterface')
-			->getMock();
+		$cache_pool = $this->createMock('Psr\Cache\CacheItemPoolInterface');
 
 		$cache_pool->expects($this->once())
 			->method('getItem')
 			->with('cache_item_key')
 			->willReturn($cache_item);
 
-		$client = $this->getMockBuilder('Youthweb\Api\ClientInterface')
-			->getMock();
+		$client = $this->createMock('Youthweb\Api\ClientInterface');
 
 		$client->expects($this->once())
 			->method('buildCacheKey')
@@ -48,8 +45,7 @@ class AuthTest extends \PHPUnit_Framework_TestCase
 				['token_secret', 'secret'],
 			]));
 
-		$document = $this->getMockBuilder('Art4\JsonApiClient\DocumentInterface')
-			->getMock();
+		$document = $this->createMock('Art4\JsonApiClient\DocumentInterface');
 
 		$document->expects($this->exactly(2))
 			->method('has')

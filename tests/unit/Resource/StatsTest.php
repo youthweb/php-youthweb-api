@@ -12,11 +12,9 @@ class StatsTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testShowAccountReturnsDocumentInterface()
 	{
-		$document = $this->getMockBuilder('\Art4\JsonApiClient\DocumentInterface')
-			->getMock();
+		$document = $this->createMock('\Art4\JsonApiClient\DocumentInterface');
 
-		$client = $this->getMockBuilder('Youthweb\Api\ClientInterface')
-			->getMock();
+		$client = $this->createMock('Youthweb\Api\ClientInterface');
 
 		$client->expects($this->once())
 			->method('getUnauthorized')
@@ -34,11 +32,9 @@ class StatsTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testShowForumReturnsObject()
 	{
-		$document = $this->getMockBuilder('\Art4\JsonApiClient\DocumentInterface')
-			->getMock();
+		$document = $this->createMock('\Art4\JsonApiClient\DocumentInterface');
 
-		$client = $this->getMockBuilder('Youthweb\Api\ClientInterface')
-			->getMock();
+		$client = $this->createMock('Youthweb\Api\ClientInterface');
 
 		$client->expects($this->once())
 			->method('getUnauthorized')
@@ -56,11 +52,9 @@ class StatsTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testShowGroupsReturnsObject()
 	{
-		$document = $this->getMockBuilder('\Art4\JsonApiClient\DocumentInterface')
-			->getMock();
+		$document = $this->createMock('\Art4\JsonApiClient\DocumentInterface');
 
-		$client = $this->getMockBuilder('Youthweb\Api\ClientInterface')
-			->getMock();
+		$client = $this->createMock('Youthweb\Api\ClientInterface');
 
 		$client->expects($this->once())
 			->method('getUnauthorized')
@@ -78,8 +72,7 @@ class StatsTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testShowFoobarThrowsException()
 	{
-		$client = $this->getMockBuilder('Youthweb\Api\ClientInterface')
-			->getMock();
+		$client = $this->createMock('Youthweb\Api\ClientInterface');
 
 		$stats = new Stats($client);
 
