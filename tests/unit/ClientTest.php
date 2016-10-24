@@ -84,7 +84,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	{
 		$client = new Client();
 
-		$stub = $this->getMock('Youthweb\Api\HttpClientInterface');
+		$stub = $this->createMock('Youthweb\Api\HttpClientInterface');
 
 		$this->assertInstanceOf('Youthweb\Api\Client', $client->setHttpClient($stub));
 	}
@@ -106,7 +106,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	{
 		$client = new Client();
 
-		$stub = $this->getMock('Psr\Cache\CacheItemPoolInterface');
+		$stub = $this->createMock('Psr\Cache\CacheItemPoolInterface');
 
 		$this->assertInstanceOf('Youthweb\Api\Client', $client->setCacheProvider($stub));
 	}
@@ -127,12 +127,9 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testGetApiInstance($resource_name, $class_name)
 	{
-		$resource = $this->getMockBuilder($class_name)
-			->disableOriginalConstructor()
-			->getMock();
+		$resource = $this->createMock($class_name);
 
-		$resource_factory = $this->getMockBuilder('Youthweb\Api\ResourceFactoryInterface')
-			->getMock();
+		$resource_factory = $this->createMock('Youthweb\Api\ResourceFactoryInterface');
 
 		$resource_factory->expects($this->once())
 			->method('createResource')
