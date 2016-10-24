@@ -16,9 +16,11 @@ final class Auth implements AuthInterface
 	/**
 	 * Get the Bearer Token
 	 *
+	 * @deprecated Since Youthweb-API 0.6
+	 *
 	 * @link http://docs.youthweb.apiary.io/#reference/auth
 	 *
-	 * @return array the stats
+	 * @return string The Bearer token incl. type e.g. "Bearer jcx45..."
 	 */
 	public function getBearerToken()
 	{
