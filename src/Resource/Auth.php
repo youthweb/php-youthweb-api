@@ -2,6 +2,7 @@
 
 namespace Youthweb\Api\Resource;
 
+use Youthweb\Api\Exception\MissingCredentialsException;
 use Youthweb\Api\JsonObject;
 
 /**
@@ -24,6 +25,11 @@ final class Auth implements AuthInterface
 	 */
 	public function getBearerToken()
 	{
+		if ( $this->client->getUserCredential('username') === '' or $this->client->getUserCredential('token_secret') === '' )
+		{
+			throw new MissingCredentialsException;
+		}
+
 		$cache_item_key = $this->client->buildCacheKey('bearer_token');
 
 		$cache_item = $this->client->getCacheProvider()

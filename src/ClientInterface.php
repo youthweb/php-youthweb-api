@@ -26,12 +26,16 @@ interface ClientInterface
 	/**
 	 * Returns the Url
 	 *
+	 * @deprecated Will be removed in future. Don't use it anymore
+	 *
 	 * @return string
 	 */
 	public function getUrl();
 
 	/**
 	 * Set the Url
+	 *
+	 * @deprecated Will be removed in future. Use the constructor instead
 	 *
 	 * @param string $url The url
 	 * @return self

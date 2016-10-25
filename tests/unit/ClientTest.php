@@ -15,7 +15,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 		$url = 'http://test.local';
 
 		$client = new Client([
-			'url' => $url,
+			'api_domain' => $url,
 		]);
 
 		$this->assertSame($url, $client->getUrl());
@@ -285,6 +285,8 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			['http_client' => $http_client]
 		);
 
+		$client->setUserCredentials('username', 'secret');
+
 		$this->setExpectedException(
 			'Exception',
 			'Unauthorized'
@@ -326,6 +328,8 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			[],
 			['http_client' => $http_client]
 		);
+
+		$client->setUserCredentials('username', 'secret');
 
 		$this->setExpectedException(
 			'Exception',

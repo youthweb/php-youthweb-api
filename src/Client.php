@@ -4,10 +4,13 @@ namespace Youthweb\Api;
 
 use Art4\JsonApiClient\Utils\Manager as JsonApiClientManager;
 use Cache\Adapter\Void\VoidCachePool;
+use DateInterval;
+use DateTime;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Psr7\Request;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Http\Message\ResponseInterface;
+use Youthweb\Api\Exception\MissingCredentialsException;
 
 /**
  * Simple PHP Youthweb client
@@ -24,7 +27,12 @@ final class Client implements ClientInterface
 	/**
 	 * @var string
 	 */
-	private $url = 'https://api.youthweb.net';
+	private $api_domain = 'https://api.youthweb.net';
+
+	/**
+	 * @var string
+	 */
+	private $auth_domain = 'https://youthweb.net';
 
 	/**
 	 * @var HttpClientInterface
@@ -53,6 +61,24 @@ final class Client implements ClientInterface
 
 	/**
 	 * @var string
+	 * @since Youthweb-API 0.6
+	 */
+	private $client_id;
+
+	/**
+	 * @var string
+	 * @since Youthweb-API 0.6
+	 */
+	private $client_secret;
+
+	/**
+	 * @var string
+	 * @since Youthweb-API 0.6
+	 */
+	private $redirect_url = '';
+
+	/**
+	 * @var string
 	 * @deprecated Since Youthweb-API 0.6
 	 */
 	private $username = '';
@@ -76,7 +102,15 @@ final class Client implements ClientInterface
 	{
 		foreach ($options as $option => $value)
 		{
-			if (in_array($option, ['api_version', 'url', 'cache_namespace']))
+			if (in_array($option, [
+				'api_version',
+				'api_domain',
+				'auth_domain',
+				'cache_namespace',
+				'client_id',
+				'client_secret',
+				'redirect_url',
+			]))
 			{
 				$this->{$option} = (string) $value;
 			}
@@ -135,22 +169,26 @@ final class Client implements ClientInterface
 	/**
 	 * Returns the Url
 	 *
+	 * @deprecated Will be set to private in future. Don't use it anymore
+	 *
 	 * @return string
 	 */
 	public function getUrl()
 	{
-		return $this->url;
+		return $this->api_domain;
 	}
 
 	/**
 	 * Set the Url
+	 *
+	 * @deprecated Will be set to private in future. Use the constructor instead
 	 *
 	 * @param string $url The url
 	 * @return self
 	 */
 	public function setUrl($url)
 	{
-		$this->url = (string) $url;
+		$this->api_domain = (string) $url;
 
 		return $this;
 	}
@@ -193,6 +231,81 @@ final class Client implements ClientInterface
 	}
 
 	/**
+	 * Authorize the client credentials
+	 *
+	 * @return
+	 */
+	public function authorize($code = null)
+	{
+		if ( $this->client_id === null or $this->client_secret === null )
+		{
+			throw new MissingCredentialsException;
+		}
+
+		$access_token_item = $this->getCacheProvider()->getItem($this->buildCacheKey('access_token'));
+
+		if ( ! $access_token_item->isHit() )
+		{
+			$provider = new \Youthweb\OAuth2\Client\Provider\Youthweb([
+				'clientId'     => $this->client_id,
+				'clientSecret' => $this->client_secret,
+				'redirectUri'  => $this->redirect_url,
+				'apiDomain'    => $this->api_domain,
+				'domain'       => $this->auth_domain,
+			]);
+
+			$refresh_token_item = $this->getCacheProvider()->getItem($this->buildCacheKey('refresh_token'));
+
+			if ( ! $refresh_token_item->isHit() )
+			{
+				if ( $code === null )
+				{
+					$options = [
+						// TODO: Scope-Übergabe ermöglichen
+						'scope' => 'user:email',
+					];
+
+					// If we don't have an authorization code then get one
+					$auth_url = $provider->getAuthorizationUrl($options);
+
+					// TODO: throw Exception with url inside
+					return $auth_url;
+				}
+				else
+				{
+					// Try to get an access token (using the authorization code grant)
+					$token = $provider->getAccessToken('authorization_code', [
+						'code' => $code,
+					]);
+				}
+			}
+			else
+			{
+				// TODO: Prüfen, ob Exception geworfen wird, bzw refresh_token nichts gebracht hat
+				$token = $provider->getAccessToken('refresh_token', [
+					'refresh_token' => $refresh_token_item->get(),
+				]);
+			}
+
+			$access_token_item->set($token->getToken());
+			$date = new DateTime('@'.$token->getExpires());
+			$access_token_item->expiresAt($date);
+			$this->getCacheProvider()->saveDeferred($access_token_item);
+
+			$refresh_token_item->set($token->getRefreshToken());
+			// refresh_token sind 30 Tage gültig
+			$refresh_token_item->expiresAfter(new DateInterval('P30D'));
+			$this->getCacheProvider()->saveDeferred($refresh_token_item);
+
+			$this->getCacheProvider()->commit();
+		}
+
+		$access_token = $access_token_item->get();
+
+		return true;
+	}
+
+	/**
 	 * HTTP GETs a json $path and decodes it to an object
 	 *
 	 * @param string  $path
@@ -202,9 +315,7 @@ final class Client implements ClientInterface
 	 */
 	public function get($path, array $data = [])
 	{
-		$bearer_token = $this->getResource('auth')->getBearerToken();
-
-		$data['headers']['Authorization'] = strval($bearer_token);
+		$data['headers']['Authorization'] = $this->getBearerToken();
 
 		return $this->runRequest($path, 'GET', $data);
 	}
@@ -284,6 +395,29 @@ final class Client implements ClientInterface
 	public function buildCacheKey($key)
 	{
 		return $this->cache_namespace . strval($key);
+	}
+
+	/**
+	 * Get the Bearer Token
+	 *
+	 * @throws MissingCredentialsException If no user or client credentials are set
+	 *
+	 * @return string The Bearer token incl. type e.g. "Bearer jcx45..."
+	 */
+	private function getBearerToken()
+	{
+		try
+		{
+			$this->authorize();
+
+			$access_token_item = $this->getCacheProvider()->getItem($this->buildCacheKey('access_token'));
+
+			return 'Bearer ' . $access_token_item->get();
+		}
+		catch (MissingCredentialsException $e)
+		{
+			return $this->getResource('auth')->getBearerToken();
+		}
 	}
 
 	/**
