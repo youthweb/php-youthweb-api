@@ -11,6 +11,7 @@ use GuzzleHttp\Psr7\Request;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Http\Message\ResponseInterface;
 use Youthweb\Api\Exception\MissingCredentialsException;
+use Youthweb\Api\Exception\UnauthorizedException;
 
 /**
  * Simple PHP Youthweb client
@@ -251,9 +252,14 @@ final class Client implements ClientInterface
 	/**
 	 * Authorize the client credentials
 	 *
-	 * @return
+	 * @param array $params for authrization code: ['code' => 'authorization_code_from_callback_url...']
+	 *
+	 * @throws MissingCredentialsException If no user or client credentials are set
+	 * @throws UnauthorizedException contains the url to get an authorization code
+	 *
+	 * @return void
 	 */
-	public function authorize($code = null)
+	public function authorize(array $params = [])
 	{
 		if ( $this->client_id === null or $this->client_secret === null )
 		{
@@ -262,59 +268,56 @@ final class Client implements ClientInterface
 
 		$access_token_item = $this->getCacheProvider()->getItem($this->buildCacheKey('access_token'));
 
-		if ( ! $access_token_item->isHit() )
+		if ( $access_token_item->isHit() )
 		{
-			$provider = $this->getOauth2Provider();
+			return;
+		}
 
-			$refresh_token_item = $this->getCacheProvider()->getItem($this->buildCacheKey('refresh_token'));
+		$provider = $this->getOauth2Provider();
 
-			if ( ! $refresh_token_item->isHit() )
+		$refresh_token_item = $this->getCacheProvider()->getItem($this->buildCacheKey('refresh_token'));
+
+		if ( ! $refresh_token_item->isHit() )
+		{
+			if ( ! isset($params['code']) )
 			{
-				if ( $code === null )
-				{
-					$options = [
-						// TODO: Scope-Übergabe ermöglichen
-						'scope' => 'user:email',
-					];
+				$options = [
+					// TODO: Scope-Übergabe ermöglichen
+					'scope' => 'user:email',
+				];
 
-					// If we don't have an authorization code then get one
-					$auth_url = $provider->getAuthorizationUrl($options);
+				// If we don't have an authorization code then get one
+				$auth_url = $provider->getAuthorizationUrl($options);
 
-					// TODO: throw Exception with url inside
-					return $auth_url;
-				}
-				else
-				{
-					// Try to get an access token (using the authorization code grant)
-					$token = $provider->getAccessToken('authorization_code', [
-						'code' => $code,
-					]);
-				}
+				throw UnauthorizedException::withAuthorizationUrl($auth_url);
 			}
 			else
 			{
-				// TODO: Prüfen, ob Exception geworfen wird, bzw refresh_token nichts gebracht hat
-				$token = $provider->getAccessToken('refresh_token', [
-					'refresh_token' => $refresh_token_item->get(),
+				// Try to get an access token (using the authorization code grant)
+				$token = $provider->getAccessToken('authorization_code', [
+					'code' => $params['code'],
 				]);
 			}
-
-			$access_token_item->set($token->getToken());
-			$date = new DateTime('@'.$token->getExpires());
-			$access_token_item->expiresAt($date);
-			$this->getCacheProvider()->saveDeferred($access_token_item);
-
-			$refresh_token_item->set($token->getRefreshToken());
-			// refresh_token sind 30 Tage gültig
-			$refresh_token_item->expiresAfter(new DateInterval('P30D'));
-			$this->getCacheProvider()->saveDeferred($refresh_token_item);
-
-			$this->getCacheProvider()->commit();
+		}
+		else
+		{
+			// TODO: Prüfen, ob Exception geworfen wird, bzw wenn refresh_token nichts gebracht hat
+			$token = $provider->getAccessToken('refresh_token', [
+				'refresh_token' => $refresh_token_item->get(),
+			]);
 		}
 
-		$access_token = $access_token_item->get();
+		$access_token_item->set($token->getToken());
+		$date = new DateTime('@'.$token->getExpires());
+		$access_token_item->expiresAt($date);
+		$this->getCacheProvider()->saveDeferred($access_token_item);
 
-		return true;
+		$refresh_token_item->set($token->getRefreshToken());
+		// refresh_token sind 30 Tage gültig
+		$refresh_token_item->expiresAfter(new DateInterval('P30D'));
+		$this->getCacheProvider()->saveDeferred($refresh_token_item);
+
+		$this->getCacheProvider()->commit();
 	}
 
 	/**
@@ -324,6 +327,7 @@ final class Client implements ClientInterface
 	 * @param array   $data
 	 *
 	 * @throws MissingCredentialsException If no user or client credentials are set
+	 * @throws UnauthorizedException contains the url to get an authorization code
 	 *
 	 * @return array
 	 */
@@ -438,6 +442,7 @@ final class Client implements ClientInterface
 	 * Get the Bearer Token
 	 *
 	 * @throws MissingCredentialsException If no user or client credentials are set
+	 * @throws UnauthorizedException contains the url to get an authorization code
 	 *
 	 * @return string The Bearer token incl. type e.g. "Bearer jcx45..."
 	 */
