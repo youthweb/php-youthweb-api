@@ -254,6 +254,27 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	/**
 	 * @test
 	 */
+	public function testGetRequestWithoutCredentialsThrowsException()
+	{
+		$http_client = $this->createMock('Youthweb\Api\HttpClientInterface');
+
+		$client = new Client(
+			[],
+			['http_client' => $http_client]
+		);
+
+		$this->setExpectedException(
+			'Youthweb\Api\Exception\MissingCredentialsException',
+			''
+		);
+
+		$client->get('foobar');
+	}
+
+
+	/**
+	 * @test
+	 */
 	public function testHandleClientExceptionWithResponseException()
 	{
 		$body = $this->createMock('Psr\Http\Message\StreamInterface');

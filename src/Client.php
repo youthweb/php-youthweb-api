@@ -40,6 +40,11 @@ final class Client implements ClientInterface
 	private $http_client;
 
 	/**
+	 * @var League\OAuth2\Client\Provider\AbstractProvider
+	 */
+	private $oauth2_client;
+
+	/**
 	 * @var CacheItemPoolInterface
 	 */
 	private $cache_provider;
@@ -126,6 +131,19 @@ final class Client implements ClientInterface
 		}
 
 		$this->setHttpClient($collaborators['http_client']);
+
+		if (empty($collaborators['oauth2_provider']))
+		{
+			$collaborators['oauth2_provider'] = new \Youthweb\OAuth2\Client\Provider\Youthweb([
+				'clientId'     => $this->client_id,
+				'clientSecret' => $this->client_secret,
+				'redirectUri'  => $this->redirect_url,
+				'apiDomain'    => $this->api_domain,
+				'domain'       => $this->auth_domain,
+			]);
+		}
+
+		$this->setOauth2Provider($collaborators['oauth2_provider']);
 
 		if (empty($collaborators['cache_provider']))
 		{
@@ -246,13 +264,7 @@ final class Client implements ClientInterface
 
 		if ( ! $access_token_item->isHit() )
 		{
-			$provider = new \Youthweb\OAuth2\Client\Provider\Youthweb([
-				'clientId'     => $this->client_id,
-				'clientSecret' => $this->client_secret,
-				'redirectUri'  => $this->redirect_url,
-				'apiDomain'    => $this->api_domain,
-				'domain'       => $this->auth_domain,
-			]);
+			$provider = $this->getOauth2Provider();
 
 			$refresh_token_item = $this->getCacheProvider()->getItem($this->buildCacheKey('refresh_token'));
 
@@ -311,6 +323,8 @@ final class Client implements ClientInterface
 	 * @param string  $path
 	 * @param array   $data
 	 *
+	 * @throws MissingCredentialsException If no user or client credentials are set
+	 *
 	 * @return array
 	 */
 	public function get($path, array $data = [])
@@ -359,6 +373,29 @@ final class Client implements ClientInterface
 		$this->http_client = $client;
 
 		return $this;
+	}
+
+	/**
+	 * Set a oauth2 provider
+	 *
+	 * @param League\OAuth2\Client\Provider\AbstractProvider $oauth2_provider the oauth2 provider
+	 * @return self
+	 */
+	public function setOauth2Provider(\League\OAuth2\Client\Provider\AbstractProvider $oauth2_provider)
+	{
+		$this->oauth2_provider = $oauth2_provider;
+
+		return $this;
+	}
+
+	/**
+	 * Get the oauth2 provider
+	 *
+	 * @return League\OAuth2\Client\Provider\AbstractProvider the oauth2 provider
+	 */
+	public function getOauth2Provider()
+	{
+		return $this->oauth2_provider;
 	}
 
 	/**
