@@ -178,7 +178,12 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	{
 		$http_client = $this->createMock('Youthweb\Api\HttpClientInterface');
 		$cache_provider = $this->createMock('Psr\Cache\CacheItemPoolInterface');
+		$oauth2_provider = $this->createMock('League\OAuth2\Client\Provider\AbstractProvider');
 		$cache_item = $this->createMock('Psr\Cache\CacheItemInterface');
+
+		$oauth2_provider->expects($this->once())
+			->method('getAuthorizationUrl')
+			->willReturn('https://example.org/url_for_auth_code');
 
 		$cache_item->expects($this->any())
 			->method('isHit')
@@ -200,6 +205,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			[
 				'http_client' => $http_client,
 				'cache_provider' => $cache_provider,
+				'oauth2_provider' => $oauth2_provider,
 			]
 		);
 
