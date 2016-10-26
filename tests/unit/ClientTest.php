@@ -320,6 +320,62 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	/**
 	 * @test
 	 */
+	public function testAuthrizedGetRequestReturnsObject()
+	{
+		$cache_provider = $this->createMock('Psr\Cache\CacheItemPoolInterface');
+		$oauth2_provider = $this->createMock('League\OAuth2\Client\Provider\AbstractProvider');
+		$cache_item_access = $this->createMock('Psr\Cache\CacheItemInterface');
+		$body = $this->createMock('Psr\Http\Message\StreamInterface');
+
+		$cache_item_access->expects($this->once())
+			->method('isHit')
+			->willReturn(true);
+
+		$cache_item_access->expects($this->once())
+			->method('get')
+			->willReturn('access_token');
+
+		$cache_provider->expects($this->exactly(2))
+			->method('getItem')
+			->will($this->returnValueMap([
+				['php_youthweb_api.access_token', $cache_item_access],
+			]));
+
+		$body->expects($this->once())
+			->method('getContents')
+			->willReturn('{"meta":{"this":"that"}}');
+
+		$response = $this->createMock('GuzzleHttp\Psr7\Response');
+
+		$response->expects($this->once())
+			->method('getBody')
+			->willReturn($body);
+
+		$http_client = $this->createMock('Youthweb\Api\HttpClientInterface');
+
+		$http_client->expects($this->once())
+			->method('send')
+			->willReturn($response);
+
+		$client = new Client(
+			[
+				'client_id'     => 'client_id',
+				'client_secret' => 'client_secret',
+				'redirect_url'  => 'https://example.org/callback',
+			],
+			[
+				'http_client' => $http_client,
+				'cache_provider' => $cache_provider,
+				'oauth2_provider' => $oauth2_provider,
+			]
+		);
+
+		$this->assertInstanceOf('\Art4\JsonApiClient\Document', $client->get('foobar'));
+	}
+
+	/**
+	 * @test
+	 */
 	public function testGetUnauthorizedReturnsObject()
 	{
 		$body = $this->createMock('Psr\Http\Message\StreamInterface');
