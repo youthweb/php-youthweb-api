@@ -37,6 +37,11 @@ final class Client implements ClientInterface
 	private $auth_domain = 'https://youthweb.net';
 
 	/**
+	 * @var array
+	 */
+	private $scope = [];
+
+	/**
 	 * @var HttpClientInterface
 	 */
 	private $http_client;
@@ -101,7 +106,7 @@ final class Client implements ClientInterface
 	 *
 	 * @param array $options An array of options to set on the client.
 	 *     Options include `api_version`, `api_domain`, `auth_domain`,
-	 *     `cache_namespace`, `client_id`, `client_secret` and `redirect_url`.
+	 *     `cache_namespace`, `client_id`, `client_secret`, `redirect_url` and `scope`.
 	 * @param array $collaborators An array of collaborators that may be used to
 	 *     override this provider's default behavior. Collaborators include
 	 *     http_client`, `oauth2_provider`, `cache_provider`, `request_factory`
@@ -109,19 +114,32 @@ final class Client implements ClientInterface
 	 */
 	public function __construct(array $options = [], array $collaborators = [])
 	{
+		$allowed_options = [
+			'api_version',
+			'api_domain',
+			'auth_domain',
+			'cache_namespace',
+			'client_id',
+			'client_secret',
+			'redirect_url',
+			'scope',
+		];
+
 		foreach ($options as $option => $value)
 		{
-			if (in_array($option, [
-				'api_version',
-				'api_domain',
-				'auth_domain',
-				'cache_namespace',
-				'client_id',
-				'client_secret',
-				'redirect_url',
-			]))
+			if ( in_array($option, $allowed_options) )
 			{
-				$this->{$option} = (string) $value;
+				if ( $option !== 'scope' )
+				{
+					$value = strval($value);
+				}
+				// scope must be an array
+				elseif ( ! is_array($value) )
+				{
+					$value = [strval($value)];
+				}
+
+				$this->{$option} = $value;
 			}
 		}
 
@@ -292,8 +310,7 @@ final class Client implements ClientInterface
 			if ( ! isset($params['code']) )
 			{
 				$options = [
-					// TODO: Scope-Übergabe ermöglichen
-					'scope' => 'user:email',
+					'scope' => $this->scope,
 				];
 
 				// If we don't have an authorization code then get one

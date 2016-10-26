@@ -183,6 +183,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 
 		$oauth2_provider->expects($this->once())
 			->method('getAuthorizationUrl')
+			->with(['scope' => ['user:email', 'user:read']])
 			->willReturn('https://example.org/url_for_auth_code');
 
 		$cache_item->expects($this->any())
@@ -202,6 +203,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 				'client_id'     => 'client_id',
 				'client_secret' => 'client_secret',
 				'redirect_url'  => 'https://example.org/callback',
+				'scope'         => ['user:email', 'user:read'],
 			],
 			[
 				'http_client' => $http_client,
