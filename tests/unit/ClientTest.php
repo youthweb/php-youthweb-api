@@ -174,7 +174,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	/**
 	 * @test
 	 */
-	public function testAuthorizeWithoutAccessTokenThrowException()
+	public function testAuthorizeWithoutAccessTokenThrowsException()
 	{
 		$http_client = $this->createMock('Youthweb\Api\HttpClientInterface');
 		$cache_provider = $this->createMock('Psr\Cache\CacheItemPoolInterface');
@@ -245,6 +245,65 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			[
 				'http_client' => $http_client,
 				'cache_provider' => $cache_provider,
+			]
+		);
+
+		$this->assertNull($client->authorize());
+	}
+
+	public function testAuthorizeWithRefeshTokenReturnsNothing()
+	{
+		$http_client = $this->createMock('Youthweb\Api\HttpClientInterface');
+		$cache_provider = $this->createMock('Psr\Cache\CacheItemPoolInterface');
+		$oauth2_provider = $this->createMock('League\OAuth2\Client\Provider\AbstractProvider');
+		$cache_item_access = $this->createMock('Psr\Cache\CacheItemInterface');
+		$cache_item_refresh = $this->createMock('Psr\Cache\CacheItemInterface');
+		$access_token = $this->createMock('League\OAuth2\Client\Token\AccessToken');
+
+		$cache_item_access->expects($this->once())
+			->method('isHit')
+			->willReturn(false);
+
+		$cache_item_refresh->expects($this->once())
+			->method('isHit')
+			->willReturn(true);
+
+		$cache_item_refresh->expects($this->once())
+			->method('get')
+			->willReturn('refresh_token');
+
+		$cache_provider->expects($this->exactly(2))
+			->method('getItem')
+			->will($this->returnValueMap([
+				['php_youthweb_api.access_token', $cache_item_access],
+				['php_youthweb_api.refresh_token', $cache_item_refresh],
+			]));
+
+		$access_token->expects($this->once())
+			->method('getToken')
+			->willReturn('access_token');
+		$access_token->expects($this->once())
+			->method('getRefreshToken')
+			->willReturn('refresh_token');
+		$access_token->expects($this->once())
+			->method('getExpires')
+			->willReturn(1234567890);
+
+		$oauth2_provider->expects($this->once())
+			->method('getAccessToken')
+			->with('refresh_token', ['refresh_token' => 'refresh_token'])
+			->willReturn($access_token);
+
+		$client = new Client(
+			[
+				'client_id'     => 'client_id',
+				'client_secret' => 'client_secret',
+				'redirect_url'  => 'https://example.org/callback',
+			],
+			[
+				'http_client' => $http_client,
+				'cache_provider' => $cache_provider,
+				'oauth2_provider' => $oauth2_provider,
 			]
 		);
 
