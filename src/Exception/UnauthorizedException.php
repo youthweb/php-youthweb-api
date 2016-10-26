@@ -6,10 +6,12 @@ use RuntimeException;
 
 class UnauthorizedException extends RuntimeException
 {
-	public static function withAuthorizationUrl($url)
+	public static function withAuthorizationUrl($url, $state = '')
 	{
 		$e = new static('We need an authorization code. Call this url to get one.');
+
 		$e->setUrl($url);
+		$e->setState($state);
 
 		return $e;
 	}
@@ -18,6 +20,11 @@ class UnauthorizedException extends RuntimeException
 	 * @var string The auth url
 	 */
 	private $url = '';
+
+	/**
+	 * @var string The state
+	 */
+	private $state = '';
 
 	/**
 	 * Set the auth url
@@ -40,5 +47,27 @@ class UnauthorizedException extends RuntimeException
 	public function getUrl()
 	{
 		return $this->url;
+	}
+
+	/**
+	 * Set the state
+	 *
+	 * @param string $state The state
+	 */
+	public function setState($state)
+	{
+		$this->state = strval($state);
+	}
+
+	/**
+	 * Get the state
+	 *
+	 * Compare this state with the state in redirect_url
+	 *
+	 * @return string The state
+	 */
+	public function getState()
+	{
+		return $this->state;
 	}
 }

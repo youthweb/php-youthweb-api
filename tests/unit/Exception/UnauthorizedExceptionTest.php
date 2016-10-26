@@ -9,14 +9,39 @@ class UnauthorizedExceptionTest extends \PHPUnit_Framework_TestCase
 	/**
 	 * @test
 	 */
-	public function testWithAuthorizationUrl()
+	public function testUrlGetterAndSetter()
 	{
 		$url = 'https://example.org';
 
-		$e = UnauthorizedException::withAuthorizationUrl($url);
+		$e = new UnauthorizedException;
+		$e->setUrl($url);
+
+		$this->assertSame($url, $e->getUrl());
+	}
+
+	/**
+	 * @test
+	 */
+	public function testStateGetterAndSetter()
+	{
+		$state = 'random_string';
+
+		$e = new UnauthorizedException;
+		$e->setState($state);
+
+		$this->assertSame($state, $e->getState());
+	}
+
+	public function testWithAuthorizationUrl()
+	{
+		$url = 'https://example.org';
+		$state = 'random_string';
+
+		$e = UnauthorizedException::withAuthorizationUrl($url, $state);
 
 		$this->assertInstanceOf(UnauthorizedException::class, $e);
 
 		$this->assertSame($url, $e->getUrl());
+		$this->assertSame($state, $e->getState());
 	}
 }

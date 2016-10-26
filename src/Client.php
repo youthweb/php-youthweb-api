@@ -8,6 +8,7 @@ use DateInterval;
 use DateTime;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Psr7\Request;
+use InvalidArgumentException;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Http\Message\ResponseInterface;
 use Youthweb\Api\Exception\MissingCredentialsException;
@@ -99,10 +100,12 @@ final class Client implements ClientInterface
 	 * Constructs the Client.
 	 *
 	 * @param array $options An array of options to set on the client.
-	 *     Options include `api_version`, `url` and `cache_namespace`.
+	 *     Options include `api_version`, `api_domain`, `auth_domain`,
+	 *     `cache_namespace`, `client_id`, `client_secret` and `redirect_url`.
 	 * @param array $collaborators An array of collaborators that may be used to
 	 *     override this provider's default behavior. Collaborators include
-	 *     http_client` and `cache_provider`.
+	 *     http_client`, `oauth2_provider`, `cache_provider`, `request_factory`
+	 *     and `resource_factory`.
 	 */
 	public function __construct(array $options = [], array $collaborators = [])
 	{
@@ -252,8 +255,13 @@ final class Client implements ClientInterface
 	/**
 	 * Authorize the client credentials
 	 *
-	 * @param array $params for authrization code: ['code' => 'authorization_code_from_callback_url...']
+	 * @param array $params for authorization code:
+	 * [
+	 *     'code' => 'authorization_code_from_callback_url...',
+	 *     'state' => 'state_from_callback_url_for_csrf_protection',
+	 * ]
 	 *
+	 * @throws InvalidArgumentException If a wrong state was set
 	 * @throws MissingCredentialsException If no user or client credentials are set
 	 * @throws UnauthorizedException contains the url to get an authorization code
 	 *
@@ -279,6 +287,8 @@ final class Client implements ClientInterface
 
 		if ( ! $refresh_token_item->isHit() )
 		{
+			$state_item = $this->getCacheProvider()->getItem($this->buildCacheKey('state'));
+
 			if ( ! isset($params['code']) )
 			{
 				$options = [
@@ -288,8 +298,21 @@ final class Client implements ClientInterface
 
 				// If we don't have an authorization code then get one
 				$auth_url = $provider->getAuthorizationUrl($options);
+				$state = $provider->getState();
 
-				throw UnauthorizedException::withAuthorizationUrl($auth_url);
+				$state_item->set($state);
+				// Save state for 10 min
+				$state_item->expiresAfter(new DateInterval('PT10M'));
+				$this->getCacheProvider()->saveDeferred($state_item);
+
+				$this->getCacheProvider()->commit();
+
+				throw UnauthorizedException::withAuthorizationUrl($auth_url, $state);
+			}
+			// Check state if present
+			elseif ( isset($params['state']) and ( ! $state_item->isHit() or $state_item->get() !== $params['state'] ) )
+			{
+				throw new \InvalidArgumentException('Invalid state');
 			}
 			else
 			{
@@ -367,7 +390,7 @@ final class Client implements ClientInterface
 	/**
 	 * Set a http client
 	 *
-	 * @deprecated Since Youthweb-API 0.6
+	 * @deprecated Will be set to private in future. Use the constructor instead
 	 *
 	 * @param HttpClientInterface $client the http client
 	 * @return self
@@ -385,7 +408,7 @@ final class Client implements ClientInterface
 	 * @param League\OAuth2\Client\Provider\AbstractProvider $oauth2_provider the oauth2 provider
 	 * @return self
 	 */
-	public function setOauth2Provider(\League\OAuth2\Client\Provider\AbstractProvider $oauth2_provider)
+	private function setOauth2Provider(\League\OAuth2\Client\Provider\AbstractProvider $oauth2_provider)
 	{
 		$this->oauth2_provider = $oauth2_provider;
 
@@ -397,7 +420,7 @@ final class Client implements ClientInterface
 	 *
 	 * @return League\OAuth2\Client\Provider\AbstractProvider the oauth2 provider
 	 */
-	public function getOauth2Provider()
+	private function getOauth2Provider()
 	{
 		return $this->oauth2_provider;
 	}
@@ -405,7 +428,7 @@ final class Client implements ClientInterface
 	/**
 	 * Set a cache provider
 	 *
-	 * @deprecated Since Youthweb-API 0.6
+	 * @deprecated Will be set to private in future. Use the constructor instead
 	 *
 	 * @param Psr\Cache\CacheItemPoolInterface $cache_provider the cache provider
 	 * @return self
@@ -420,6 +443,8 @@ final class Client implements ClientInterface
 	/**
 	 * Get the cache provider
 	 *
+	 * @deprecated Will be set to private in future. Don't use it anymore
+	 *
 	 * @return Psr\Cache\CacheItemPoolInterface the cache provider
 	 */
 	public function getCacheProvider()
@@ -429,6 +454,8 @@ final class Client implements ClientInterface
 
 	/**
 	 * Build a cache key
+	 *
+	 * @deprecated Will be set to private in future. Don't use it anymore
 	 *
 	 * @param string $key The key
 	 * @return stirng The cache key
