@@ -10,6 +10,7 @@ use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Psr7\Request;
 use InvalidArgumentException;
 use Psr\Cache\CacheItemPoolInterface;
+use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Youthweb\Api\Exception\MissingCredentialsException;
 use Youthweb\Api\Exception\UnauthorizedException;
@@ -375,7 +376,9 @@ final class Client implements ClientInterface
 	{
 		$data['headers']['Authorization'] = $this->getBearerToken();
 
-		return $this->runRequest($path, 'GET', $data);
+		$request = $this->createRequest('GET', $this->getUrl() . $path, $data);
+
+		return $this->runRequest($request);
 	}
 
 	/**
@@ -388,7 +391,9 @@ final class Client implements ClientInterface
 	 */
 	public function getUnauthorized($path, array $data = [])
 	{
-		return $this->runRequest($path, 'GET', $data);
+		$request = $this->createRequest('GET', $this->getUrl() . $path, $data);
+
+		return $this->runRequest($request);
 	}
 
 	/**
@@ -401,7 +406,9 @@ final class Client implements ClientInterface
 	 */
 	public function postUnauthorized($path, array $data = [])
 	{
-		return $this->runRequest($path, 'POST', $data);
+		$request = $this->createRequest('POST', $this->getUrl() . $path, $data);
+
+		return $this->runRequest($request);
 	}
 
 	/**
@@ -507,18 +514,14 @@ final class Client implements ClientInterface
 	}
 
 	/**
-	 * @param string $path
-	 * @param string $method
-	 * @param array  $data
+	 * @param RequestInterface $request The request to run
 	 *
 	 * @return mixed
 	 *
 	 * @throws \Exception If anything goes wrong on the request
 	 */
-	private function runRequest($path, $method = 'GET', array $data = [])
+	private function runRequest(RequestInterface $request)
 	{
-		$request = $this->createRequest($method, $this->getUrl() . $path, $data);
-
 		try
 		{
 			$response = $this->getHttpClient()->send($request);
