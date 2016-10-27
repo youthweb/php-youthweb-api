@@ -8,13 +8,35 @@ use InvalidArgumentException;
 class ClientTest extends \PHPUnit_Framework_TestCase
 {
 	/**
+	 * Create a client with mocks of all collaborators
+	 */
+	private function createClient(array $options = [], array $collaborators = [])
+	{
+		$default_options = [];
+
+		$options = array_merge($default_options, $options);
+
+		$default_collaborators = [
+			'http_client' => $this->createMock('Youthweb\Api\HttpClientInterface'),
+			'oauth2_provider' => $this->createMock('League\OAuth2\Client\Provider\AbstractProvider'),
+			'cache_provider' => $this->createMock('Psr\Cache\CacheItemPoolInterface'),
+			'request_factory' => $this->createMock('Youthweb\Api\RequestFactoryInterface'),
+			'resource_factory' => $this->createMock('Youthweb\Api\ResourceFactoryInterface'),
+		];
+
+		$collaborators = array_merge($default_collaborators, $collaborators);
+
+		return new Client($options, $collaborators);
+	}
+
+	/**
 	 * @test
 	 */
 	public function testSetOptionsThroughConstructor()
 	{
 		$url = 'http://test.local';
 
-		$client = new Client([
+		$client = $this->createClient([
 			'api_domain' => $url,
 		]);
 
@@ -26,7 +48,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testSetUrlReturnsClient()
 	{
-		$client = new Client();
+		$client = $this->createClient();
 
 		$this->assertInstanceOf('Youthweb\Api\Client', $client->setUrl('http://test.local'));
 	}
@@ -36,7 +58,8 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testGetUrlReturnsValueFromSetUrl()
 	{
-		$client = (new Client())->setUrl('http://test.local');
+		$client = $this->createClient();
+		$client->setUrl('http://test.local');
 
 		$this->assertSame('http://test.local', $client->getUrl());
 	}
@@ -46,7 +69,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testSetUserCredentialsReturnsClient()
 	{
-		$client = new Client();
+		$client = $this->createClient();
 
 		$this->assertInstanceOf('Youthweb\Api\Client', $client->setUserCredentials('Username', 'User-Token'));
 	}
@@ -56,7 +79,8 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testGetUserCredentialReturnsValueFromSetUserCredentials()
 	{
-		$client = (new Client())->setUserCredentials('Username', 'User-Token');
+		$client = $this->createClient();
+		$client->setUserCredentials('Username', 'User-Token');
 
 		$this->assertSame('Username', $client->getUserCredential('username'));
 		$this->assertSame('User-Token', $client->getUserCredential('token_secret'));
@@ -67,7 +91,8 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testGetUserCredentialWithWrongKeyThrowsException()
 	{
-		$client = (new Client())->setUserCredentials('Username', 'User-Token');
+		$client = $this->createClient();
+		$client->setUserCredentials('Username', 'User-Token');
 
 		$this->setExpectedException(
 			'UnexpectedValueException',
@@ -82,7 +107,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testSetHttpClientReturnsClient()
 	{
-		$client = new Client();
+		$client = $this->createClient();
 
 		$stub = $this->createMock('Youthweb\Api\HttpClientInterface');
 
@@ -94,7 +119,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testGetCacheProviderReturnsPsrCacheItemPool()
 	{
-		$client = new Client();
+		$client = $this->createClient();
 
 		$this->assertInstanceOf('Psr\Cache\CacheItemPoolInterface', $client->getCacheProvider());
 	}
@@ -104,7 +129,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testSetCacheProviderReturnsClient()
 	{
-		$client = new Client();
+		$client = $this->createClient();
 
 		$stub = $this->createMock('Psr\Cache\CacheItemPoolInterface');
 
@@ -116,7 +141,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testBuildCacheKeyReturnsString()
 	{
-		$client = new Client();
+		$client = $this->createClient();
 
 		$this->assertSame('php_youthweb_api.foobar', $client->buildCacheKey('foobar'));
 	}
@@ -136,7 +161,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			->with($resource_name)
 			->willReturn($resource);
 
-		$client = new Client(
+		$client = $this->createClient(
 			[],
 			['resource_factory' => $resource_factory]
 		);
@@ -161,7 +186,19 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testGetUnknownResourceThrowsException()
 	{
-		$client = new Client();
+		$resource_factory = $this->createMock('Youthweb\Api\ResourceFactoryInterface');
+
+		$resource_factory->expects($this->once())
+			->method('createResource')
+			->with('foobar')
+			->will($this->throwException(new \InvalidArgumentException('The resource "foobar" does not exists.')));
+
+		$client = $this->createClient(
+			[],
+			[
+				'resource_factory' => $resource_factory,
+			]
+		);
 
 		$this->setExpectedException(
 			'InvalidArgumentException',
@@ -196,7 +233,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 				['php_youthweb_api.state', $cache_item],
 			]));
 
-		$client = new Client(
+		$client = $this->createClient(
 			[
 				'client_id'     => 'client_id',
 				'client_secret' => 'client_secret',
@@ -238,7 +275,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 				['php_youthweb_api.access_token', $cache_item],
 			]));
 
-		$client = new Client(
+		$client = $this->createClient(
 			[
 				'client_id'     => 'client_id',
 				'client_secret' => 'client_secret',
@@ -271,7 +308,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 				['php_youthweb_api.state', $cache_item_state],
 			]));
 
-		$client = new Client(
+		$client = $this->createClient(
 			[
 				'client_id'     => 'client_id',
 				'client_secret' => 'client_secret',
@@ -348,7 +385,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 				['php_youthweb_api.state', $cache_item_state],
 			]));
 
-		$client = new Client(
+		$client = $this->createClient(
 			[
 				'client_id'     => 'client_id',
 				'client_secret' => 'client_secret',
@@ -424,7 +461,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 				['php_youthweb_api.state', $cache_item_state],
 			]));
 
-		$client = new Client(
+		$client = $this->createClient(
 			[
 				'client_id'     => 'client_id',
 				'client_secret' => 'client_secret',
@@ -464,7 +501,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 				['php_youthweb_api.state', $cache_item_state],
 			]));
 
-		$client = new Client(
+		$client = $this->createClient(
 			[
 				'client_id'     => 'client_id',
 				'client_secret' => 'client_secret',
@@ -488,12 +525,13 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	/**
 	 * @test
 	 */
-	public function testAuthrizedGetRequestReturnsObject()
+	public function testAuthorizedGetRequestReturnsObject()
 	{
 		$cache_provider = $this->createMock('Psr\Cache\CacheItemPoolInterface');
 		$oauth2_provider = $this->createMock('League\OAuth2\Client\Provider\AbstractProvider');
 		$cache_item_access = $this->createMock('Psr\Cache\CacheItemInterface');
 		$body = $this->createMock('Psr\Http\Message\StreamInterface');
+		$request_factory = $this->createMock('Youthweb\Api\RequestFactoryInterface');
 
 		$cache_item_access->expects($this->once())
 			->method('isHit')
@@ -513,7 +551,13 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			->method('getContents')
 			->willReturn('{"meta":{"this":"that"}}');
 
-		$response = $this->createMock('GuzzleHttp\Psr7\Response');
+		$request = $this->createMock('Psr\Http\Message\RequestInterface');
+
+		$request_factory->expects($this->once())
+			->method('createRequest')
+			->willReturn($request);
+
+		$response = $this->createMock('Psr\Http\Message\ResponseInterface');
 
 		$response->expects($this->once())
 			->method('getBody')
@@ -523,9 +567,10 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 
 		$http_client->expects($this->once())
 			->method('send')
+			->with($request)
 			->willReturn($response);
 
-		$client = new Client(
+		$client = $this->createClient(
 			[
 				'client_id'     => 'client_id',
 				'client_secret' => 'client_secret',
@@ -535,6 +580,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 				'http_client' => $http_client,
 				'cache_provider' => $cache_provider,
 				'oauth2_provider' => $oauth2_provider,
+				'request_factory' => $request_factory,
 			]
 		);
 
@@ -546,13 +592,21 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testGetUnauthorizedReturnsObject()
 	{
+		$request_factory = $this->createMock('Youthweb\Api\RequestFactoryInterface');
+
+		$request = $this->createMock('Psr\Http\Message\RequestInterface');
+
+		$request_factory->expects($this->once())
+			->method('createRequest')
+			->willReturn($request);
+
 		$body = $this->createMock('Psr\Http\Message\StreamInterface');
 
 		$body->expects($this->once())
 			->method('getContents')
 			->willReturn('{"meta":{"this":"that"}}');
 
-		$response = $this->createMock('GuzzleHttp\Psr7\Response');
+		$response = $this->createMock('Psr\Http\Message\ResponseInterface');
 
 		$response->expects($this->once())
 			->method('getBody')
@@ -562,12 +616,14 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 
 		$http_client->expects($this->once())
 			->method('send')
+			->with($request)
 			->willReturn($response);
 
-		$client = new Client(
+		$client = $this->createClient(
 			[],
 			[
 				'http_client' => $http_client,
+				'request_factory' => $request_factory,
 			]
 		);
 
@@ -579,6 +635,33 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testGetWithUserTokenReturnsObject()
 	{
+		$cache_provider = $this->createMock('Psr\Cache\CacheItemPoolInterface');
+		$cache_item_state = $this->createMock('Psr\Cache\CacheItemInterface');
+		$cache_item_access = $this->createMock('Psr\Cache\CacheItemInterface');
+
+		$cache_item_state->expects($this->any())
+			->method('isHit')
+			->willReturn(false);
+
+		$cache_item_access->expects($this->once())
+			->method('isHit')
+			->willReturn(false);
+
+		$cache_provider->expects($this->exactly(2))
+			->method('getItem')
+			->will($this->returnValueMap([
+				['php_youthweb_api.state', $cache_item_state],
+				['php_youthweb_api.access_token', $cache_item_access],
+			]));
+
+		$request_factory = $this->createMock('Youthweb\Api\RequestFactoryInterface');
+
+		$request = $this->createMock('Psr\Http\Message\RequestInterface');
+
+		$request_factory->expects($this->once())
+			->method('createRequest')
+			->willReturn($request);
+
 		$body = $this->createMock('Psr\Http\Message\StreamInterface');
 
 		$body->expects($this->once())
@@ -595,6 +678,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 
 		$http_client->expects($this->once())
 			->method('send')
+			->with($request)
 			->willReturn($response);
 
 		$auth_resource = $this->createMock('Youthweb\Api\Resource\AuthInterface');
@@ -610,11 +694,13 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			->with('auth')
 			->willReturn($auth_resource);
 
-		$client = new Client(
+		$client = $this->createClient(
 			[],
 			[
 				'resource_factory' => $resource_factory,
 				'http_client' => $http_client,
+				'cache_provider' => $cache_provider,
+				'request_factory' => $request_factory,
 			]
 		);
 
@@ -627,10 +713,49 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	public function testGetRequestWithoutCredentialsThrowsException()
 	{
 		$http_client = $this->createMock('Youthweb\Api\HttpClientInterface');
+		$cache_provider = $this->createMock('Psr\Cache\CacheItemPoolInterface');
+		$cache_item_state = $this->createMock('Psr\Cache\CacheItemInterface');
+		$cache_item_access = $this->createMock('Psr\Cache\CacheItemInterface');
+		$cache_item_refresh = $this->createMock('Psr\Cache\CacheItemInterface');
+		$resource_factory = $this->createMock('Youthweb\Api\ResourceFactoryInterface');
+		$auth_resource = $this->createMock('Youthweb\Api\Resource\AuthInterface');
 
-		$client = new Client(
+		$auth_resource->expects($this->once())
+			->method('getBearerToken')
+			->will($this->throwException(new \Youthweb\Api\Exception\MissingCredentialsException));
+
+		$resource_factory->expects($this->once())
+			->method('createResource')
+			->with('auth')
+			->willReturn($auth_resource);
+
+		$cache_item_state->expects($this->any())
+			->method('isHit')
+			->willReturn(false);
+
+		$cache_item_access->expects($this->once())
+			->method('isHit')
+			->willReturn(false);
+
+		$cache_item_refresh->expects($this->once())
+			->method('isHit')
+			->willReturn(false);
+
+		$cache_provider->expects($this->exactly(2))
+			->method('getItem')
+			->will($this->returnValueMap([
+				['php_youthweb_api.state', $cache_item_state],
+				['php_youthweb_api.access_token', $cache_item_access],
+				['php_youthweb_api.refresh_token', $cache_item_refresh],
+			]));
+
+		$client = $this->createClient(
 			[],
-			['http_client' => $http_client]
+			[
+				'http_client' => $http_client,
+				'cache_provider' => $cache_provider,
+				'resource_factory' => $resource_factory,
+			]
 		);
 
 		$this->setExpectedException(
@@ -646,7 +771,31 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testHandleClientExceptionWithResponseException()
 	{
+		$cache_provider = $this->createMock('Psr\Cache\CacheItemPoolInterface');
+		$cache_item_state = $this->createMock('Psr\Cache\CacheItemInterface');
+		$cache_item_access = $this->createMock('Psr\Cache\CacheItemInterface');
 		$body = $this->createMock('Psr\Http\Message\StreamInterface');
+		$request_factory = $this->createMock('Youthweb\Api\RequestFactoryInterface');
+		$request = $this->createMock('Psr\Http\Message\RequestInterface');
+
+		$request_factory->expects($this->once())
+			->method('createRequest')
+			->willReturn($request);
+
+		$cache_item_state->expects($this->any())
+			->method('isHit')
+			->willReturn(false);
+
+		$cache_item_access->expects($this->once())
+			->method('isHit')
+			->willReturn(false);
+
+		$cache_provider->expects($this->exactly(2))
+			->method('getItem')
+			->will($this->returnValueMap([
+				['php_youthweb_api.state', $cache_item_state],
+				['php_youthweb_api.access_token', $cache_item_access],
+			]));
 
 		$body->expects($this->once())
 			->method('getContents')
@@ -683,11 +832,13 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			->with('auth')
 			->willReturn($auth_resource);
 
-		$client = new Client(
+		$client = $this->createClient(
 			[],
 			[
 				'http_client' => $http_client,
 				'resource_factory' => $resource_factory,
+				'cache_provider' => $cache_provider,
+				'request_factory' => $request_factory,
 			]
 		);
 
@@ -724,6 +875,26 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			->method('getResponse')
 			->willReturn($response);
 
+		$cache_provider = $this->createMock('Psr\Cache\CacheItemPoolInterface');
+		$cache_item_access = $this->createMock('Psr\Cache\CacheItemInterface');
+
+		$cache_item_access->expects($this->once())
+			->method('isHit')
+			->willReturn(false);
+
+		$cache_provider->expects($this->exactly(2))
+			->method('getItem')
+			->will($this->returnValueMap([
+				['php_youthweb_api.access_token', $cache_item_access],
+			]));
+
+		$request_factory = $this->createMock('Youthweb\Api\RequestFactoryInterface');
+		$request = $this->createMock('Psr\Http\Message\RequestInterface');
+
+		$request_factory->expects($this->once())
+			->method('createRequest')
+			->willReturn($request);
+
 		$http_client = $this->createMock('Youthweb\Api\HttpClientInterface');
 
 		$http_client->expects($this->once())
@@ -743,11 +914,13 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			->with('auth')
 			->willReturn($auth_resource);
 
-		$client = new Client(
+		$client = $this->createClient(
 			[],
 			[
 				'http_client' => $http_client,
 				'resource_factory' => $resource_factory,
+				'cache_provider' => $cache_provider,
+				'request_factory' => $request_factory,
 			]
 		);
 
@@ -774,9 +947,19 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			->method('send')
 			->will($this->throwException($exception));
 
-		$client = new Client(
+		$request_factory = $this->createMock('Youthweb\Api\RequestFactoryInterface');
+		$request = $this->createMock('Psr\Http\Message\RequestInterface');
+
+		$request_factory->expects($this->once())
+			->method('createRequest')
+			->willReturn($request);
+
+		$client = $this->createClient(
 			[],
-			['http_client' => $http_client]
+			[
+				'http_client' => $http_client,
+				'request_factory' => $request_factory,
+			]
 		);
 
 		$this->setExpectedException(
