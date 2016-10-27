@@ -1,6 +1,6 @@
 <?php
 
-namespace Youthweb\Api\Tests\Exception;
+namespace Youthweb\Api\Tests\Unit\Exception;
 
 use Youthweb\Api\Exception\UnauthorizedException;
 

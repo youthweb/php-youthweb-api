@@ -1,6 +1,6 @@
 <?php
 
-namespace Youthweb\Api\Tests;
+namespace Youthweb\Api\Tests\Unit;
 
 use Youthweb\Api\JsonObject;
 

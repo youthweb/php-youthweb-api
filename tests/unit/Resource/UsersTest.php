@@ -1,6 +1,6 @@
 <?php
 
-namespace Youthweb\Api\Tests\Resource;
+namespace Youthweb\Api\Tests\Unit\Resource;
 
 use Youthweb\Api\Resource\Users;
 use InvalidArgumentException;

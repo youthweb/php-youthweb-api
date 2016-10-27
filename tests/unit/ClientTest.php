@@ -1,6 +1,6 @@
 <?php
 
-namespace Youthweb\Api\Tests;
+namespace Youthweb\Api\Tests\Unit;
 
 use Youthweb\Api\Client;
 use InvalidArgumentException;
@@ -148,17 +148,16 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 
 	/**
 	 * @test
-	 * @dataProvider getResoursesClassesProvider
 	 */
-	public function testGetApiInstance($resource_name, $class_name)
+	public function testGetResource()
 	{
-		$resource = $this->createMock($class_name);
+		$resource = $this->createMock('Youthweb\Api\Resource\UsersInterface');
 
 		$resource_factory = $this->createMock('Youthweb\Api\ResourceFactoryInterface');
 
 		$resource_factory->expects($this->once())
 			->method('createResource')
-			->with($resource_name)
+			->with('users')
 			->willReturn($resource);
 
 		$client = $this->createClient(
@@ -166,19 +165,10 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			['resource_factory' => $resource_factory]
 		);
 
-		$this->assertSame($resource, $client->getResource($resource_name));
-	}
+		$this->assertSame($resource, $client->getResource('users'));
 
-	/**
-	 * Resources DataProvider
-	 */
-	public function getResoursesClassesProvider()
-	{
-		return array(
-			array('auth', 'Youthweb\Api\Resource\AuthInterface'),
-			array('stats', 'Youthweb\Api\Resource\StatsInterface'),
-			array('users', 'Youthweb\Api\Resource\UsersInterface'),
-		);
+		// test that the client caches the resources
+		$this->assertSame($resource, $client->getResource('users'));
 	}
 
 	/**
