@@ -190,11 +190,9 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			->method('isHit')
 			->willReturn(false);
 
-		$cache_provider->expects($this->exactly(3))
+		$cache_provider->expects($this->exactly(1))
 			->method('getItem')
 			->will($this->returnValueMap([
-				['php_youthweb_api.access_token', $cache_item],
-				['php_youthweb_api.refresh_token', $cache_item],
 				['php_youthweb_api.state', $cache_item],
 			]));
 
@@ -223,7 +221,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	/**
 	 * @test
 	 */
-	public function testAuthorizeWithAccessReturnsNothing()
+	public function testAuthorizeWithAccessThrowsException()
 	{
 		$http_client = $this->createMock('Youthweb\Api\HttpClientInterface');
 		$cache_provider = $this->createMock('Psr\Cache\CacheItemPoolInterface');
@@ -236,6 +234,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 		$cache_provider->expects($this->exactly(1))
 			->method('getItem')
 			->will($this->returnValueMap([
+				['php_youthweb_api.state', $cache_item],
 				['php_youthweb_api.access_token', $cache_item],
 			]));
 
@@ -251,51 +250,26 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			]
 		);
 
+		$this->setExpectedException(
+			'Youthweb\Api\Exception\UnauthorizedException',
+			'We need an authorization code. Call this url to get one.'
+		);
+
 		$this->assertNull($client->authorize());
 	}
 
-	public function testAuthorizeWithRefeshTokenReturnsNothing()
+	public function testAuthorizeWithRefeshTokenThrowsException()
 	{
 		$http_client = $this->createMock('Youthweb\Api\HttpClientInterface');
 		$cache_provider = $this->createMock('Psr\Cache\CacheItemPoolInterface');
 		$oauth2_provider = $this->createMock('League\OAuth2\Client\Provider\AbstractProvider');
-		$cache_item_access = $this->createMock('Psr\Cache\CacheItemInterface');
-		$cache_item_refresh = $this->createMock('Psr\Cache\CacheItemInterface');
-		$access_token = $this->createMock('League\OAuth2\Client\Token\AccessToken');
+		$cache_item_state = $this->createMock('Psr\Cache\CacheItemInterface');
 
-		$cache_item_access->expects($this->once())
-			->method('isHit')
-			->willReturn(false);
-
-		$cache_item_refresh->expects($this->once())
-			->method('isHit')
-			->willReturn(true);
-
-		$cache_item_refresh->expects($this->once())
-			->method('get')
-			->willReturn('refresh_token');
-
-		$cache_provider->expects($this->exactly(2))
+		$cache_provider->expects($this->exactly(1))
 			->method('getItem')
 			->will($this->returnValueMap([
-				['php_youthweb_api.access_token', $cache_item_access],
-				['php_youthweb_api.refresh_token', $cache_item_refresh],
+				['php_youthweb_api.state', $cache_item_state],
 			]));
-
-		$access_token->expects($this->once())
-			->method('getToken')
-			->willReturn('access_token');
-		$access_token->expects($this->once())
-			->method('getRefreshToken')
-			->willReturn('refresh_token');
-		$access_token->expects($this->once())
-			->method('getExpires')
-			->willReturn(1234567890);
-
-		$oauth2_provider->expects($this->once())
-			->method('getAccessToken')
-			->with('refresh_token', ['refresh_token' => 'refresh_token'])
-			->willReturn($access_token);
 
 		$client = new Client(
 			[
@@ -308,6 +282,11 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 				'cache_provider' => $cache_provider,
 				'oauth2_provider' => $oauth2_provider,
 			]
+		);
+
+		$this->setExpectedException(
+			'Youthweb\Api\Exception\UnauthorizedException',
+			'We need an authorization code. Call this url to get one.'
 		);
 
 		$this->assertNull($client->authorize());
@@ -469,8 +448,6 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 		$http_client = $this->createMock('Youthweb\Api\HttpClientInterface');
 		$cache_provider = $this->createMock('Psr\Cache\CacheItemPoolInterface');
 		$oauth2_provider = $this->createMock('League\OAuth2\Client\Provider\AbstractProvider');
-		$cache_item_access = $this->createMock('Psr\Cache\CacheItemInterface');
-		$cache_item_refresh = $this->createMock('Psr\Cache\CacheItemInterface');
 		$cache_item_state = $this->createMock('Psr\Cache\CacheItemInterface');
 
 		$cache_item_state->expects($this->any())
@@ -481,19 +458,9 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			->method('get')
 			->willReturn('random_string');
 
-		$cache_item_access->expects($this->any())
-			->method('isHit')
-			->willReturn(false);
-
-		$cache_item_refresh->expects($this->any())
-			->method('isHit')
-			->willReturn(false);
-
-		$cache_provider->expects($this->exactly(3))
+		$cache_provider->expects($this->exactly(1))
 			->method('getItem')
 			->will($this->returnValueMap([
-				['php_youthweb_api.access_token', $cache_item_access],
-				['php_youthweb_api.refresh_token', $cache_item_refresh],
 				['php_youthweb_api.state', $cache_item_state],
 			]));
 
@@ -610,7 +577,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	/**
 	 * @test
 	 */
-	public function testParseResponseReturnsObject()
+	public function testGetWithUserTokenReturnsObject()
 	{
 		$body = $this->createMock('Psr\Http\Message\StreamInterface');
 
@@ -703,9 +670,25 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			->method('send')
 			->will($this->throwException($exception));
 
+		$auth_resource = $this->createMock('Youthweb\Api\Resource\AuthInterface');
+
+		$auth_resource->expects($this->once())
+			->method('getBearerToken')
+			->willReturn('Bearer JWT');
+
+		$resource_factory = $this->createMock('Youthweb\Api\ResourceFactoryInterface');
+
+		$resource_factory->expects($this->once())
+			->method('createResource')
+			->with('auth')
+			->willReturn($auth_resource);
+
 		$client = new Client(
 			[],
-			['http_client' => $http_client]
+			[
+				'http_client' => $http_client,
+				'resource_factory' => $resource_factory,
+			]
 		);
 
 		$client->setUserCredentials('username', 'secret');
@@ -747,9 +730,25 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			->method('send')
 			->will($this->throwException($exception));
 
+		$auth_resource = $this->createMock('Youthweb\Api\Resource\AuthInterface');
+
+		$auth_resource->expects($this->once())
+			->method('getBearerToken')
+			->willReturn('Bearer JWT');
+
+		$resource_factory = $this->createMock('Youthweb\Api\ResourceFactoryInterface');
+
+		$resource_factory->expects($this->once())
+			->method('createResource')
+			->with('auth')
+			->willReturn($auth_resource);
+
 		$client = new Client(
 			[],
-			['http_client' => $http_client]
+			[
+				'http_client' => $http_client,
+				'resource_factory' => $resource_factory,
+			]
 		);
 
 		$client->setUserCredentials('username', 'secret');

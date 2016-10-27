@@ -2,6 +2,7 @@
 
 namespace Youthweb\Api\Resource;
 
+use DateInterval;
 use Youthweb\Api\Exception\MissingCredentialsException;
 use Youthweb\Api\JsonObject;
 
@@ -20,6 +21,8 @@ final class Auth implements AuthInterface
 	 * @deprecated Since Youthweb-API 0.6
 	 *
 	 * @link http://docs.youthweb.apiary.io/#reference/auth
+	 *
+	 * @throws MissingCredentialsException If no user or client credentials are set
 	 *
 	 * @return string The Bearer token incl. type e.g. "Bearer jcx45..."
 	 */
@@ -51,6 +54,7 @@ final class Auth implements AuthInterface
 				$bearer_token = $document->get('meta.token_type') . ' ' . $document->get('meta.token');
 
 				$cache_item->set($bearer_token);
+				$cache_item->expiresAfter(new DateInterval('PT1H'));
 
 				$this->client->getCacheProvider()->saveDeferred($cache_item);
 			}

@@ -9,11 +9,13 @@ use DateTime;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Psr7\Request;
 use InvalidArgumentException;
+use League\OAuth2\Client\Token\AccessToken;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Youthweb\Api\Exception\MissingCredentialsException;
 use Youthweb\Api\Exception\UnauthorizedException;
+use Youthweb\OAuth2\Client\Provider\Youthweb as Oauth2Provider;
 
 /**
  * Simple PHP Youthweb client
@@ -157,7 +159,7 @@ final class Client implements ClientInterface
 
 		if (empty($collaborators['oauth2_provider']))
 		{
-			$collaborators['oauth2_provider'] = new \Youthweb\OAuth2\Client\Provider\Youthweb([
+			$collaborators['oauth2_provider'] = new Oauth2Provider([
 				'clientId'     => $this->client_id,
 				'clientSecret' => $this->client_secret,
 				'redirectUri'  => $this->redirect_url,
@@ -272,7 +274,62 @@ final class Client implements ClientInterface
 	}
 
 	/**
-	 * Authorize the client credentials
+	 * Check if we have a access token
+	 *
+	 * @return boolena
+	 */
+	private function isAuthorized()
+	{
+		// Check the access token
+		$access_token_item = $this->getCacheProvider()->getItem($this->buildCacheKey('access_token'));
+
+		if ( $access_token_item->isHit() )
+		{
+			return true;
+		}
+
+		// BC: Try to get a token with deprecated user token
+		try
+		{
+			 $this->getResource('auth')->getBearerToken();
+
+			 return true;
+		}
+		catch (\Exception $e) {}
+
+		// check the refresh token
+		$refresh_token_item = $this->getCacheProvider()->getItem($this->buildCacheKey('refresh_token'));
+
+		if ( ! $refresh_token_item->isHit() )
+		{
+			return false;
+		}
+
+		// refresh the access token
+		try
+		{
+			$token = $this->getOauth2Provider()->getAccessToken('refresh_token', [
+				'refresh_token' => $refresh_token_item->get(),
+			]);
+
+			$this->saveAccessToken($token);
+
+			return true;
+		}
+		catch (\Exception $e)
+		{
+			// TODO: catch specific exception and handle it
+
+			// delete access and refresh token
+			$this->getCacheProvider()->deleteItem($this->buildCacheKey('access_token'));
+			$this->getCacheProvider()->deleteItem($this->buildCacheKey('refresh_token'));
+		}
+
+		return false;
+	}
+
+	/**
+	 * Force the Authorization with client (or user) credentials
 	 *
 	 * @param array $params for authorization code:
 	 * [
@@ -288,71 +345,69 @@ final class Client implements ClientInterface
 	 */
 	public function authorize(array $params = [])
 	{
+		// FIXME: client credentials could be already setted in the oauth2_provider
 		if ( $this->client_id === null or $this->client_secret === null )
 		{
 			throw new MissingCredentialsException;
 		}
 
-		$access_token_item = $this->getCacheProvider()->getItem($this->buildCacheKey('access_token'));
+		$state_item = $this->getCacheProvider()->getItem($this->buildCacheKey('state'));
 
-		if ( $access_token_item->isHit() )
+		if ( ! isset($params['code']) )
 		{
-			return;
+			$options = [
+				'scope' => $this->scope,
+			];
+
+			// If we don't have an authorization code then get one
+			$auth_url = $this->getOauth2Provider()->getAuthorizationUrl($options);
+			$state = $this->getOauth2Provider()->getState();
+			$state_item->set($state);
+			// Save state for 10 min
+			$state_item->expiresAfter(new DateInterval('PT10M'));
+			$this->getCacheProvider()->saveDeferred($state_item);
+
+			$this->getCacheProvider()->commit();
+
+			throw UnauthorizedException::withAuthorizationUrl($auth_url, $state);
 		}
-
-		$provider = $this->getOauth2Provider();
-
-		$refresh_token_item = $this->getCacheProvider()->getItem($this->buildCacheKey('refresh_token'));
-
-		if ( ! $refresh_token_item->isHit() )
+		// Check state if present
+		elseif ( isset($params['state']) )
 		{
-			$state_item = $this->getCacheProvider()->getItem($this->buildCacheKey('state'));
-
-			if ( ! isset($params['code']) )
+			if ( ! $state_item->isHit() or $state_item->get() !== $params['state'] )
 			{
-				$options = [
-					'scope' => $this->scope,
-				];
+				$this->getCacheProvider()->deleteItem($this->buildCacheKey('state'));
 
-				// If we don't have an authorization code then get one
-				$auth_url = $provider->getAuthorizationUrl($options);
-				$state = $provider->getState();
-
-				$state_item->set($state);
-				// Save state for 10 min
-				$state_item->expiresAfter(new DateInterval('PT10M'));
-				$this->getCacheProvider()->saveDeferred($state_item);
-
-				$this->getCacheProvider()->commit();
-
-				throw UnauthorizedException::withAuthorizationUrl($auth_url, $state);
-			}
-			// Check state if present
-			elseif ( isset($params['state']) and ( ! $state_item->isHit() or $state_item->get() !== $params['state'] ) )
-			{
 				throw new \InvalidArgumentException('Invalid state');
 			}
-			else
-			{
-				// Try to get an access token (using the authorization code grant)
-				$token = $provider->getAccessToken('authorization_code', [
-					'code' => $params['code'],
-				]);
-			}
-		}
-		else
-		{
-			// TODO: Prüfen, ob Exception geworfen wird, bzw wenn refresh_token nichts gebracht hat
-			$token = $provider->getAccessToken('refresh_token', [
-				'refresh_token' => $refresh_token_item->get(),
-			]);
 		}
 
+		$this->getCacheProvider()->deleteItem($this->buildCacheKey('state'));
+
+		// Try to get an access token (using the authorization code grant)
+		$token = $this->getOauth2Provider()->getAccessToken('authorization_code', [
+			'code' => $params['code'],
+		]);
+
+		$this->saveAccessToken($token);
+	}
+
+	/**
+	 * Save a access token in cache provider
+	 *
+	 * @param AccessToken $token The access token
+	 *
+	 * @return void
+	 */
+	private function saveAccessToken(AccessToken $token)
+	{
+		$access_token_item = $this->getCacheProvider()->getItem($this->buildCacheKey('access_token'));
 		$access_token_item->set($token->getToken());
 		$date = new DateTime('@'.$token->getExpires());
 		$access_token_item->expiresAt($date);
 		$this->getCacheProvider()->saveDeferred($access_token_item);
 
+		$refresh_token_item = $this->getCacheProvider()->getItem($this->buildCacheKey('refresh_token'));
 		$refresh_token_item->set($token->getRefreshToken());
 		// refresh_token sind 30 Tage gültig
 		$refresh_token_item->expiresAfter(new DateInterval('P30D'));
@@ -499,16 +554,21 @@ final class Client implements ClientInterface
 	 */
 	private function getBearerToken()
 	{
+		if ( ! $this->isAuthorized() )
+		{
+			// Throws an UnauthorizedException with auth_url and state
+			$this->authorize();
+		}
+
 		try
 		{
-			$this->authorize();
-
 			$access_token_item = $this->getCacheProvider()->getItem($this->buildCacheKey('access_token'));
 
 			return 'Bearer ' . $access_token_item->get();
 		}
 		catch (MissingCredentialsException $e)
 		{
+			// BC: Try to get a token with deprecated user token
 			return $this->getResource('auth')->getBearerToken();
 		}
 	}
