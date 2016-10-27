@@ -38,7 +38,7 @@ class AuthTest extends \PHPUnit_Framework_TestCase
 			->method('getCacheProvider')
 			->willReturn($cache_pool);
 
-		$client->expects($this->exactly(2))
+		$client->expects($this->exactly(4))
 			->method('getUserCredential')
 			->will($this->returnValueMap([
 				['username', 'User'],

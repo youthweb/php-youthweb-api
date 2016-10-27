@@ -4,10 +4,15 @@ namespace Youthweb\Api;
 
 use Art4\JsonApiClient\Utils\Manager as JsonApiClientManager;
 use Cache\Adapter\Void\VoidCachePool;
+use DateInterval;
+use DateTime;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Psr7\Request;
+use InvalidArgumentException;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Http\Message\ResponseInterface;
+use Youthweb\Api\Exception\MissingCredentialsException;
+use Youthweb\Api\Exception\UnauthorizedException;
 
 /**
  * Simple PHP Youthweb client
@@ -24,12 +29,27 @@ final class Client implements ClientInterface
 	/**
 	 * @var string
 	 */
-	private $url = 'https://api.youthweb.net';
+	private $api_domain = 'https://api.youthweb.net';
+
+	/**
+	 * @var string
+	 */
+	private $auth_domain = 'https://youthweb.net';
+
+	/**
+	 * @var array
+	 */
+	private $scope = [];
 
 	/**
 	 * @var HttpClientInterface
 	 */
 	private $http_client;
+
+	/**
+	 * @var League\OAuth2\Client\Provider\AbstractProvider
+	 */
+	private $oauth2_client;
 
 	/**
 	 * @var CacheItemPoolInterface
@@ -53,6 +73,24 @@ final class Client implements ClientInterface
 
 	/**
 	 * @var string
+	 * @since Youthweb-API 0.6
+	 */
+	private $client_id;
+
+	/**
+	 * @var string
+	 * @since Youthweb-API 0.6
+	 */
+	private $client_secret;
+
+	/**
+	 * @var string
+	 * @since Youthweb-API 0.6
+	 */
+	private $redirect_url = '';
+
+	/**
+	 * @var string
 	 * @deprecated Since Youthweb-API 0.6
 	 */
 	private $username = '';
@@ -67,18 +105,41 @@ final class Client implements ClientInterface
 	 * Constructs the Client.
 	 *
 	 * @param array $options An array of options to set on the client.
-	 *     Options include `api_version`, `url` and `cache_namespace`.
+	 *     Options include `api_version`, `api_domain`, `auth_domain`,
+	 *     `cache_namespace`, `client_id`, `client_secret`, `redirect_url` and `scope`.
 	 * @param array $collaborators An array of collaborators that may be used to
 	 *     override this provider's default behavior. Collaborators include
-	 *     http_client` and `cache_provider`.
+	 *     http_client`, `oauth2_provider`, `cache_provider`, `request_factory`
+	 *     and `resource_factory`.
 	 */
 	public function __construct(array $options = [], array $collaborators = [])
 	{
+		$allowed_options = [
+			'api_version',
+			'api_domain',
+			'auth_domain',
+			'cache_namespace',
+			'client_id',
+			'client_secret',
+			'redirect_url',
+			'scope',
+		];
+
 		foreach ($options as $option => $value)
 		{
-			if (in_array($option, ['api_version', 'url', 'cache_namespace']))
+			if ( in_array($option, $allowed_options) )
 			{
-				$this->{$option} = (string) $value;
+				if ( $option !== 'scope' )
+				{
+					$value = strval($value);
+				}
+				// scope must be an array
+				elseif ( ! is_array($value) )
+				{
+					$value = [strval($value)];
+				}
+
+				$this->{$option} = $value;
 			}
 		}
 
@@ -92,6 +153,19 @@ final class Client implements ClientInterface
 		}
 
 		$this->setHttpClient($collaborators['http_client']);
+
+		if (empty($collaborators['oauth2_provider']))
+		{
+			$collaborators['oauth2_provider'] = new \Youthweb\OAuth2\Client\Provider\Youthweb([
+				'clientId'     => $this->client_id,
+				'clientSecret' => $this->client_secret,
+				'redirectUri'  => $this->redirect_url,
+				'apiDomain'    => $this->api_domain,
+				'domain'       => $this->auth_domain,
+			]);
+		}
+
+		$this->setOauth2Provider($collaborators['oauth2_provider']);
 
 		if (empty($collaborators['cache_provider']))
 		{
@@ -135,22 +209,26 @@ final class Client implements ClientInterface
 	/**
 	 * Returns the Url
 	 *
+	 * @deprecated Will be set to private in future. Don't use it anymore
+	 *
 	 * @return string
 	 */
 	public function getUrl()
 	{
-		return $this->url;
+		return $this->api_domain;
 	}
 
 	/**
 	 * Set the Url
+	 *
+	 * @deprecated Will be set to private in future. Use the constructor instead
 	 *
 	 * @param string $url The url
 	 * @return self
 	 */
 	public function setUrl($url)
 	{
-		$this->url = (string) $url;
+		$this->api_domain = (string) $url;
 
 		return $this;
 	}
@@ -193,18 +271,109 @@ final class Client implements ClientInterface
 	}
 
 	/**
+	 * Authorize the client credentials
+	 *
+	 * @param array $params for authorization code:
+	 * [
+	 *     'code' => 'authorization_code_from_callback_url...',
+	 *     'state' => 'state_from_callback_url_for_csrf_protection',
+	 * ]
+	 *
+	 * @throws InvalidArgumentException If a wrong state was set
+	 * @throws MissingCredentialsException If no user or client credentials are set
+	 * @throws UnauthorizedException contains the url to get an authorization code
+	 *
+	 * @return void
+	 */
+	public function authorize(array $params = [])
+	{
+		if ( $this->client_id === null or $this->client_secret === null )
+		{
+			throw new MissingCredentialsException;
+		}
+
+		$access_token_item = $this->getCacheProvider()->getItem($this->buildCacheKey('access_token'));
+
+		if ( $access_token_item->isHit() )
+		{
+			return;
+		}
+
+		$provider = $this->getOauth2Provider();
+
+		$refresh_token_item = $this->getCacheProvider()->getItem($this->buildCacheKey('refresh_token'));
+
+		if ( ! $refresh_token_item->isHit() )
+		{
+			$state_item = $this->getCacheProvider()->getItem($this->buildCacheKey('state'));
+
+			if ( ! isset($params['code']) )
+			{
+				$options = [
+					'scope' => $this->scope,
+				];
+
+				// If we don't have an authorization code then get one
+				$auth_url = $provider->getAuthorizationUrl($options);
+				$state = $provider->getState();
+
+				$state_item->set($state);
+				// Save state for 10 min
+				$state_item->expiresAfter(new DateInterval('PT10M'));
+				$this->getCacheProvider()->saveDeferred($state_item);
+
+				$this->getCacheProvider()->commit();
+
+				throw UnauthorizedException::withAuthorizationUrl($auth_url, $state);
+			}
+			// Check state if present
+			elseif ( isset($params['state']) and ( ! $state_item->isHit() or $state_item->get() !== $params['state'] ) )
+			{
+				throw new \InvalidArgumentException('Invalid state');
+			}
+			else
+			{
+				// Try to get an access token (using the authorization code grant)
+				$token = $provider->getAccessToken('authorization_code', [
+					'code' => $params['code'],
+				]);
+			}
+		}
+		else
+		{
+			// TODO: Prüfen, ob Exception geworfen wird, bzw wenn refresh_token nichts gebracht hat
+			$token = $provider->getAccessToken('refresh_token', [
+				'refresh_token' => $refresh_token_item->get(),
+			]);
+		}
+
+		$access_token_item->set($token->getToken());
+		$date = new DateTime('@'.$token->getExpires());
+		$access_token_item->expiresAt($date);
+		$this->getCacheProvider()->saveDeferred($access_token_item);
+
+		$refresh_token_item->set($token->getRefreshToken());
+		// refresh_token sind 30 Tage gültig
+		$refresh_token_item->expiresAfter(new DateInterval('P30D'));
+		$this->getCacheProvider()->saveDeferred($refresh_token_item);
+
+		$this->getCacheProvider()->commit();
+	}
+
+	/**
 	 * HTTP GETs a json $path and decodes it to an object
 	 *
 	 * @param string  $path
 	 * @param array   $data
 	 *
+	 * @throws MissingCredentialsException If no user or client credentials are set
+	 * @throws UnauthorizedException contains the url to get an authorization code
+	 *
 	 * @return array
 	 */
 	public function get($path, array $data = [])
 	{
-		$bearer_token = $this->getResource('auth')->getBearerToken();
-
-		$data['headers']['Authorization'] = strval($bearer_token);
+		$data['headers']['Authorization'] = $this->getBearerToken();
 
 		return $this->runRequest($path, 'GET', $data);
 	}
@@ -238,7 +407,7 @@ final class Client implements ClientInterface
 	/**
 	 * Set a http client
 	 *
-	 * @deprecated Since Youthweb-API 0.6
+	 * @deprecated Will be set to private in future. Use the constructor instead
 	 *
 	 * @param HttpClientInterface $client the http client
 	 * @return self
@@ -251,9 +420,32 @@ final class Client implements ClientInterface
 	}
 
 	/**
+	 * Set a oauth2 provider
+	 *
+	 * @param League\OAuth2\Client\Provider\AbstractProvider $oauth2_provider the oauth2 provider
+	 * @return self
+	 */
+	private function setOauth2Provider(\League\OAuth2\Client\Provider\AbstractProvider $oauth2_provider)
+	{
+		$this->oauth2_provider = $oauth2_provider;
+
+		return $this;
+	}
+
+	/**
+	 * Get the oauth2 provider
+	 *
+	 * @return League\OAuth2\Client\Provider\AbstractProvider the oauth2 provider
+	 */
+	private function getOauth2Provider()
+	{
+		return $this->oauth2_provider;
+	}
+
+	/**
 	 * Set a cache provider
 	 *
-	 * @deprecated Since Youthweb-API 0.6
+	 * @deprecated Will be set to private in future. Use the constructor instead
 	 *
 	 * @param Psr\Cache\CacheItemPoolInterface $cache_provider the cache provider
 	 * @return self
@@ -268,6 +460,8 @@ final class Client implements ClientInterface
 	/**
 	 * Get the cache provider
 	 *
+	 * @deprecated Will be set to private in future. Don't use it anymore
+	 *
 	 * @return Psr\Cache\CacheItemPoolInterface the cache provider
 	 */
 	public function getCacheProvider()
@@ -278,12 +472,38 @@ final class Client implements ClientInterface
 	/**
 	 * Build a cache key
 	 *
+	 * @deprecated Will be set to private in future. Don't use it anymore
+	 *
 	 * @param string $key The key
 	 * @return stirng The cache key
 	 **/
 	public function buildCacheKey($key)
 	{
 		return $this->cache_namespace . strval($key);
+	}
+
+	/**
+	 * Get the Bearer Token
+	 *
+	 * @throws MissingCredentialsException If no user or client credentials are set
+	 * @throws UnauthorizedException contains the url to get an authorization code
+	 *
+	 * @return string The Bearer token incl. type e.g. "Bearer jcx45..."
+	 */
+	private function getBearerToken()
+	{
+		try
+		{
+			$this->authorize();
+
+			$access_token_item = $this->getCacheProvider()->getItem($this->buildCacheKey('access_token'));
+
+			return 'Bearer ' . $access_token_item->get();
+		}
+		catch (MissingCredentialsException $e)
+		{
+			return $this->getResource('auth')->getBearerToken();
+		}
 	}
 
 	/**

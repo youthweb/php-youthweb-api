@@ -15,7 +15,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 		$url = 'http://test.local';
 
 		$client = new Client([
-			'url' => $url,
+			'api_domain' => $url,
 		]);
 
 		$this->assertSame($url, $client->getUrl());
@@ -174,6 +174,409 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	/**
 	 * @test
 	 */
+	public function testAuthorizeWithoutAccessTokenThrowsException()
+	{
+		$http_client = $this->createMock('Youthweb\Api\HttpClientInterface');
+		$cache_provider = $this->createMock('Psr\Cache\CacheItemPoolInterface');
+		$oauth2_provider = $this->createMock('League\OAuth2\Client\Provider\AbstractProvider');
+		$cache_item = $this->createMock('Psr\Cache\CacheItemInterface');
+
+		$oauth2_provider->expects($this->once())
+			->method('getAuthorizationUrl')
+			->with(['scope' => ['user:email']])
+			->willReturn('https://example.org/url_for_auth_code');
+
+		$cache_item->expects($this->any())
+			->method('isHit')
+			->willReturn(false);
+
+		$cache_provider->expects($this->exactly(3))
+			->method('getItem')
+			->will($this->returnValueMap([
+				['php_youthweb_api.access_token', $cache_item],
+				['php_youthweb_api.refresh_token', $cache_item],
+				['php_youthweb_api.state', $cache_item],
+			]));
+
+		$client = new Client(
+			[
+				'client_id'     => 'client_id',
+				'client_secret' => 'client_secret',
+				'redirect_url'  => 'https://example.org/callback',
+				'scope'         => 'user:email',
+			],
+			[
+				'http_client' => $http_client,
+				'cache_provider' => $cache_provider,
+				'oauth2_provider' => $oauth2_provider,
+			]
+		);
+
+		$this->setExpectedException(
+			'Youthweb\Api\Exception\UnauthorizedException',
+			'We need an authorization code. Call this url to get one.'
+		);
+
+		$client->authorize();
+	}
+
+	/**
+	 * @test
+	 */
+	public function testAuthorizeWithAccessReturnsNothing()
+	{
+		$http_client = $this->createMock('Youthweb\Api\HttpClientInterface');
+		$cache_provider = $this->createMock('Psr\Cache\CacheItemPoolInterface');
+		$cache_item = $this->createMock('Psr\Cache\CacheItemInterface');
+
+		$cache_item->expects($this->any())
+			->method('isHit')
+			->willReturn(true);
+
+		$cache_provider->expects($this->exactly(1))
+			->method('getItem')
+			->will($this->returnValueMap([
+				['php_youthweb_api.access_token', $cache_item],
+			]));
+
+		$client = new Client(
+			[
+				'client_id'     => 'client_id',
+				'client_secret' => 'client_secret',
+				'redirect_url'  => 'https://example.org/callback',
+			],
+			[
+				'http_client' => $http_client,
+				'cache_provider' => $cache_provider,
+			]
+		);
+
+		$this->assertNull($client->authorize());
+	}
+
+	public function testAuthorizeWithRefeshTokenReturnsNothing()
+	{
+		$http_client = $this->createMock('Youthweb\Api\HttpClientInterface');
+		$cache_provider = $this->createMock('Psr\Cache\CacheItemPoolInterface');
+		$oauth2_provider = $this->createMock('League\OAuth2\Client\Provider\AbstractProvider');
+		$cache_item_access = $this->createMock('Psr\Cache\CacheItemInterface');
+		$cache_item_refresh = $this->createMock('Psr\Cache\CacheItemInterface');
+		$access_token = $this->createMock('League\OAuth2\Client\Token\AccessToken');
+
+		$cache_item_access->expects($this->once())
+			->method('isHit')
+			->willReturn(false);
+
+		$cache_item_refresh->expects($this->once())
+			->method('isHit')
+			->willReturn(true);
+
+		$cache_item_refresh->expects($this->once())
+			->method('get')
+			->willReturn('refresh_token');
+
+		$cache_provider->expects($this->exactly(2))
+			->method('getItem')
+			->will($this->returnValueMap([
+				['php_youthweb_api.access_token', $cache_item_access],
+				['php_youthweb_api.refresh_token', $cache_item_refresh],
+			]));
+
+		$access_token->expects($this->once())
+			->method('getToken')
+			->willReturn('access_token');
+		$access_token->expects($this->once())
+			->method('getRefreshToken')
+			->willReturn('refresh_token');
+		$access_token->expects($this->once())
+			->method('getExpires')
+			->willReturn(1234567890);
+
+		$oauth2_provider->expects($this->once())
+			->method('getAccessToken')
+			->with('refresh_token', ['refresh_token' => 'refresh_token'])
+			->willReturn($access_token);
+
+		$client = new Client(
+			[
+				'client_id'     => 'client_id',
+				'client_secret' => 'client_secret',
+				'redirect_url'  => 'https://example.org/callback',
+			],
+			[
+				'http_client' => $http_client,
+				'cache_provider' => $cache_provider,
+				'oauth2_provider' => $oauth2_provider,
+			]
+		);
+
+		$this->assertNull($client->authorize());
+	}
+
+	/**
+	 * @test
+	 */
+	public function testAuthorizeWithAuthCodeSavesToken()
+	{
+		$http_client = $this->createMock('Youthweb\Api\HttpClientInterface');
+		$cache_provider = $this->createMock('Psr\Cache\CacheItemPoolInterface');
+		$oauth2_provider = $this->createMock('League\OAuth2\Client\Provider\AbstractProvider');
+		$cache_item_access = $this->createMock('Psr\Cache\CacheItemInterface');
+		$cache_item_refresh = $this->createMock('Psr\Cache\CacheItemInterface');
+		$cache_item_state = $this->createMock('Psr\Cache\CacheItemInterface');
+		$access_token = $this->createMock('League\OAuth2\Client\Token\AccessToken');
+
+		$access_token->expects($this->once())
+			->method('getToken')
+			->willReturn('access_token');
+		$access_token->expects($this->once())
+			->method('getRefreshToken')
+			->willReturn('refresh_token');
+		$access_token->expects($this->once())
+			->method('getExpires')
+			->willReturn(1234567890);
+
+		$cache_item_state->expects($this->any())
+			->method('isHit')
+			->willReturn(false);
+
+		$cache_item_access->expects($this->any())
+			->method('isHit')
+			->willReturn(false);
+
+		$cache_item_access->expects($this->once())
+			->method('set')
+			->willReturn('access_token');
+
+		$cache_item_refresh->expects($this->any())
+			->method('isHit')
+			->willReturn(false);
+
+		$cache_item_refresh->expects($this->once())
+			->method('set')
+			->willReturn('refresh_token');
+
+		$oauth2_provider->expects($this->once())
+			->method('getAccessToken')
+			->with('authorization_code', ['code' => 'auth_code'])
+			->willReturn($access_token);
+
+		$cache_provider->expects($this->exactly(3))
+			->method('getItem')
+			->will($this->returnValueMap([
+				['php_youthweb_api.access_token', $cache_item_access],
+				['php_youthweb_api.refresh_token', $cache_item_refresh],
+				['php_youthweb_api.state', $cache_item_state],
+			]));
+
+		$client = new Client(
+			[
+				'client_id'     => 'client_id',
+				'client_secret' => 'client_secret',
+				'redirect_url'  => 'https://example.org/callback',
+			],
+			[
+				'http_client' => $http_client,
+				'cache_provider' => $cache_provider,
+				'oauth2_provider' => $oauth2_provider,
+			]
+		);
+
+		$client->authorize(['code' => 'auth_code']);
+	}
+
+	/**
+	 * @test
+	 */
+	public function testAuthorizeWithAuthCodeAndStateSavesToken()
+	{
+		$http_client = $this->createMock('Youthweb\Api\HttpClientInterface');
+		$cache_provider = $this->createMock('Psr\Cache\CacheItemPoolInterface');
+		$oauth2_provider = $this->createMock('League\OAuth2\Client\Provider\AbstractProvider');
+		$cache_item_access = $this->createMock('Psr\Cache\CacheItemInterface');
+		$cache_item_refresh = $this->createMock('Psr\Cache\CacheItemInterface');
+		$cache_item_state = $this->createMock('Psr\Cache\CacheItemInterface');
+		$access_token = $this->createMock('League\OAuth2\Client\Token\AccessToken');
+
+		$access_token->expects($this->once())
+			->method('getToken')
+			->willReturn('access_token');
+		$access_token->expects($this->once())
+			->method('getRefreshToken')
+			->willReturn('refresh_token');
+		$access_token->expects($this->once())
+			->method('getExpires')
+			->willReturn(1234567890);
+
+		$cache_item_state->expects($this->any())
+			->method('isHit')
+			->willReturn(true);
+
+		$cache_item_state->expects($this->once())
+			->method('get')
+			->willReturn('random_string');
+
+		$cache_item_access->expects($this->any())
+			->method('isHit')
+			->willReturn(false);
+
+		$cache_item_access->expects($this->once())
+			->method('set')
+			->willReturn('access_token');
+
+		$cache_item_refresh->expects($this->any())
+			->method('isHit')
+			->willReturn(false);
+
+		$cache_item_refresh->expects($this->once())
+			->method('set')
+			->willReturn('refresh_token');
+
+		$oauth2_provider->expects($this->once())
+			->method('getAccessToken')
+			->with('authorization_code', ['code' => 'auth_code'])
+			->willReturn($access_token);
+
+		$cache_provider->expects($this->exactly(3))
+			->method('getItem')
+			->will($this->returnValueMap([
+				['php_youthweb_api.access_token', $cache_item_access],
+				['php_youthweb_api.refresh_token', $cache_item_refresh],
+				['php_youthweb_api.state', $cache_item_state],
+			]));
+
+		$client = new Client(
+			[
+				'client_id'     => 'client_id',
+				'client_secret' => 'client_secret',
+				'redirect_url'  => 'https://example.org/callback',
+			],
+			[
+				'http_client' => $http_client,
+				'cache_provider' => $cache_provider,
+				'oauth2_provider' => $oauth2_provider,
+			]
+		);
+
+		$client->authorize(['code' => 'auth_code', 'state' => 'random_string']);
+	}
+
+	/**
+	 * @test
+	 */
+	public function testAuthorizeWithAuthCodeAndWrongStateThrowsException()
+	{
+		$http_client = $this->createMock('Youthweb\Api\HttpClientInterface');
+		$cache_provider = $this->createMock('Psr\Cache\CacheItemPoolInterface');
+		$oauth2_provider = $this->createMock('League\OAuth2\Client\Provider\AbstractProvider');
+		$cache_item_access = $this->createMock('Psr\Cache\CacheItemInterface');
+		$cache_item_refresh = $this->createMock('Psr\Cache\CacheItemInterface');
+		$cache_item_state = $this->createMock('Psr\Cache\CacheItemInterface');
+
+		$cache_item_state->expects($this->any())
+			->method('isHit')
+			->willReturn(true);
+
+		$cache_item_state->expects($this->once())
+			->method('get')
+			->willReturn('random_string');
+
+		$cache_item_access->expects($this->any())
+			->method('isHit')
+			->willReturn(false);
+
+		$cache_item_refresh->expects($this->any())
+			->method('isHit')
+			->willReturn(false);
+
+		$cache_provider->expects($this->exactly(3))
+			->method('getItem')
+			->will($this->returnValueMap([
+				['php_youthweb_api.access_token', $cache_item_access],
+				['php_youthweb_api.refresh_token', $cache_item_refresh],
+				['php_youthweb_api.state', $cache_item_state],
+			]));
+
+		$client = new Client(
+			[
+				'client_id'     => 'client_id',
+				'client_secret' => 'client_secret',
+				'redirect_url'  => 'https://example.org/callback',
+			],
+			[
+				'http_client' => $http_client,
+				'cache_provider' => $cache_provider,
+				'oauth2_provider' => $oauth2_provider,
+			]
+		);
+
+		$this->setExpectedException(
+			'InvalidArgumentException',
+			'Invalid state'
+		);
+
+		$client->authorize(['code' => 'auth_code', 'state' => 'wrong_state']);
+	}
+
+	/**
+	 * @test
+	 */
+	public function testAuthrizedGetRequestReturnsObject()
+	{
+		$cache_provider = $this->createMock('Psr\Cache\CacheItemPoolInterface');
+		$oauth2_provider = $this->createMock('League\OAuth2\Client\Provider\AbstractProvider');
+		$cache_item_access = $this->createMock('Psr\Cache\CacheItemInterface');
+		$body = $this->createMock('Psr\Http\Message\StreamInterface');
+
+		$cache_item_access->expects($this->once())
+			->method('isHit')
+			->willReturn(true);
+
+		$cache_item_access->expects($this->once())
+			->method('get')
+			->willReturn('access_token');
+
+		$cache_provider->expects($this->exactly(2))
+			->method('getItem')
+			->will($this->returnValueMap([
+				['php_youthweb_api.access_token', $cache_item_access],
+			]));
+
+		$body->expects($this->once())
+			->method('getContents')
+			->willReturn('{"meta":{"this":"that"}}');
+
+		$response = $this->createMock('GuzzleHttp\Psr7\Response');
+
+		$response->expects($this->once())
+			->method('getBody')
+			->willReturn($body);
+
+		$http_client = $this->createMock('Youthweb\Api\HttpClientInterface');
+
+		$http_client->expects($this->once())
+			->method('send')
+			->willReturn($response);
+
+		$client = new Client(
+			[
+				'client_id'     => 'client_id',
+				'client_secret' => 'client_secret',
+				'redirect_url'  => 'https://example.org/callback',
+			],
+			[
+				'http_client' => $http_client,
+				'cache_provider' => $cache_provider,
+				'oauth2_provider' => $oauth2_provider,
+			]
+		);
+
+		$this->assertInstanceOf('\Art4\JsonApiClient\Document', $client->get('foobar'));
+	}
+
+	/**
+	 * @test
+	 */
 	public function testGetUnauthorizedReturnsObject()
 	{
 		$body = $this->createMock('Psr\Http\Message\StreamInterface');
@@ -254,6 +657,26 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	/**
 	 * @test
 	 */
+	public function testGetRequestWithoutCredentialsThrowsException()
+	{
+		$http_client = $this->createMock('Youthweb\Api\HttpClientInterface');
+
+		$client = new Client(
+			[],
+			['http_client' => $http_client]
+		);
+
+		$this->setExpectedException(
+			'Youthweb\Api\Exception\MissingCredentialsException',
+			''
+		);
+
+		$client->get('foobar');
+	}
+
+	/**
+	 * @test
+	 */
 	public function testHandleClientExceptionWithResponseException()
 	{
 		$body = $this->createMock('Psr\Http\Message\StreamInterface');
@@ -284,6 +707,8 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			[],
 			['http_client' => $http_client]
 		);
+
+		$client->setUserCredentials('username', 'secret');
 
 		$this->setExpectedException(
 			'Exception',
@@ -326,6 +751,8 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			[],
 			['http_client' => $http_client]
 		);
+
+		$client->setUserCredentials('username', 'secret');
 
 		$this->setExpectedException(
 			'Exception',
