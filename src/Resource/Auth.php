@@ -33,10 +33,7 @@ final class Auth implements AuthInterface
 			throw new MissingCredentialsException;
 		}
 
-		$cache_item_key = $this->client->buildCacheKey('bearer_token');
-
-		$cache_item = $this->client->getCacheProvider()
-			->getItem($cache_item_key);
+		$cache_item = $this->client->getCacheItem('bearer_token');
 
 		if ( ! $cache_item->isHit() )
 		{
@@ -56,7 +53,7 @@ final class Auth implements AuthInterface
 				$cache_item->set($bearer_token);
 				$cache_item->expiresAfter(new DateInterval('PT1H'));
 
-				$this->client->getCacheProvider()->saveDeferred($cache_item);
+				$this->client->saveCacheItem($cache_item);
 			}
 		}
 

@@ -7,6 +7,7 @@ use Cache\Adapter\Void\VoidCachePool;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Psr7\Request;
 use Psr\Cache\CacheItemPoolInterface;
+use Psr\Cache\CacheItemInterface;
 use Psr\Http\Message\ResponseInterface;
 
 /**
@@ -26,6 +27,33 @@ interface ClientInterface
 	 *     and `resource_factory`.
 	 */
 	public function __construct(array $options = [], array $collaborators = []);
+
+	/**
+	 * Get a cache item
+	 *
+	 * @param string $key The item key
+	 *
+	 * @return Psr\Cache\CacheItemInterface the cache item
+	 */
+	public function getCacheItem($key);
+
+	/**
+	 * Save a cache item
+	 *
+	 * @param Psr\Cache\CacheItemInterface $item The item
+	 *
+	 * @return void
+	 */
+	public function saveCacheItem(CacheItemInterface $item);
+
+	/**
+	 * Delete a cache item
+	 *
+	 * @param Psr\Cache\CacheItemInterface $item The item
+	 *
+	 * @return void
+	 */
+	public function deleteCacheItem(CacheItemInterface $item);
 
 	/**
 	 * @param string $name

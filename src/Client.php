@@ -322,7 +322,7 @@ final class Client implements ClientInterface
 	private function isAuthorized()
 	{
 		// Check the access token
-		$access_token_item = $this->getCacheProvider()->getItem($this->buildCacheKey('access_token'));
+		$access_token_item = $this->getCacheItem('access_token');
 
 		if ( $access_token_item->isHit() )
 		{
@@ -339,7 +339,7 @@ final class Client implements ClientInterface
 		catch (\Exception $e) {}
 
 		// check the refresh token
-		$refresh_token_item = $this->getCacheProvider()->getItem($this->buildCacheKey('refresh_token'));
+		$refresh_token_item = $this->getCacheItem('refresh_token');
 
 		if ( ! $refresh_token_item->isHit() )
 		{
@@ -362,8 +362,8 @@ final class Client implements ClientInterface
 			// TODO: catch specific exception and handle it
 
 			// delete access and refresh token
-			$this->getCacheProvider()->deleteItem($this->buildCacheKey('access_token'));
-			$this->getCacheProvider()->deleteItem($this->buildCacheKey('refresh_token'));
+			$this->deleteCacheItem($access_token_item);
+			$this->deleteCacheItem($refresh_token_item);
 		}
 
 		return false;
@@ -392,7 +392,7 @@ final class Client implements ClientInterface
 			throw new MissingCredentialsException;
 		}
 
-		$state_item = $this->getCacheProvider()->getItem($this->buildCacheKey('state'));
+		$state_item = $this->getCacheItem('state');
 
 		if ( ! isset($params['code']) )
 		{
@@ -406,9 +406,7 @@ final class Client implements ClientInterface
 			$state_item->set($state);
 			// Save state for 10 min
 			$state_item->expiresAfter(new DateInterval('PT10M'));
-			$this->getCacheProvider()->saveDeferred($state_item);
-
-			$this->getCacheProvider()->commit();
+			$this->saveCacheItem($state_item);
 
 			throw UnauthorizedException::withAuthorizationUrl($auth_url, $state);
 		}
@@ -417,13 +415,13 @@ final class Client implements ClientInterface
 		{
 			if ( ! $state_item->isHit() or $state_item->get() !== $params['state'] )
 			{
-				$this->getCacheProvider()->deleteItem($this->buildCacheKey('state'));
+				$this->deleteCacheItem($state_item);
 
 				throw new \InvalidArgumentException('Invalid state');
 			}
 		}
 
-		$this->getCacheProvider()->deleteItem($this->buildCacheKey('state'));
+		$this->deleteCacheItem($state_item);
 
 		// Try to get an access token (using the authorization code grant)
 		$token = $this->getOauth2Provider()->getAccessToken('authorization_code', [
@@ -442,19 +440,17 @@ final class Client implements ClientInterface
 	 */
 	private function saveAccessToken(AccessToken $token)
 	{
-		$access_token_item = $this->getCacheProvider()->getItem($this->buildCacheKey('access_token'));
+		$access_token_item = $this->getCacheItem('access_token');
 		$access_token_item->set($token->getToken());
 		$date = new DateTime('@'.$token->getExpires());
 		$access_token_item->expiresAt($date);
-		$this->getCacheProvider()->saveDeferred($access_token_item);
+		$this->saveCacheItem($access_token_item);
 
-		$refresh_token_item = $this->getCacheProvider()->getItem($this->buildCacheKey('refresh_token'));
+		$refresh_token_item = $this->getCacheItem('refresh_token');
 		$refresh_token_item->set($token->getRefreshToken());
 		// refresh_token sind 30 Tage gültig
 		$refresh_token_item->expiresAfter(new DateInterval('P30D'));
-		$this->getCacheProvider()->saveDeferred($refresh_token_item);
-
-		$this->getCacheProvider()->commit();
+		$this->saveCacheItem($refresh_token_item);
 	}
 
 	/**
@@ -603,7 +599,7 @@ final class Client implements ClientInterface
 
 		try
 		{
-			$access_token_item = $this->getCacheProvider()->getItem($this->buildCacheKey('access_token'));
+			$access_token_item = $this->getCacheItem('access_token');
 
 			return 'Bearer ' . $access_token_item->get();
 		}

@@ -45,22 +45,11 @@ class AuthTest extends \PHPUnit_Framework_TestCase
 			->method('get')
 			->willReturn('Bearer JWT');
 
-		$cache_pool = $this->createMock('Psr\Cache\CacheItemPoolInterface');
-
-		$cache_pool->expects($this->once())
-			->method('getItem')
-			->with('cache_item_key')
-			->willReturn($cache_item);
-
 		$client = $this->createMock('Youthweb\Api\ClientInterface');
 
-		$client->expects($this->once())
-			->method('buildCacheKey')
-			->willReturn('cache_item_key');
-
-		$client->expects($this->exactly(2))
-			->method('getCacheProvider')
-			->willReturn($cache_pool);
+		$client->expects($this->exactly(1))
+			->method('getCacheItem')
+			->willReturn($cache_item);
 
 		$client->expects($this->exactly(4))
 			->method('getUserCredential')
