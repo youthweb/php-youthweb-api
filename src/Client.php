@@ -10,6 +10,7 @@ use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Psr7\Request;
 use InvalidArgumentException;
 use League\OAuth2\Client\Token\AccessToken;
+use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -207,6 +208,46 @@ final class Client implements ClientInterface
 		}
 
 		return $this->resources[$name];
+	}
+
+	/**
+	 * Get a cache item
+	 *
+	 * @param string $key The item key
+	 *
+	 * @return Psr\Cache\CacheItemInterface the cache item
+	 */
+	public function getCacheItem($key)
+	{
+		$key = $this->buildCacheKey($key);
+
+		return $this->getCacheProvider()->getItem($key);
+	}
+
+	/**
+	 * Save a cache item
+	 *
+	 * @param Psr\Cache\CacheItemInterface $item The item
+	 *
+	 * @return void
+	 */
+	public function saveCacheItem(CacheItemInterface $item)
+	{
+		$this->getCacheProvider()->saveDeferred($item);
+
+		$this->getCacheProvider()->commit();
+	}
+
+	/**
+	 * Delete a cache item
+	 *
+	 * @param Psr\Cache\CacheItemInterface $item The item
+	 *
+	 * @return void
+	 */
+	public function deleteCacheItem(CacheItemInterface $item)
+	{
+		$this->getCacheProvider()->deleteItem($item->getKey());
 	}
 
 	/**

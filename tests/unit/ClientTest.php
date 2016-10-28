@@ -959,4 +959,79 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 
 		$client->getUnauthorized('foobar');
 	}
+
+	/**
+	 * @test
+	 */
+	public function testGetCacheItemReturnsCacheItem()
+	{
+		$cache_provider = $this->createMock('Psr\Cache\CacheItemPoolInterface');
+		$cache_item = $this->createMock('Psr\Cache\CacheItemInterface');
+
+		$cache_provider->expects($this->exactly(1))
+			->method('getItem')
+			->will($this->returnValueMap([
+				['php_youthweb_api.test_item', $cache_item],
+			]));
+
+		$client = $this->createClient(
+			[],
+			[
+				'cache_provider' => $cache_provider,
+			]
+		);
+
+		$this->assertSame($cache_item, $client->getCacheItem('test_item'));
+	}
+
+	/**
+	 * @test
+	 */
+	public function testSaveCacheItem()
+	{
+		$cache_provider = $this->createMock('Psr\Cache\CacheItemPoolInterface');
+		$cache_item = $this->createMock('Psr\Cache\CacheItemInterface');
+
+		$cache_provider->expects($this->exactly(1))
+			->method('saveDeferred')
+			->with($cache_item);
+
+		$cache_provider->expects($this->exactly(2))
+			->method('commit');
+
+		$client = $this->createClient(
+			[],
+			[
+				'cache_provider' => $cache_provider,
+			]
+		);
+
+		$client->saveCacheItem($cache_item);
+	}
+
+	/**
+	 * @test
+	 */
+	public function testDeleteCacheItem()
+	{
+		$cache_provider = $this->createMock('Psr\Cache\CacheItemPoolInterface');
+		$cache_item = $this->createMock('Psr\Cache\CacheItemInterface');
+
+		$cache_item->expects($this->exactly(1))
+			->method('getKey')
+			->willReturn('php_youthweb_api.test_item');
+
+		$cache_provider->expects($this->exactly(1))
+			->method('deleteItem')
+			->with('php_youthweb_api.test_item');
+
+		$client = $this->createClient(
+			[],
+			[
+				'cache_provider' => $cache_provider,
+			]
+		);
+
+		$client->deleteCacheItem($cache_item);
+	}
 }
