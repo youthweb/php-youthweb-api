@@ -9,6 +9,30 @@ class AuthTest extends \PHPUnit_Framework_TestCase
 	/**
 	 * @test
 	 */
+	public function testGetBearerTokenWithoutCredentialsThrowsException()
+	{
+		$client = $this->createMock('Youthweb\Api\ClientInterface');
+
+		$client->expects($this->exactly(1))
+			->method('getUserCredential')
+			->will($this->returnValueMap([
+				['username', ''],
+				['token_secret', ''],
+			]));
+
+		$auth = new Auth($client);
+
+		$this->setExpectedException(
+			'Youthweb\Api\Exception\MissingCredentialsException',
+			''
+		);
+
+		$auth->getBearerToken();
+	}
+
+	/**
+	 * @test
+	 */
 	public function testGetBearerTokenReturnsToken()
 	{
 		$cache_item = $this->createMock('Psr\Cache\CacheItemInterface');
