@@ -329,6 +329,8 @@ final class Client implements ClientInterface
 			return true;
 		}
 
+		$this->deleteCacheItem($access_token_item);
+
 		// BC: Try to get a token with deprecated user token
 		try
 		{
@@ -337,34 +339,6 @@ final class Client implements ClientInterface
 			 return true;
 		}
 		catch (\Exception $e) {}
-
-		// check the refresh token
-		$refresh_token_item = $this->getCacheItem('refresh_token');
-
-		if ( ! $refresh_token_item->isHit() )
-		{
-			return false;
-		}
-
-		// refresh the access token
-		try
-		{
-			$token = $this->getOauth2Provider()->getAccessToken('refresh_token', [
-				'refresh_token' => $refresh_token_item->get(),
-			]);
-
-			$this->saveAccessToken($token);
-
-			return true;
-		}
-		catch (\Exception $e)
-		{
-			// TODO: catch specific exception and handle it
-
-			// delete access and refresh token
-			$this->deleteCacheItem($access_token_item);
-			$this->deleteCacheItem($refresh_token_item);
-		}
 
 		return false;
 	}
@@ -445,12 +419,6 @@ final class Client implements ClientInterface
 		$date = new DateTime('@'.$token->getExpires());
 		$access_token_item->expiresAt($date);
 		$this->saveCacheItem($access_token_item);
-
-		$refresh_token_item = $this->getCacheItem('refresh_token');
-		$refresh_token_item->set($token->getRefreshToken());
-		// refresh_token sind 30 Tage gültig
-		$refresh_token_item->expiresAfter(new DateInterval('P30D'));
-		$this->saveCacheItem($refresh_token_item);
 	}
 
 	/**
