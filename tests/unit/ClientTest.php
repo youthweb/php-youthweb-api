@@ -597,6 +597,45 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	/**
 	 * @test
 	 */
+	public function testPostUnauthorizedReturnsObject()
+	{
+		$request_factory = $this->createMock('Youthweb\Api\RequestFactoryInterface');
+		$request = $this->createMock('Psr\Http\Message\RequestInterface');
+		$body = $this->createMock('Psr\Http\Message\StreamInterface');
+		$response = $this->createMock('Psr\Http\Message\ResponseInterface');
+		$http_client = $this->createMock('Youthweb\Api\HttpClientInterface');
+
+		$request_factory->expects($this->once())
+			->method('createRequest')
+			->willReturn($request);
+
+		$body->expects($this->once())
+			->method('getContents')
+			->willReturn('{"meta":{"this":"that"}}');
+
+		$response->expects($this->once())
+			->method('getBody')
+			->willReturn($body);
+
+		$http_client->expects($this->once())
+			->method('send')
+			->with($request)
+			->willReturn($response);
+
+		$client = $this->createClient(
+			[],
+			[
+				'http_client' => $http_client,
+				'request_factory' => $request_factory,
+			]
+		);
+
+		$this->assertInstanceOf('\Art4\JsonApiClient\Document', $client->postUnauthorized('foobar', ['body' => '{}']));
+	}
+
+	/**
+	 * @test
+	 */
 	public function testGetWithUserTokenReturnsObject()
 	{
 		$cache_provider = $this->createMock('Psr\Cache\CacheItemPoolInterface');
