@@ -328,16 +328,12 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 		$cache_provider = $this->createMock('Psr\Cache\CacheItemPoolInterface');
 		$oauth2_provider = $this->createMock('League\OAuth2\Client\Provider\AbstractProvider');
 		$cache_item_access = $this->createMock('Psr\Cache\CacheItemInterface');
-		$cache_item_refresh = $this->createMock('Psr\Cache\CacheItemInterface');
 		$cache_item_state = $this->createMock('Psr\Cache\CacheItemInterface');
 		$access_token = $this->createMock('League\OAuth2\Client\Token\AccessToken');
 
 		$access_token->expects($this->once())
 			->method('getToken')
 			->willReturn('access_token');
-		$access_token->expects($this->once())
-			->method('getRefreshToken')
-			->willReturn('refresh_token');
 		$access_token->expects($this->once())
 			->method('getExpires')
 			->willReturn(1234567890);
@@ -354,24 +350,15 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			->method('set')
 			->willReturn('access_token');
 
-		$cache_item_refresh->expects($this->any())
-			->method('isHit')
-			->willReturn(false);
-
-		$cache_item_refresh->expects($this->once())
-			->method('set')
-			->willReturn('refresh_token');
-
 		$oauth2_provider->expects($this->once())
 			->method('getAccessToken')
 			->with('authorization_code', ['code' => 'auth_code'])
 			->willReturn($access_token);
 
-		$cache_provider->expects($this->exactly(3))
+		$cache_provider->expects($this->exactly(2))
 			->method('getItem')
 			->will($this->returnValueMap([
 				['php_youthweb_api.access_token', $cache_item_access],
-				['php_youthweb_api.refresh_token', $cache_item_refresh],
 				['php_youthweb_api.state', $cache_item_state],
 			]));
 
@@ -400,16 +387,12 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 		$cache_provider = $this->createMock('Psr\Cache\CacheItemPoolInterface');
 		$oauth2_provider = $this->createMock('League\OAuth2\Client\Provider\AbstractProvider');
 		$cache_item_access = $this->createMock('Psr\Cache\CacheItemInterface');
-		$cache_item_refresh = $this->createMock('Psr\Cache\CacheItemInterface');
 		$cache_item_state = $this->createMock('Psr\Cache\CacheItemInterface');
 		$access_token = $this->createMock('League\OAuth2\Client\Token\AccessToken');
 
 		$access_token->expects($this->once())
 			->method('getToken')
 			->willReturn('access_token');
-		$access_token->expects($this->once())
-			->method('getRefreshToken')
-			->willReturn('refresh_token');
 		$access_token->expects($this->once())
 			->method('getExpires')
 			->willReturn(1234567890);
@@ -430,24 +413,15 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			->method('set')
 			->willReturn('access_token');
 
-		$cache_item_refresh->expects($this->any())
-			->method('isHit')
-			->willReturn(false);
-
-		$cache_item_refresh->expects($this->once())
-			->method('set')
-			->willReturn('refresh_token');
-
 		$oauth2_provider->expects($this->once())
 			->method('getAccessToken')
 			->with('authorization_code', ['code' => 'auth_code'])
 			->willReturn($access_token);
 
-		$cache_provider->expects($this->exactly(3))
+		$cache_provider->expects($this->exactly(2))
 			->method('getItem')
 			->will($this->returnValueMap([
 				['php_youthweb_api.access_token', $cache_item_access],
-				['php_youthweb_api.refresh_token', $cache_item_refresh],
 				['php_youthweb_api.state', $cache_item_state],
 			]));
 
@@ -704,9 +678,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	{
 		$http_client = $this->createMock('Youthweb\Api\HttpClientInterface');
 		$cache_provider = $this->createMock('Psr\Cache\CacheItemPoolInterface');
-		$cache_item_state = $this->createMock('Psr\Cache\CacheItemInterface');
 		$cache_item_access = $this->createMock('Psr\Cache\CacheItemInterface');
-		$cache_item_refresh = $this->createMock('Psr\Cache\CacheItemInterface');
 		$resource_factory = $this->createMock('Youthweb\Api\ResourceFactoryInterface');
 		$auth_resource = $this->createMock('Youthweb\Api\Resource\AuthInterface');
 
@@ -719,24 +691,14 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			->with('auth')
 			->willReturn($auth_resource);
 
-		$cache_item_state->expects($this->any())
-			->method('isHit')
-			->willReturn(false);
-
 		$cache_item_access->expects($this->once())
 			->method('isHit')
 			->willReturn(false);
 
-		$cache_item_refresh->expects($this->once())
-			->method('isHit')
-			->willReturn(false);
-
-		$cache_provider->expects($this->exactly(2))
+		$cache_provider->expects($this->exactly(1))
 			->method('getItem')
 			->will($this->returnValueMap([
-				['php_youthweb_api.state', $cache_item_state],
 				['php_youthweb_api.access_token', $cache_item_access],
-				['php_youthweb_api.refresh_token', $cache_item_refresh],
 			]));
 
 		$client = $this->createClient(
