@@ -721,7 +721,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 		$resource_factory = $this->createMock('Youthweb\Api\ResourceFactoryInterface');
 		$auth_resource = $this->createMock('Youthweb\Api\Resource\AuthInterface');
 
-		$auth_resource->expects($this->once())
+		$auth_resource->expects($this->exactly(2))
 			->method('getBearerToken')
 			->will($this->throwException(new \Youthweb\Api\Exception\MissingCredentialsException));
 

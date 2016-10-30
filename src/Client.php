@@ -559,24 +559,23 @@ final class Client implements ClientInterface
 	 */
 	private function getBearerToken()
 	{
-		if ( ! $this->isAuthorized() )
+		if ( $this->isAuthorized() )
+		{
+			$access_token_item = $this->getCacheItem('access_token');
+
+			return $access_token_item->get();
+		}
+
+		try
 		{
 			// Throws an UnauthorizedException with auth_url and state
 			$this->authorize();
 		}
-
-		$access_token_item = $this->getCacheItem('access_token');
-
-		if ( ! $access_token_item->isHit() )
+		catch (MissingCredentialsException $e)
 		{
 			// BC: Try to get a token with deprecated user token
 			return $this->getResource('auth')->getBearerToken();
 		}
-
-		throw new UnauthorizedException::withAuthorizationUrl(
-			$this->getOauth2Provider()->getAuthorizationUrl(['scope' => $this->scope]),
-			$this->getOauth2Provider()->getState(),
-		);
 	}
 
 	/**
