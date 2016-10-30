@@ -317,9 +317,9 @@ final class Client implements ClientInterface
 	/**
 	 * Check if we have a access token
 	 *
-	 * @return boolena
+	 * @return boolean
 	 */
-	private function isAuthorized()
+	public function isAuthorized()
 	{
 		// Check the access token
 		$access_token_item = $this->getCacheItem('access_token');

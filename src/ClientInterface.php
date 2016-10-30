@@ -105,6 +105,13 @@ interface ClientInterface
 	public function getUserCredential($key);
 
 	/**
+	 * Check if we have a access token
+	 *
+	 * @return boolean
+	 */
+	public function isAuthorized();
+
+	/**
 	 * Authorize the client credentials
 	 *
 	 * @param array $params for authorization code:
