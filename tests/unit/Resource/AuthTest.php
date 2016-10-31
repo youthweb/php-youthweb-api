@@ -23,7 +23,7 @@ class AuthTest extends \PHPUnit_Framework_TestCase
 		$auth = new Auth($client);
 
 		$this->setExpectedException(
-			'Youthweb\Api\Exception\MissingCredentialsException',
+			'InvalidArgumentException',
 			''
 		);
 

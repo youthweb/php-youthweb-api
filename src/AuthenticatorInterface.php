@@ -23,9 +23,10 @@ interface AuthenticatorInterface
 	/**
 	 * get the authorization url
 	 *
+	 * @param  array $options
 	 * @return string
 	 */
-	public function getAuthorizationUrl($options);
+	public function getAuthorizationUrl(array $options = []);
 
 	/**
 	 * get a random state
@@ -45,7 +46,6 @@ interface AuthenticatorInterface
 	 * ]
 	 *
 	 * @throws InvalidArgumentException If a wrong state was set
-	 * @throws MissingCredentialsException If no user or client credentials are set
 	 * @throws UnauthorizedException contains the url to get an authorization code
 	 *
 	 * @return void

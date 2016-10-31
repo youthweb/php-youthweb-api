@@ -95,7 +95,7 @@ interface ClientInterface
 	 * @param  array $options
 	 * @return string Authorization URL
 	 */
-	public function getAuthorizationUrl($options);
+	public function getAuthorizationUrl(array $options = []);
 
 	/**
 	 * Returns the current value of the state parameter.

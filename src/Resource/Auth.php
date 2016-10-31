@@ -3,7 +3,6 @@
 namespace Youthweb\Api\Resource;
 
 use DateInterval;
-use Youthweb\Api\Exception\MissingCredentialsException;
 use Youthweb\Api\JsonObject;
 
 /**
@@ -22,7 +21,7 @@ final class Auth implements AuthInterface
 	 *
 	 * @link http://docs.youthweb.apiary.io/#reference/auth
 	 *
-	 * @throws MissingCredentialsException If no user or client credentials are set
+	 * @throws InvalidArgumentException if no user or client credentials are set
 	 *
 	 * @return string The Bearer token incl. type e.g. "Bearer jcx45..."
 	 */
@@ -30,7 +29,7 @@ final class Auth implements AuthInterface
 	{
 		if ( $this->client->getUserCredential('username') === '' or $this->client->getUserCredential('token_secret') === '' )
 		{
-			throw new MissingCredentialsException;
+			throw new \InvalidArgumentException;
 		}
 
 		$cache_item = $this->client->getCacheItem('bearer_token');

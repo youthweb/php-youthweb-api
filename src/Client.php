@@ -14,7 +14,6 @@ use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
-use Youthweb\Api\Exception\MissingCredentialsException;
 use Youthweb\Api\Exception\UnauthorizedException;
 
 /**
@@ -273,7 +272,7 @@ final class Client implements ClientInterface
 
 			 return true;
 		}
-		catch (MissingCredentialsException $e) {}
+		catch (\Exception $e) {}
 
 		return false;
 	}
@@ -289,19 +288,12 @@ final class Client implements ClientInterface
 	 * ]
 	 *
 	 * @throws InvalidArgumentException If a wrong state was set
-	 * @throws MissingCredentialsException If no user or client credentials are set
 	 * @throws UnauthorizedException contains the url to get an authorization code
 	 *
 	 * @return boolean true, if a new access token was saved
 	 */
 	public function authorize($grant, array $params = [])
 	{
-		// FIXME: client credentials could be already setted in the oauth2_provider
-		if ( $this->client_id === null or $this->client_secret === null )
-		{
-			throw new MissingCredentialsException;
-		}
-
 		if ( ! isset($params['code']) )
 		{
 			throw new UnauthorizedException;
@@ -338,7 +330,7 @@ final class Client implements ClientInterface
 	 * @param  array $options
 	 * @return string Authorization URL
 	 */
-	public function getAuthorizationUrl($options)
+	public function getAuthorizationUrl(array $options = [])
 	{
 		$default_options = [
 			'scope' => $this->scope,
@@ -377,7 +369,6 @@ final class Client implements ClientInterface
 	 * @param string  $path
 	 * @param array   $data
 	 *
-	 * @throws MissingCredentialsException If no user or client credentials are set
 	 * @throws UnauthorizedException contains the url to get an authorization code
 	 *
 	 * @return array
@@ -591,7 +582,6 @@ final class Client implements ClientInterface
 	/**
 	 * Get the Bearer Token
 	 *
-	 * @throws MissingCredentialsException If no user or client credentials are set
 	 * @throws UnauthorizedException contains the url to get an authorization code
 	 *
 	 * @return string The Bearer token incl. type e.g. "Bearer jcx45..."

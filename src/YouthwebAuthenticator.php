@@ -81,9 +81,10 @@ class YouthwebAuthenticator implements AuthenticatorInterface
 	/**
 	 * get the authorization url
 	 *
+	 * @param  array $options
 	 * @return string
 	 */
-	public function getAuthorizationUrl($options)
+	public function getAuthorizationUrl(array $options = [])
 	{
 		return $this->getOauth2Provider()->getAuthorizationUrl($options);
 	}
@@ -109,7 +110,6 @@ class YouthwebAuthenticator implements AuthenticatorInterface
 	 * ]
 	 *
 	 * @throws InvalidArgumentException If a wrong state or grant was set
-	 * @throws MissingCredentialsException If no user or client credentials are set
 	 *
 	 * @return void
 	 */
