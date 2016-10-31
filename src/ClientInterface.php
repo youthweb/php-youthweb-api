@@ -65,46 +65,6 @@ interface ClientInterface
 	public function getResource($name);
 
 	/**
-	 * Returns the Url
-	 *
-	 * @deprecated Will be removed in future. Don't use it anymore
-	 *
-	 * @return string
-	 */
-	public function getUrl();
-
-	/**
-	 * Set the Url
-	 *
-	 * @deprecated Will be removed in future. Use the constructor instead
-	 *
-	 * @param string $url The url
-	 * @return self
-	 */
-	public function setUrl($url);
-
-	/**
-	 * Set the User Credentials
-	 *
-	 * @deprecated Since Youthweb-API 0.6
-	 *
-	 * @param string $username The username
-	 * @param string $token_secret The Token-Secret
-	 * @return self
-	 */
-	public function setUserCredentials($username, $token_secret);
-
-	/**
-	 * Get a User Credentials
-	 *
-	 * @deprecated Since Youthweb-API 0.6
-	 *
-	 * @param string $key 'username' or 'token_secret'
-	 * @return string the requested user credential
-	 */
-	public function getUserCredential($key);
-
-	/**
 	 * Check if we have a access token
 	 *
 	 * @return boolean
@@ -114,6 +74,7 @@ interface ClientInterface
 	/**
 	 * Authorize the client credentials
 	 *
+	 * @param string $grant the grant, e.g. `authorization_code`
 	 * @param array $params for authorization code:
 	 * [
 	 *     'code' => 'authorization_code_from_callback_url...',
@@ -124,9 +85,27 @@ interface ClientInterface
 	 * @throws MissingCredentialsException If no user or client credentials are set
 	 * @throws UnauthorizedException contains the url to get an authorization code
 	 *
-	 * @return void
+	 * @return boolean true, if a new access token was saved
 	 */
-	public function authorize(array $params = []);
+	public function authorize($grant, array $params = []);
+
+	/**
+	 * Returns an authorization code url
+	 *
+	 * @param  array $options
+	 * @return string Authorization URL
+	 */
+	public function getAuthorizationUrl($options);
+
+	/**
+	 * Returns the current value of the state parameter.
+	 *
+	 * This can be accessed by the redirect handler during authorization.
+	 *
+	 * @return string
+	 */
+
+	public function getState();
 
 	/**
 	 * HTTP GETs a json $path and decodes it to an object
@@ -176,4 +155,44 @@ interface ClientInterface
 	 * @return stirng The cache key
 	 **/
 	public function buildCacheKey($key);
+
+	/**
+	 * Returns the Url
+	 *
+	 * @deprecated Will be removed in future. Don't use it anymore
+	 *
+	 * @return string
+	 */
+	public function getUrl();
+
+	/**
+	 * Set the Url
+	 *
+	 * @deprecated Will be removed in future. Use the constructor instead
+	 *
+	 * @param string $url The url
+	 * @return self
+	 */
+	public function setUrl($url);
+
+	/**
+	 * Set the User Credentials
+	 *
+	 * @deprecated Since Youthweb-API 0.6
+	 *
+	 * @param string $username The username
+	 * @param string $token_secret The Token-Secret
+	 * @return self
+	 */
+	public function setUserCredentials($username, $token_secret);
+
+	/**
+	 * Get a User Credentials
+	 *
+	 * @deprecated Since Youthweb-API 0.6
+	 *
+	 * @param string $key 'username' or 'token_secret'
+	 * @return string the requested user credential
+	 */
+	public function getUserCredential($key);
 }

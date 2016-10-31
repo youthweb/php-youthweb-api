@@ -251,6 +251,187 @@ final class Client implements ClientInterface
 	}
 
 	/**
+	 * Check if we have a access token
+	 *
+	 * @return boolean
+	 */
+	public function isAuthorized()
+	{
+		// Check the access token
+		$access_token_item = $this->getCacheItem('access_token');
+
+		if ( $access_token_item->isHit() )
+		{
+			return true;
+		}
+
+		$this->deleteCacheItem($access_token_item);
+
+		// BC: Try to get a token with deprecated user token
+		try
+		{
+			 $this->getResource('auth')->getBearerToken();
+
+			 return true;
+		}
+		catch (MissingCredentialsException $e) {}
+
+		return false;
+	}
+
+	/**
+	 * Force the Authorization with client (or user) credentials
+	 *
+	 * @param string $grant the grant, e.g. `authorization_code`
+	 * @param array $params for authorization code:
+	 * [
+	 *     'code' => 'authorization_code_from_callback_url...',
+	 *     'state' => 'state_from_callback_url_for_csrf_protection',
+	 * ]
+	 *
+	 * @throws InvalidArgumentException If a wrong state was set
+	 * @throws MissingCredentialsException If no user or client credentials are set
+	 * @throws UnauthorizedException contains the url to get an authorization code
+	 *
+	 * @return boolean true, if a new access token was saved
+	 */
+	public function authorize($grant, array $params = [])
+	{
+		// FIXME: client credentials could be already setted in the oauth2_provider
+		if ( $this->client_id === null or $this->client_secret === null )
+		{
+			throw new MissingCredentialsException;
+		}
+
+		if ( ! isset($params['code']) )
+		{
+			throw new UnauthorizedException;
+		}
+
+		$state_item = $this->getCacheItem('state');
+
+		// Check state if present
+		if ( isset($params['state']) )
+		{
+			if ( ! $state_item->isHit() or $state_item->get() !== $params['state'] )
+			{
+				$this->deleteCacheItem($state_item);
+
+				throw new \InvalidArgumentException('Invalid state');
+			}
+		}
+
+		$this->deleteCacheItem($state_item);
+
+		// Try to get an access token (using the authorization code grant)
+		$token = $this->getOauth2Provider()->getAccessToken($grant, [
+			'code' => $params['code'],
+		]);
+
+		$this->saveAccessToken($token);
+
+		return true;
+	}
+
+	/**
+	 * Returns an authorization code url
+	 *
+	 * @param  array $options
+	 * @return string Authorization URL
+	 */
+	public function getAuthorizationUrl($options)
+	{
+		$default_options = [
+			'scope' => $this->scope,
+		];
+
+		$options = array_merge($default_options, $options);
+
+		return $this->getOauth2Provider()->getAuthorizationUrl($options);
+	}
+
+	/**
+	 * Returns the current value of the state parameter.
+	 *
+	 * This can be accessed by the redirect handler during authorization.
+	 *
+	 * @return string
+	 */
+
+	public function getState()
+	{
+		$state = $this->getOauth2Provider()->getState();
+
+		$state_item = $this->getCacheItem('state');
+		$state_item->set($state);
+
+		// Save state for 10 min
+		$state_item->expiresAfter(new DateInterval('PT10M'));
+		$this->saveCacheItem($state_item);
+
+		return $state;
+	}
+
+	/**
+	 * HTTP GETs a json $path and decodes it to an object
+	 *
+	 * @param string  $path
+	 * @param array   $data
+	 *
+	 * @throws MissingCredentialsException If no user or client credentials are set
+	 * @throws UnauthorizedException contains the url to get an authorization code
+	 *
+	 * @return array
+	 */
+	public function get($path, array $data = [])
+	{
+		$data['headers']['Authorization'] = $this->getBearerToken();
+
+		$request = $this->createRequest('GET', $this->getUrl() . $path, $data);
+
+		return $this->runRequest($request);
+	}
+
+	/**
+	 * HTTP GETs a json $path without Authorization and decodes it to an object
+	 *
+	 * @param string  $path
+	 * @param array   $data
+	 *
+	 * @return array
+	 */
+	public function getUnauthorized($path, array $data = [])
+	{
+		$request = $this->createRequest('GET', $this->getUrl() . $path, $data);
+
+		return $this->runRequest($request);
+	}
+
+	/**
+	 * HTTP POSTs a json $path without Authorization and decodes it to an object
+	 *
+	 * @param string  $path
+	 * @param array   $data
+	 *
+	 * @return array
+	 */
+	public function postUnauthorized($path, array $data = [])
+	{
+		$request = $this->createRequest('POST', $this->getUrl() . $path, $data);
+
+		return $this->runRequest($request);
+	}
+
+	/**
+	 * destructor
+	 **/
+	public function __destruct()
+	{
+		// Save deferred items
+		$this->getCacheProvider()->commit();
+	}
+
+	/**
 	 * Returns the Url
 	 *
 	 * @deprecated Will be set to private in future. Don't use it anymore
@@ -315,163 +496,6 @@ final class Client implements ClientInterface
 	}
 
 	/**
-	 * Check if we have a access token
-	 *
-	 * @return boolean
-	 */
-	public function isAuthorized()
-	{
-		// Check the access token
-		$access_token_item = $this->getCacheItem('access_token');
-
-		if ( $access_token_item->isHit() )
-		{
-			return true;
-		}
-
-		$this->deleteCacheItem($access_token_item);
-
-		// BC: Try to get a token with deprecated user token
-		try
-		{
-			 $this->getResource('auth')->getBearerToken();
-
-			 return true;
-		}
-		catch (\Exception $e) {}
-
-		return false;
-	}
-
-	/**
-	 * Force the Authorization with client (or user) credentials
-	 *
-	 * @param array $params for authorization code:
-	 * [
-	 *     'code' => 'authorization_code_from_callback_url...',
-	 *     'state' => 'state_from_callback_url_for_csrf_protection',
-	 * ]
-	 *
-	 * @throws InvalidArgumentException If a wrong state was set
-	 * @throws MissingCredentialsException If no user or client credentials are set
-	 * @throws UnauthorizedException contains the url to get an authorization code
-	 *
-	 * @return void
-	 */
-	public function authorize(array $params = [])
-	{
-		// FIXME: client credentials could be already setted in the oauth2_provider
-		if ( $this->client_id === null or $this->client_secret === null )
-		{
-			throw new MissingCredentialsException;
-		}
-
-		$state_item = $this->getCacheItem('state');
-
-		if ( ! isset($params['code']) )
-		{
-			$options = [
-				'scope' => $this->scope,
-			];
-
-			// If we don't have an authorization code then get one
-			$auth_url = $this->getOauth2Provider()->getAuthorizationUrl($options);
-			$state = $this->getOauth2Provider()->getState();
-			$state_item->set($state);
-			// Save state for 10 min
-			$state_item->expiresAfter(new DateInterval('PT10M'));
-			$this->saveCacheItem($state_item);
-
-			throw UnauthorizedException::withAuthorizationUrl($auth_url, $state);
-		}
-		// Check state if present
-		elseif ( isset($params['state']) )
-		{
-			if ( ! $state_item->isHit() or $state_item->get() !== $params['state'] )
-			{
-				$this->deleteCacheItem($state_item);
-
-				throw new \InvalidArgumentException('Invalid state');
-			}
-		}
-
-		$this->deleteCacheItem($state_item);
-
-		// Try to get an access token (using the authorization code grant)
-		$token = $this->getOauth2Provider()->getAccessToken('authorization_code', [
-			'code' => $params['code'],
-		]);
-
-		$this->saveAccessToken($token);
-	}
-
-	/**
-	 * Save a access token in cache provider
-	 *
-	 * @param AccessToken $token The access token
-	 *
-	 * @return void
-	 */
-	private function saveAccessToken(AccessToken $token)
-	{
-		$access_token_item = $this->getCacheItem('access_token');
-		$access_token_item->set($token->getToken());
-		$date = new DateTime('@'.$token->getExpires());
-		$access_token_item->expiresAt($date);
-		$this->saveCacheItem($access_token_item);
-	}
-
-	/**
-	 * HTTP GETs a json $path and decodes it to an object
-	 *
-	 * @param string  $path
-	 * @param array   $data
-	 *
-	 * @throws MissingCredentialsException If no user or client credentials are set
-	 * @throws UnauthorizedException contains the url to get an authorization code
-	 *
-	 * @return array
-	 */
-	public function get($path, array $data = [])
-	{
-		$data['headers']['Authorization'] = $this->getBearerToken();
-
-		$request = $this->createRequest('GET', $this->getUrl() . $path, $data);
-
-		return $this->runRequest($request);
-	}
-
-	/**
-	 * HTTP GETs a json $path without Authorization and decodes it to an object
-	 *
-	 * @param string  $path
-	 * @param array   $data
-	 *
-	 * @return array
-	 */
-	public function getUnauthorized($path, array $data = [])
-	{
-		$request = $this->createRequest('GET', $this->getUrl() . $path, $data);
-
-		return $this->runRequest($request);
-	}
-
-	/**
-	 * HTTP POSTs a json $path without Authorization and decodes it to an object
-	 *
-	 * @param string  $path
-	 * @param array   $data
-	 *
-	 * @return array
-	 */
-	public function postUnauthorized($path, array $data = [])
-	{
-		$request = $this->createRequest('POST', $this->getUrl() . $path, $data);
-
-		return $this->runRequest($request);
-	}
-
-	/**
 	 * Set a http client
 	 *
 	 * @deprecated Will be set to private in future. Use the constructor instead
@@ -484,29 +508,6 @@ final class Client implements ClientInterface
 		$this->http_client = $client;
 
 		return $this;
-	}
-
-	/**
-	 * Set a oauth2 provider
-	 *
-	 * @param League\OAuth2\Client\Provider\AbstractProvider $oauth2_provider the oauth2 provider
-	 * @return self
-	 */
-	private function setOauth2Provider(\League\OAuth2\Client\Provider\AbstractProvider $oauth2_provider)
-	{
-		$this->oauth2_provider = $oauth2_provider;
-
-		return $this;
-	}
-
-	/**
-	 * Get the oauth2 provider
-	 *
-	 * @return League\OAuth2\Client\Provider\AbstractProvider the oauth2 provider
-	 */
-	private function getOauth2Provider()
-	{
-		return $this->oauth2_provider;
 	}
 
 	/**
@@ -550,6 +551,45 @@ final class Client implements ClientInterface
 	}
 
 	/**
+	 * Save a access token in cache provider
+	 *
+	 * @param AccessToken $token The access token
+	 *
+	 * @return void
+	 */
+	private function saveAccessToken(AccessToken $token)
+	{
+		$access_token_item = $this->getCacheItem('access_token');
+		$access_token_item->set($token->getToken());
+		$date = new DateTime('@'.$token->getExpires());
+		$access_token_item->expiresAt($date);
+		$this->saveCacheItem($access_token_item);
+	}
+
+	/**
+	 * Set a oauth2 provider
+	 *
+	 * @param League\OAuth2\Client\Provider\AbstractProvider $oauth2_provider the oauth2 provider
+	 * @return self
+	 */
+	private function setOauth2Provider(\League\OAuth2\Client\Provider\AbstractProvider $oauth2_provider)
+	{
+		$this->oauth2_provider = $oauth2_provider;
+
+		return $this;
+	}
+
+	/**
+	 * Get the oauth2 provider
+	 *
+	 * @return League\OAuth2\Client\Provider\AbstractProvider the oauth2 provider
+	 */
+	private function getOauth2Provider()
+	{
+		return $this->oauth2_provider;
+	}
+
+	/**
 	 * Get the Bearer Token
 	 *
 	 * @throws MissingCredentialsException If no user or client credentials are set
@@ -559,22 +599,21 @@ final class Client implements ClientInterface
 	 */
 	private function getBearerToken()
 	{
-		if ( $this->isAuthorized() )
+		if ( ! $this->isAuthorized() )
 		{
-			$access_token_item = $this->getCacheItem('access_token');
-
-			if ( $access_token_item->isHit() )
-			{
-				return $access_token_item->get();
-			}
-
-			// BC: Try to get a token with deprecated user token
-			return $this->getResource('auth')->getBearerToken();
+			throw new UnauthorizedException;
 		}
 
-		// Throws an UnauthorizedException with auth_url and state
-		// or a MissingCredentialsException
-		$this->authorize();
+		$access_token_item = $this->getCacheItem('access_token');
+
+		if ( $access_token_item->isHit() )
+		{
+			return $access_token_item->get();
+		}
+
+		// BC: Try to get a token with deprecated user token
+		return $this->getResource('auth')->getBearerToken();
+
 	}
 
 	/**
@@ -752,14 +791,5 @@ final class Client implements ClientInterface
 		}
 
 		return new \Exception($message, $e->getCode(), $e);
-	}
-
-	/**
-	 * destructor
-	 **/
-	public function __destruct()
-	{
-		// Save deferred items
-		$this->getCacheProvider()->commit();
 	}
 }
