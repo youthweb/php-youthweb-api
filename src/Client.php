@@ -561,24 +561,20 @@ final class Client implements ClientInterface
 	{
 		if ( $this->isAuthorized() )
 		{
-			return $this->getCacheItem('access_token')->get();
-		}
+			$access_token_item = $this->getCacheItem('access_token');
 
-		$access_token = '';
+			if ( $access_token_item->isHit() )
+			{
+				return $access_token_item->get();
+			}
 
-		try
-		{
-			// Throws an UnauthorizedException with auth_url and state
-			// or a MissingCredentialsException
-			$this->authorize();
-		}
-		catch (MissingCredentialsException $e)
-		{
 			// BC: Try to get a token with deprecated user token
-			$access_token = $this->getResource('auth')->getBearerToken();
+			return $this->getResource('auth')->getBearerToken();
 		}
 
-		return $access_token;
+		// Throws an UnauthorizedException with auth_url and state
+		// or a MissingCredentialsException
+		$this->authorize();
 	}
 
 	/**

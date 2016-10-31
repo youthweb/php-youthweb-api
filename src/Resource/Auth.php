@@ -46,11 +46,9 @@ final class Auth implements AuthInterface
 
 			$document = $this->client->postUnauthorized('/auth/token', ['body' => $body]);
 
-			if ( $document->has('meta.token') and $document->has('meta.token_type') )
+			if ( $document->has('meta.token') and $document->has('meta.token_type') and $document->get('meta.token_type') === 'Bearer' )
 			{
-				$bearer_token = $document->get('meta.token_type') . ' ' . $document->get('meta.token');
-
-				$cache_item->set($bearer_token);
+				$cache_item->set($document->get('meta.token'));
 				$cache_item->expiresAfter(new DateInterval('PT1H'));
 
 				$this->client->saveCacheItem($cache_item);
