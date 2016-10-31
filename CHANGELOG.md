@@ -6,9 +6,13 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Implementation for OAuth2 Authorization Code Grant was added.
 - New setting for config and collaborators through `Client::__construct($config, $collaborators)`.
-- New method Resource\Users::showMe()` for new API endpoint `/me`.
+- New method `Resource\Users::showMe()` for new API endpoint `/me`.
 - New factories for `Resource` and PSR-7 `Request` creation.
+- New `Client` methods `getCacheItem($key)`, `saveCacheItem($item)` and `deleteCacheItem($item)` in replace for deprecated `Client::setCacheProvider()`.
+- New method `Client::isAuthorized()` to check if the client has a valid access_token.
+- New method `Client::authorize()` to authorize a grant.
 
 ### Changed
 
@@ -23,6 +27,7 @@ All notable changes to this project will be documented in this file.
 - `Client::getUserCredential()` is deprecated and will be replaced with OAuth2 client.
 - `Client::setHttpClient()` is deprecated. Use `Client::__construct()` instead.
 - `Client::setCacheProvider()` is deprecated. Use `Client::__construct()` instead.
+- `Client::getCacheProvider()` is deprecated. Use the new cache methods in `Client` instead.
 
 ### Removed
 
