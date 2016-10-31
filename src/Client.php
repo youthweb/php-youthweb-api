@@ -559,12 +559,12 @@ final class Client implements ClientInterface
 	 */
 	private function getBearerToken()
 	{
-		$access_token = '';
-
 		if ( $this->isAuthorized() )
 		{
-			$access_token = $this->getCacheItem('access_token')->get();
+			return $this->getCacheItem('access_token')->get();
 		}
+
+		$access_token = '';
 
 		try
 		{
