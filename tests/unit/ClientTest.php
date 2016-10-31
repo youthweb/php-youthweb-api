@@ -18,7 +18,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 
 		$default_collaborators = [
 			'http_client' => $this->createMock('Youthweb\Api\HttpClientInterface'),
-			'oauth2_provider' => $this->createMock('League\OAuth2\Client\Provider\AbstractProvider'),
+			'oauth2_provider' => $this->createMock('Youthweb\Api\AuthenticatorInterface'),
 			'cache_provider' => $this->createMock('Psr\Cache\CacheItemPoolInterface'),
 			'request_factory' => $this->createMock('Youthweb\Api\RequestFactoryInterface'),
 			'resource_factory' => $this->createMock('Youthweb\Api\ResourceFactoryInterface'),
@@ -227,7 +227,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	{
 		$http_client = $this->createMock('Youthweb\Api\HttpClientInterface');
 		$cache_provider = $this->createMock('Psr\Cache\CacheItemPoolInterface');
-		$oauth2_provider = $this->createMock('League\OAuth2\Client\Provider\AbstractProvider');
+		$oauth2_provider = $this->createMock('Youthweb\Api\AuthenticatorInterface');
 		$cache_item_access = $this->createMock('Psr\Cache\CacheItemInterface');
 		$cache_item_state = $this->createMock('Psr\Cache\CacheItemInterface');
 		$access_token = $this->createMock('League\OAuth2\Client\Token\AccessToken');
@@ -286,7 +286,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	{
 		$http_client = $this->createMock('Youthweb\Api\HttpClientInterface');
 		$cache_provider = $this->createMock('Psr\Cache\CacheItemPoolInterface');
-		$oauth2_provider = $this->createMock('League\OAuth2\Client\Provider\AbstractProvider');
+		$oauth2_provider = $this->createMock('Youthweb\Api\AuthenticatorInterface');
 		$cache_item_access = $this->createMock('Psr\Cache\CacheItemInterface');
 		$cache_item_state = $this->createMock('Psr\Cache\CacheItemInterface');
 		$access_token = $this->createMock('League\OAuth2\Client\Token\AccessToken');
@@ -352,7 +352,6 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	{
 		$http_client = $this->createMock('Youthweb\Api\HttpClientInterface');
 		$cache_provider = $this->createMock('Psr\Cache\CacheItemPoolInterface');
-		$oauth2_provider = $this->createMock('League\OAuth2\Client\Provider\AbstractProvider');
 		$cache_item_state = $this->createMock('Psr\Cache\CacheItemInterface');
 
 		$cache_item_state->expects($this->any())
@@ -378,7 +377,6 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			[
 				'http_client' => $http_client,
 				'cache_provider' => $cache_provider,
-				'oauth2_provider' => $oauth2_provider,
 			]
 		);
 
@@ -399,7 +397,6 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	public function testAuthorizedGetRequestReturnsObject()
 	{
 		$cache_provider = $this->createMock('Psr\Cache\CacheItemPoolInterface');
-		$oauth2_provider = $this->createMock('League\OAuth2\Client\Provider\AbstractProvider');
 		$cache_item_access = $this->createMock('Psr\Cache\CacheItemInterface');
 		$body = $this->createMock('Psr\Http\Message\StreamInterface');
 		$request_factory = $this->createMock('Youthweb\Api\RequestFactoryInterface');
@@ -447,7 +444,6 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			[
 				'http_client' => $http_client,
 				'cache_provider' => $cache_provider,
-				'oauth2_provider' => $oauth2_provider,
 				'request_factory' => $request_factory,
 			]
 		);

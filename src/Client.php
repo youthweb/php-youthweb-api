@@ -16,7 +16,6 @@ use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Youthweb\Api\Exception\MissingCredentialsException;
 use Youthweb\Api\Exception\UnauthorizedException;
-use Youthweb\OAuth2\Client\Provider\Youthweb as Oauth2Provider;
 
 /**
  * Simple PHP Youthweb client
@@ -160,7 +159,7 @@ final class Client implements ClientInterface
 
 		if (empty($collaborators['oauth2_provider']))
 		{
-			$collaborators['oauth2_provider'] = new Oauth2Provider([
+			$collaborators['oauth2_provider'] = new YouthwebAuthenticator([
 				'clientId'     => $this->client_id,
 				'clientSecret' => $this->client_secret,
 				'redirectUri'  => $this->redirect_url,
@@ -569,10 +568,10 @@ final class Client implements ClientInterface
 	/**
 	 * Set a oauth2 provider
 	 *
-	 * @param League\OAuth2\Client\Provider\AbstractProvider $oauth2_provider the oauth2 provider
+	 * @param AuthenticatorInterface $oauth2_provider the oauth2 provider
 	 * @return self
 	 */
-	private function setOauth2Provider(\League\OAuth2\Client\Provider\AbstractProvider $oauth2_provider)
+	private function setOauth2Provider(AuthenticatorInterface $oauth2_provider)
 	{
 		$this->oauth2_provider = $oauth2_provider;
 
@@ -582,7 +581,7 @@ final class Client implements ClientInterface
 	/**
 	 * Get the oauth2 provider
 	 *
-	 * @return League\OAuth2\Client\Provider\AbstractProvider the oauth2 provider
+	 * @return AuthenticatorInterface the oauth2 provider
 	 */
 	private function getOauth2Provider()
 	{
