@@ -380,7 +380,7 @@ final class Client implements ClientInterface
 	 */
 	public function get($path, array $data = [])
 	{
-		$data['headers']['Authorization'] = $this->getBearerToken();
+		$data['headers']['Authorization'] = 'Bearer ' . $this->getBearerToken();
 
 		$request = $this->createRequest('GET', $this->getUrl() . $path, $data);
 
@@ -782,6 +782,13 @@ final class Client implements ClientInterface
 		if ( is_null($message) )
 		{
 			$message = 'The server responses with an unknown error.';
+		}
+
+		// Delete the access token if a 401 error occured
+		if ( strval($e->getCode()) === '401' )
+		{
+			$access_token_item = $this->getCacheItem('access_token');
+			$this->deleteCacheItem($access_token_item);
 		}
 
 		return new \Exception($message, $e->getCode(), $e);
