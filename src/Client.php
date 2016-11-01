@@ -380,7 +380,7 @@ final class Client implements ClientInterface
 	 */
 	public function get($path, array $data = [])
 	{
-		$data['headers']['Authorization'] = 'Bearer ' . $this->getBearerToken();
+		$data['headers']['Authorization'] = 'Bearer ' . $this->getAccessToken();
 
 		$request = $this->createRequest('GET', $this->getUrl() . $path, $data);
 
@@ -589,9 +589,9 @@ final class Client implements ClientInterface
 	 *
 	 * @throws UnauthorizedException contains the url to get an authorization code
 	 *
-	 * @return string The Bearer token incl. type e.g. "Bearer jcx45..."
+	 * @return string The Bearer token, e.g. "jcx45..."
 	 */
-	private function getBearerToken()
+	private function getAccessToken()
 	{
 		if ( ! $this->isAuthorized() )
 		{

@@ -729,7 +729,6 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 		$request_factory = $this->createMock('Youthweb\Api\RequestFactoryInterface');
 		$request = $this->createMock('Psr\Http\Message\RequestInterface');
 		$response = $this->createMock('Psr\Http\Message\ResponseInterface');
-		$exception = $this->createMock('GuzzleHttp\Exception\ClientException');
 		$http_client = $this->createMock('Youthweb\Api\HttpClientInterface');
 		$auth_resource = $this->createMock('Youthweb\Api\Resource\AuthInterface');
 		$resource_factory = $this->createMock('Youthweb\Api\ResourceFactoryInterface');
@@ -742,7 +741,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			->method('isHit')
 			->willReturn(false);
 
-		$cache_provider->expects($this->exactly(2))
+		$cache_provider->expects($this->exactly(3))
 			->method('getItem')
 			->will($this->returnValueMap([
 				['php_youthweb_api.access_token', $cache_item_access],
@@ -756,9 +755,11 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			->method('getBody')
 			->willReturn($body);
 
-		$exception->expects($this->once())
-			->method('getResponse')
-			->willReturn($response);
+		$response->expects($this->once())
+			->method('getStatusCode')
+			->willReturn(401);
+
+		$exception = new \GuzzleHttp\Exception\ClientException('The server responses with an unknown error.', $request, $response);
 
 		$http_client->expects($this->once())
 			->method('send')
@@ -787,7 +788,8 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 
 		$this->setExpectedException(
 			'Exception',
-			'Unauthorized'
+			'Unauthorized',
+			401
 		);
 
 		$client->get('foobar');
@@ -800,7 +802,6 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	{
 		$body = $this->createMock('Psr\Http\Message\StreamInterface');
 		$response = $this->createMock('Psr\Http\Message\ResponseInterface');
-		$exception = $this->createMock('GuzzleHttp\Exception\ClientException');
 		$cache_provider = $this->createMock('Psr\Cache\CacheItemPoolInterface');
 		$cache_item_access = $this->createMock('Psr\Cache\CacheItemInterface');
 		$request_factory = $this->createMock('Youthweb\Api\RequestFactoryInterface');
@@ -817,15 +818,15 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			->method('getBody')
 			->willReturn($body);
 
-		$exception->expects($this->once())
-			->method('getResponse')
-			->willReturn($response);
+		$response->expects($this->once())
+			->method('getStatusCode')
+			->willReturn(401);
 
 		$cache_item_access->expects($this->exactly(2))
 			->method('isHit')
 			->willReturn(false);
 
-		$cache_provider->expects($this->exactly(2))
+		$cache_provider->expects($this->exactly(3))
 			->method('getItem')
 			->will($this->returnValueMap([
 				['php_youthweb_api.access_token', $cache_item_access],
@@ -834,6 +835,8 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 		$request_factory->expects($this->once())
 			->method('createRequest')
 			->willReturn($request);
+
+		$exception = new \GuzzleHttp\Exception\ClientException('error message', $request, $response);
 
 		$http_client->expects($this->once())
 			->method('send')
@@ -862,7 +865,8 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 
 		$this->setExpectedException(
 			'Exception',
-			'Detailed error message'
+			'Detailed error message',
+			401
 		);
 
 		$client->get('foobar');
@@ -873,10 +877,11 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testHandleClientExceptionWithException()
 	{
-		$exception = $this->createMock('\Exception');
 		$http_client = $this->createMock('Youthweb\Api\HttpClientInterface');
 		$request_factory = $this->createMock('Youthweb\Api\RequestFactoryInterface');
 		$request = $this->createMock('Psr\Http\Message\RequestInterface');
+
+		$exception = new \Exception('error message', 0);
 
 		$http_client->expects($this->once())
 			->method('send')
@@ -896,7 +901,8 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 
 		$this->setExpectedException(
 			'Exception',
-			'The server responses with an unknown error.'
+			'The server responses with an unknown error.',
+			0
 		);
 
 		$client->getUnauthorized('foobar');

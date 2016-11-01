@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.5] - 2016-11-01
+
 ### Added
 
 - Implementation for OAuth2 Authorization Code Grant was added.
@@ -18,7 +20,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- [Youthweb API 0.6](https://github.com/youthweb/youthweb-api/releases/tag/0.6) Support.
+- [Youthweb-API 0.6](https://github.com/youthweb/youthweb-api/releases/tag/0.6) Support.
 - **Breaking:** All classes are set to `final` and implement interfaces. All protected methods are now private. If you had extend some classes, implement the interface instead.
 - **Breaking:** `$data` in `Client::getUnauthorized()`, `Client::getUnauthorized()` and `Client::postUnauthorized()` must be an array. It cannot be `null` anymore.
 - Switch LICENSE from GPLv2 to GPLv3.
@@ -39,7 +41,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- [Youthweb API 0.5](https://github.com/youthweb/youthweb-api/releases/tag/0.5) Support
+- [Youthweb-API 0.5](https://github.com/youthweb/youthweb-api/releases/tag/0.5) Support
 
 ### Added
 
@@ -50,7 +52,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- [Youthweb API 0.3](https://github.com/youthweb/youthweb-api/releases/tag/0.3) Support
+- [Youthweb-API 0.3](https://github.com/youthweb/youthweb-api/releases/tag/0.3) Support
 - **Breaking:** API Resources return the data as `Art4\JsonApiClient\Document` object instead of `stdClass`
 
 ### Removed
@@ -62,7 +64,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- [Youthweb API 0.2](https://github.com/youthweb/youthweb-api/releases/tag/0.2) Support
+- [Youthweb-API 0.2](https://github.com/youthweb/youthweb-api/releases/tag/0.2) Support
 - phpunit tests
 - Travis-CI Support
 - this CHANGELOG.md
@@ -71,10 +73,11 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- First workable client for Youthweb API  [Version 0.1](https://github.com/youthweb/youthweb-api/releases/tag/0.1)
+- First workable client for Youthweb-API [Version 0.1](https://github.com/youthweb/youthweb-api/releases/tag/0.1)
 - Http client based on [guzzlehttp/guzzle ~5.0](https://github.com/guzzle/guzzle)
 
-[Unreleased]: https://github.com/youthweb/php-youthweb-api/compare/0.4...HEAD
+[Unreleased]: https://github.com/youthweb/php-youthweb-api/compare/0.5...HEAD
+[0.5]: https://github.com/youthweb/php-youthweb-api/compare/0.4...0.5
 [0.4]: https://github.com/youthweb/php-youthweb-api/compare/0.3...0.4
 [0.3]: https://github.com/youthweb/php-youthweb-api/compare/0.2...0.3
 [0.2]: https://github.com/youthweb/php-youthweb-api/compare/0.1...0.2
