@@ -159,11 +159,11 @@ final class Client implements ClientInterface
 		if (empty($collaborators['oauth2_provider']))
 		{
 			$collaborators['oauth2_provider'] = new YouthwebAuthenticator([
-				'clientId'     => $this->client_id,
-				'clientSecret' => $this->client_secret,
-				'redirectUri'  => $this->redirect_url,
-				'apiDomain'    => $this->api_domain,
-				'domain'       => $this->auth_domain,
+				'client_id'     => $this->client_id,
+				'client_secret' => $this->client_secret,
+				'redirect_url'  => $this->redirect_url,
+				'api_domain'    => $this->api_domain,
+				'auth_domain'   => $this->auth_domain,
 			]);
 		}
 
@@ -334,6 +334,7 @@ final class Client implements ClientInterface
 	{
 		$default_options = [
 			'scope' => $this->scope,
+			'state' => $this->getState(),
 		];
 
 		$options = array_merge($default_options, $options);
@@ -351,16 +352,20 @@ final class Client implements ClientInterface
 
 	public function getState()
 	{
-		$state = $this->getOauth2Provider()->getState();
-
 		$state_item = $this->getCacheItem('state');
-		$state_item->set($state);
 
-		// Save state for 10 min
-		$state_item->expiresAfter(new DateInterval('PT10M'));
-		$this->saveCacheItem($state_item);
+		if ( ! $state_item->isHit() )
+		{
+			$state = $this->getOauth2Provider()->getState();
 
-		return $state;
+			$state_item->set($state);
+
+			// Save state for 10 min
+			$state_item->expiresAfter(new DateInterval('PT10M'));
+			$this->saveCacheItem($state_item);
+		}
+
+		return $state_item->get();
 	}
 
 	/**

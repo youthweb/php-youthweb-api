@@ -67,6 +67,26 @@ class YouthwebAuthenticatorTest extends \PHPUnit_Framework_TestCase
 	/**
 	 * @test
 	 */
+	public function testGetStateWorkaroundReturnsState()
+	{
+		$oauth2_provider = $this->createMock('Youthweb\OAuth2\Client\Provider\Youthweb');
+
+		$state = 'random_string';
+
+		$oauth2_provider->expects($this->exactly(2))
+			->method('getState')
+			->will($this->onConsecutiveCalls(null, $state));
+
+		$authenticator = $this->createAuthenticator([], [
+			'oauth2_provider' => $oauth2_provider,
+		]);
+
+		$this->assertSame($state, $authenticator->getState());
+	}
+
+	/**
+	 * @test
+	 */
 	public function testGetAccessTokenWithWrongGrantThrowsException()
 	{
 		$authenticator = $this->createAuthenticator();

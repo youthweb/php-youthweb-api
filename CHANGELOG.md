@@ -13,6 +13,8 @@ All notable changes to this project will be documented in this file.
 - New `Client` methods `getCacheItem($key)`, `saveCacheItem($item)` and `deleteCacheItem($item)` in replace for deprecated `Client::setCacheProvider()`.
 - New method `Client::isAuthorized()` to check if the client has a valid access_token.
 - New method `Client::authorize()` to authorize a grant.
+- New method `Client::getAuthorizationUrl()` to get an authorization url.
+- New method `Client::getState()` to get a random state.
 
 ### Changed
 

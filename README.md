@@ -21,16 +21,53 @@ $ composer require youthweb/php-youthweb-api
 ## [Dokumentation](docs/README.md) / Anwendung
 
 ```php
-// Create a Client
-$client = new \Youthweb\Api\Client();
-// Add your credentials
-$client->setUserCredentials('Username', 'lp4LExKDYug5ARka6ckgkbRCzOzdd6Mo');
+<?php
 
-// Request a user
-$response = $client->getResource('users')->show(123456);
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
-echo $response->get('data.attributes.username');
-// echoes 'Username'
+// Config
+$client_id = 'CB91ZullPa4ync4l';
+$client_secret = 'YC7CXuDXX9pF5SeTKs9enkoPjbV01QIs';
+$redirect_url = 'http://localhost/php-youthweb-api/login-button.php';
+
+require 'vendor/autoload.php';
+
+$client = new Youthweb\Api\Client([
+    'client_id'     => $client_id,
+    'client_secret' => $client_secret,
+    'redirect_url'  => $redirect_url,
+    'scope'         => ['user:read'],
+]);
+
+echo '<h1>Mit Youthweb einloggen</h1>';
+echo '<form method="get" action="'.$redirect_url.'">
+<input name="go" value="Login" type="submit" />
+</form>';
+
+if ( isset($_GET['go']) )
+{
+    if ( ! $client->isAuthorized() )
+    {
+        header('Location: '.$client->getAuthorizationUrl());
+        exit;
+    }
+
+    $me = $client->getResource('users')->showMe();
+
+    printf('<p>Hallo %s %s!</p>', $me->get('data.attributes.first_name'), $me->get('data.attributes.last_name'));
+    printf('<p>Deine Email-Adresse: %s', $me->get('data.attributes.email'));
+}
+elseif ( isset($_GET['code']) )
+{
+    $client->authorize('authorization_code', [
+        'code' => $_GET['code'],
+        'state' => $_GET['state'],
+    ]);
+
+    header('Location: '.$redirect_url.'?go=Login');
+    exit;
+}
 ```
 
 Weitere Informationen zur Anwendung gibt es in der [Dokumentation](docs/README.md).

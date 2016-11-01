@@ -70,8 +70,28 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	public function testGetAuthorizationUrlReturnsUrl()
 	{
 		$oauth2_provider = $this->createMock('Youthweb\Api\AuthenticatorInterface');
+		$cache_provider = $this->createMock('Psr\Cache\CacheItemPoolInterface');
+		$cache_item_state = $this->createMock('Psr\Cache\CacheItemInterface');
 
 		$url = 'https://example.org';
+
+		$cache_item_state->expects($this->exactly(1))
+			->method('isHit')
+			->willReturn(false);
+
+		$cache_item_state->expects($this->exactly(1))
+			->method('get')
+			->willReturn('random_string');
+
+		$cache_provider->expects($this->exactly(1))
+			->method('getItem')
+			->will($this->returnValueMap([
+				['php_youthweb_api.state', $cache_item_state],
+			]));
+
+		$oauth2_provider->expects($this->once())
+			->method('getState')
+			->willReturn('random_string');
 
 		$oauth2_provider->expects($this->once())
 			->method('getAuthorizationUrl')
@@ -79,6 +99,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 
 		$client = $this->createClient([], [
 			'oauth2_provider' => $oauth2_provider,
+			'cache_provider' => $cache_provider,
 		]);
 
 		$this->assertSame($url, $client->getAuthorizationUrl());
@@ -94,15 +115,20 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 		$cache_item_state = $this->createMock('Psr\Cache\CacheItemInterface');
 
 		$cache_item_state->expects($this->exactly(1))
-			->method('set');
+			->method('isHit')
+			->willReturn(false);
+
+		$state = 'random_string';
+
+		$cache_item_state->expects($this->exactly(1))
+			->method('get')
+			->willReturn($state);
 
 		$cache_provider->expects($this->exactly(1))
 			->method('getItem')
 			->will($this->returnValueMap([
 				['php_youthweb_api.state', $cache_item_state],
 			]));
-
-		$state = 'random_string';
 
 		$oauth2_provider->expects($this->once())
 			->method('getState')

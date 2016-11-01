@@ -35,6 +35,11 @@ class YouthwebAuthenticator implements AuthenticatorInterface
 	private $redirect_url = '';
 
 	/**
+	 * @var Youthweb\OAuth2\Client\Provider\Youthweb
+	 */
+	private $oauth2_provider;
+
+	/**
 	 * Constructs the Authenticator
 	 *
 	 * @param array $options An array of options to set on the client.
@@ -96,7 +101,19 @@ class YouthwebAuthenticator implements AuthenticatorInterface
 	 */
 	public function getState()
 	{
-		return $this->getOauth2Provider()->getState();
+		$state = $this->getOauth2Provider()->getState();
+
+		// Workaround, if no state was generated so far
+		if ( $state === null )
+		{
+			// get the url so a new state will be generated
+			$this->getAuthorizationUrl();
+
+			// get the generated state
+			$state = $this->getOauth2Provider()->getState();
+		}
+
+		return $state;
 	}
 
 	/**
