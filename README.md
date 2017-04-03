@@ -30,7 +30,7 @@ ini_set('display_errors', 1);
 $client_id = 'CB91ZullPa4ync4l';
 $client_secret = 'YC7CXuDXX9pF5SeTKs9enkoPjbV01QIs';
 $redirect_url = 'http://localhost/php-youthweb-api/login-button.php';
-$scope = ['user:read']; // See http://developer.youthweb.net/api_scopes.html
+$scope = ['user:read']; // See http://developer.youthweb.net/api_general_scopes.html
 
 require 'vendor/autoload.php';
 
