@@ -5,7 +5,7 @@ namespace Youthweb\Api\Tests\Unit\Resource;
 use Youthweb\Api\Resource\Users;
 use InvalidArgumentException;
 
-class UsersTest extends \PHPUnit_Framework_TestCase
+class UsersTest extends \PHPUnit\Framework\TestCase
 {
 	/**
 	 * @test show()

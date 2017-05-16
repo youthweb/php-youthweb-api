@@ -4,7 +4,7 @@ namespace Youthweb\Api\Tests\Unit\Resource;
 
 use Youthweb\Api\Resource\Auth;
 
-class AuthTest extends \PHPUnit_Framework_TestCase
+class AuthTest extends \PHPUnit\Framework\TestCase
 {
 	/**
 	 * @test

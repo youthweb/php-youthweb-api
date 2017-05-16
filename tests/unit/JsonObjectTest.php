@@ -4,7 +4,7 @@ namespace Youthweb\Api\Tests\Unit;
 
 use Youthweb\Api\JsonObject;
 
-class JsonObjectTest extends \PHPUnit_Framework_TestCase
+class JsonObjectTest extends \PHPUnit\Framework\TestCase
 {
 	/**
 	 * @test

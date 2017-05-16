@@ -4,7 +4,7 @@ namespace Youthweb\Api\Tests\Unit;
 
 use Youthweb\Api\YouthwebAuthenticator;
 
-class YouthwebAuthenticatorTest extends \PHPUnit_Framework_TestCase
+class YouthwebAuthenticatorTest extends \PHPUnit\Framework\TestCase
 {
 	/**
 	 * Create a Authenticator with mocks of all collaborators

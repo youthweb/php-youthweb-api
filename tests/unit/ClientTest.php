@@ -5,7 +5,7 @@ namespace Youthweb\Api\Tests\Unit;
 use Youthweb\Api\Client;
 use InvalidArgumentException;
 
-class ClientTest extends \PHPUnit_Framework_TestCase
+class ClientTest extends \PHPUnit\Framework\TestCase
 {
 	/**
 	 * Create a client with mocks of all collaborators

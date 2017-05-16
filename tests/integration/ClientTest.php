@@ -4,7 +4,7 @@ namespace Youthweb\Api\Tests\Integration;
 
 use Youthweb\Api\Client;
 
-class ClientTest extends \PHPUnit_Framework_TestCase
+class ClientTest extends \PHPUnit\Framework\TestCase
 {
 	/**
 	 * @test

@@ -4,7 +4,7 @@ namespace Youthweb\Api\Tests\Integration;
 
 use Youthweb\Api\ResourceFactory;
 
-class ResourceFactoryTest extends \PHPUnit_Framework_TestCase
+class ResourceFactoryTest extends \PHPUnit\Framework\TestCase
 {
 	/**
 	 * @test

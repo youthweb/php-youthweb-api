@@ -5,7 +5,7 @@ namespace Youthweb\Api\Tests\Unit\Resource;
 use Youthweb\Api\Resource\Stats;
 use InvalidArgumentException;
 
-class StatsTest extends \PHPUnit_Framework_TestCase
+class StatsTest extends \PHPUnit\Framework\TestCase
 {
 	/**
 	 * @test

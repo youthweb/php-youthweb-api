@@ -4,7 +4,7 @@ namespace Youthweb\Api\Tests\Integration;
 
 use Youthweb\Api\RequestFactory;
 
-class RequestFactoryTest extends \PHPUnit_Framework_TestCase
+class RequestFactoryTest extends \PHPUnit\Framework\TestCase
 {
 	/**
 	 * @test
