@@ -91,10 +91,8 @@ class YouthwebAuthenticatorTest extends \PHPUnit\Framework\TestCase
 	{
 		$authenticator = $this->createAuthenticator();
 
-		$this->setExpectedException(
-			'InvalidArgumentException',
-			'Unsupported grant "wrong_grant"'
-		);
+		$this->expectException('InvalidArgumentException');
+		$this->expectExceptionMessage('Unsupported grant "wrong_grant"');
 
 		$authenticator->getAccessToken('wrong_grant');
 	}

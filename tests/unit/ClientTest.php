@@ -172,10 +172,8 @@ class ClientTest extends \PHPUnit\Framework\TestCase
 		$client = $this->createClient();
 		$client->setUserCredentials('Username', 'User-Token');
 
-		$this->setExpectedException(
-			'UnexpectedValueException',
-			'"foobar" is not a valid key for user credentials.'
-		);
+		$this->expectException('UnexpectedValueException');
+		$this->expectExceptionMessage('"foobar" is not a valid key for user credentials.');
 
 		$foo = $client->getUserCredential('foobar');
 	}
@@ -267,10 +265,8 @@ class ClientTest extends \PHPUnit\Framework\TestCase
 			]
 		);
 
-		$this->setExpectedException(
-			'InvalidArgumentException',
-			'The resource "foobar" does not exists.'
-		);
+		$this->expectException('InvalidArgumentException');
+		$this->expectExceptionMessage('The resource "foobar" does not exists.');
 
 		$client->getResource('foobar');
 	}
@@ -290,10 +286,8 @@ class ClientTest extends \PHPUnit\Framework\TestCase
 			[]
 		);
 
-		$this->setExpectedException(
-			'Youthweb\Api\Exception\UnauthorizedException',
-			''
-		);
+		$this->expectException('Youthweb\Api\Exception\UnauthorizedException');
+		$this->expectExceptionMessage('');
 
 		$client->authorize('authorization_code');
 	}
@@ -458,10 +452,8 @@ class ClientTest extends \PHPUnit\Framework\TestCase
 			]
 		);
 
-		$this->setExpectedException(
-			'InvalidArgumentException',
-			'Invalid state'
-		);
+		$this->expectException('InvalidArgumentException');
+		$this->expectExceptionMessage('Invalid state');
 
 		$client->authorize('authorization_code', [
 			'code' => 'auth_code',
@@ -710,10 +702,8 @@ class ClientTest extends \PHPUnit\Framework\TestCase
 			]
 		);
 
-		$this->setExpectedException(
-			'Youthweb\Api\Exception\UnauthorizedException',
-			''
-		);
+		$this->expectException('Youthweb\Api\Exception\UnauthorizedException');
+		$this->expectExceptionMessage('');
 
 		$client->get('foobar');
 	}
@@ -786,11 +776,9 @@ class ClientTest extends \PHPUnit\Framework\TestCase
 
 		$client->setUserCredentials('username', 'secret');
 
-		$this->setExpectedException(
-			'Exception',
-			'Unauthorized',
-			401
-		);
+		$this->expectException('Exception');
+		$this->expectExceptionMessage('Unauthorized');
+		$this->expectExceptionCode(401);
 
 		$client->get('foobar');
 	}
@@ -863,11 +851,9 @@ class ClientTest extends \PHPUnit\Framework\TestCase
 
 		$client->setUserCredentials('username', 'secret');
 
-		$this->setExpectedException(
-			'Exception',
-			'Detailed error message',
-			401
-		);
+		$this->expectException('Exception');
+		$this->expectExceptionMessage('Detailed error message');
+		$this->expectExceptionCode(401);
 
 		$client->get('foobar');
 	}
@@ -899,11 +885,9 @@ class ClientTest extends \PHPUnit\Framework\TestCase
 			]
 		);
 
-		$this->setExpectedException(
-			'Exception',
-			'The server responses with an unknown error.',
-			0
-		);
+		$this->expectException('Exception');
+		$this->expectExceptionMessage('The server responses with an unknown error.');
+		$this->expectExceptionCode(0);
 
 		$client->getUnauthorized('foobar');
 	}

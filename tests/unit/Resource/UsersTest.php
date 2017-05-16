@@ -42,10 +42,8 @@ class UsersTest extends \PHPUnit\Framework\TestCase
 
 		$users = new Users($client);
 
-		$this->setExpectedException(
-			'Exception',
-			'Resource not found'
-		);
+		$this->expectException('Exception');
+		$this->expectExceptionMessage('Resource not found');
 
 		$response = $users->show('invalid_user_id');
 	}

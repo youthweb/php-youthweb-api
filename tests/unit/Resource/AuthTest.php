@@ -22,10 +22,8 @@ class AuthTest extends \PHPUnit\Framework\TestCase
 
 		$auth = new Auth($client);
 
-		$this->setExpectedException(
-			'InvalidArgumentException',
-			''
-		);
+		$this->expectException('InvalidArgumentException');
+		$this->expectExceptionMessage('');
 
 		$auth->getBearerToken();
 	}

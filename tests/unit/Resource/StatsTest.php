@@ -76,10 +76,8 @@ class StatsTest extends \PHPUnit\Framework\TestCase
 
 		$stats = new Stats($client);
 
-		$this->setExpectedException(
-			'InvalidArgumentException',
-			'The ressource id "foobar" does not exists.'
-		);
+		$this->expectException('InvalidArgumentException');
+		$this->expectExceptionMessage('The ressource id "foobar" does not exists.');
 
 		$response = $stats->show('foobar');
 	}

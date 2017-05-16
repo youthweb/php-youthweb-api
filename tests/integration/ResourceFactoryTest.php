@@ -53,10 +53,8 @@ class ResourceFactoryTest extends \PHPUnit\Framework\TestCase
 
 		$factory = new ResourceFactory();
 
-		$this->setExpectedException(
-			'InvalidArgumentException',
-			'The resource "foobar" does not exists.'
-		);
+		$this->expectException('InvalidArgumentException');
+		$this->expectExceptionMessage('The resource "foobar" does not exists.');
 
 		$factory->createResource('foobar', $client);
 	}
