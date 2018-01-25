@@ -4,7 +4,7 @@
     "description": "Youthweb API client",
     "homepage": "https://github.com/youthweb/php-youthweb-api",
     "keywords": ["youthweb", "api"],
-    "license": "GPL3",
+    "license": "GPL-3.0-or-later",
     "authors": [
         {
             "name": "Artur Weigandt",
