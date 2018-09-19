@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- [Youthweb-API 0.12](https://developer.youthweb.net/20170716-Youthweb-API-0.12.html) support, but there is still code missing for accessing the new resources
 - `Youthweb\Api\Client::getUrl()` is deprecated and triggers an `E_USER_DEPRECATED` error if used
 - `Youthweb\Api\Client::setUrl()` is deprecated and triggers an `E_USER_DEPRECATED` error if used
 - `Youthweb\Api\Client::setUserCredentials()` is deprecated and triggers an `E_USER_DEPRECATED` error if used
