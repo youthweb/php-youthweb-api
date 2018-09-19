@@ -6,14 +6,16 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- `Client::getUrl()` is deprecated and triggers an `E_USER_DEPRECATED` error if used
-- `Client::setUrl()` is deprecated and triggers an `E_USER_DEPRECATED` error if used
-- `Client::setUserCredentials()` is deprecated and triggers an `E_USER_DEPRECATED` error if used
-- `Client::getUserCredential()` is deprecated and triggers an `E_USER_DEPRECATED` error if used
-- `Client::setHttpClient()` is deprecated and triggers an `E_USER_DEPRECATED` error if used
-- `Client::setCacheProvider()` is deprecated and triggers an `E_USER_DEPRECATED` error if used
-- `Client::getCacheProvider()` is deprecated and triggers an `E_USER_DEPRECATED` error if used
-- `Client::buildCacheKey()` is deprecated and triggers an `E_USER_DEPRECATED` error if used
+- `Youthweb\Api\Client::getUrl()` is deprecated and triggers an `E_USER_DEPRECATED` error if used
+- `Youthweb\Api\Client::setUrl()` is deprecated and triggers an `E_USER_DEPRECATED` error if used
+- `Youthweb\Api\Client::setUserCredentials()` is deprecated and triggers an `E_USER_DEPRECATED` error if used
+- `Youthweb\Api\Client::getUserCredential()` is deprecated and triggers an `E_USER_DEPRECATED` error if used
+- `Youthweb\Api\Client::setHttpClient()` is deprecated and triggers an `E_USER_DEPRECATED` error if used
+- `Youthweb\Api\Client::setCacheProvider()` is deprecated and triggers an `E_USER_DEPRECATED` error if used
+- `Youthweb\Api\Client::getCacheProvider()` is deprecated and triggers an `E_USER_DEPRECATED` error if used
+- `Youthweb\Api\Client::buildCacheKey()` is deprecated and triggers an `E_USER_DEPRECATED` error if used
+- `Youthweb\Api\Resource\Auth` is deprecated and triggers an `E_USER_DEPRECATED` error if used
+- `Youthweb\Api\Resource\AuthInterface` is deprecated and triggers an `E_USER_DEPRECATED` error if used
 - Update tests for PHPUnit 6
 
 ## [0.5] - 2016-11-01
