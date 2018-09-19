@@ -6,7 +6,15 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- Update tests for PHPUnit 6 
+- `Client::getUrl()` is deprecated and triggers an `E_USER_DEPRECATED` error if used
+- `Client::setUrl()` is deprecated and triggers an `E_USER_DEPRECATED` error if used
+- `Client::setUserCredentials()` is deprecated and triggers an `E_USER_DEPRECATED` error if used
+- `Client::getUserCredential()` is deprecated and triggers an `E_USER_DEPRECATED` error if used
+- `Client::setHttpClient()` is deprecated and triggers an `E_USER_DEPRECATED` error if used
+- `Client::setCacheProvider()` is deprecated and triggers an `E_USER_DEPRECATED` error if used
+- `Client::getCacheProvider()` is deprecated and triggers an `E_USER_DEPRECATED` error if used
+- `Client::buildCacheKey()` is deprecated and triggers an `E_USER_DEPRECATED` error if used
+- Update tests for PHPUnit 6
 
 ## [0.5] - 2016-11-01
 

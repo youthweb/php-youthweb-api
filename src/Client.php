@@ -154,7 +154,7 @@ final class Client implements ClientInterface
 			);
 		}
 
-		$this->setHttpClient($collaborators['http_client']);
+		$this->setHttpClientInternally($collaborators['http_client']);
 
 		if (empty($collaborators['oauth2_provider']))
 		{
@@ -217,9 +217,9 @@ final class Client implements ClientInterface
 	 */
 	public function getCacheItem($key)
 	{
-		$key = $this->buildCacheKey($key);
+		$key = $this->createCacheKey($key);
 
-		return $this->getCacheProvider()->getItem($key);
+		return $this->getCacheProviderInternally()->getItem($key);
 	}
 
 	/**
@@ -231,9 +231,9 @@ final class Client implements ClientInterface
 	 */
 	public function saveCacheItem(CacheItemInterface $item)
 	{
-		$this->getCacheProvider()->saveDeferred($item);
+		$this->getCacheProviderInternally()->saveDeferred($item);
 
-		$this->getCacheProvider()->commit();
+		$this->getCacheProviderInternally()->commit();
 	}
 
 	/**
@@ -245,7 +245,7 @@ final class Client implements ClientInterface
 	 */
 	public function deleteCacheItem(CacheItemInterface $item)
 	{
-		$this->getCacheProvider()->deleteItem($item->getKey());
+		$this->getCacheProviderInternally()->deleteItem($item->getKey());
 	}
 
 	/**
@@ -349,7 +349,6 @@ final class Client implements ClientInterface
 	 *
 	 * @return string
 	 */
-
 	public function getState()
 	{
 		$state_item = $this->getCacheItem('state');
@@ -382,7 +381,7 @@ final class Client implements ClientInterface
 	{
 		$data['headers']['Authorization'] = 'Bearer ' . $this->getAccessToken();
 
-		$request = $this->createRequest('GET', $this->getUrl() . $path, $data);
+		$request = $this->createRequest('GET', $this->getApiUrl() . $path, $data);
 
 		return $this->runRequest($request);
 	}
@@ -397,7 +396,7 @@ final class Client implements ClientInterface
 	 */
 	public function getUnauthorized($path, array $data = [])
 	{
-		$request = $this->createRequest('GET', $this->getUrl() . $path, $data);
+		$request = $this->createRequest('GET', $this->getApiUrl() . $path, $data);
 
 		return $this->runRequest($request);
 	}
@@ -412,7 +411,7 @@ final class Client implements ClientInterface
 	 */
 	public function postUnauthorized($path, array $data = [])
 	{
-		$request = $this->createRequest('POST', $this->getUrl() . $path, $data);
+		$request = $this->createRequest('POST', $this->getApiUrl() . $path, $data);
 
 		return $this->runRequest($request);
 	}
@@ -423,17 +422,29 @@ final class Client implements ClientInterface
 	public function __destruct()
 	{
 		// Save deferred items
-		$this->getCacheProvider()->commit();
+		$this->getCacheProviderInternally()->commit();
 	}
 
 	/**
 	 * Returns the Url
 	 *
-	 * @deprecated Will be set to private in future. Don't use it anymore
+	 * @deprecated since 0.5 and will be removed in 1.0. Don't use it anymore
 	 *
 	 * @return string
 	 */
 	public function getUrl()
+	{
+		@trigger_error(__METHOD__ . ' is deprecated since version 0.5 and will be removed in 1.0, don\'t use it anymore.', E_USER_DEPRECATED);
+
+		return $this->getApiUrl();
+	}
+
+	/**
+	 * Returns the Url
+	 *
+	 * @return string
+	 */
+	private function getApiUrl()
 	{
 		return $this->api_domain;
 	}
@@ -441,13 +452,15 @@ final class Client implements ClientInterface
 	/**
 	 * Set the Url
 	 *
-	 * @deprecated Will be set to private in future. Use the constructor instead
+	 * @deprecated since 0.5 and will be removed in 1.0. Don't use it anymore
 	 *
 	 * @param string $url The url
 	 * @return self
 	 */
 	public function setUrl($url)
 	{
+		@trigger_error(__METHOD__ . ' is deprecated since version 0.5 and will be removed in 1.0, don\'t use it anymore.', E_USER_DEPRECATED);
+
 		$this->api_domain = (string) $url;
 
 		return $this;
@@ -456,7 +469,7 @@ final class Client implements ClientInterface
 	/**
 	 * Set the User Credentials
 	 *
-	 * @deprecated Since Youthweb-API 0.6
+	 * @deprecated since 0.5 and will be removed in 1.0. Use OAuth 2.0 instead
 	 *
 	 * @param string $username The username
 	 * @param string $token_secret The Token-Secret
@@ -464,6 +477,8 @@ final class Client implements ClientInterface
 	 */
 	public function setUserCredentials($username, $token_secret)
 	{
+		@trigger_error(__METHOD__ . ' is deprecated since version 0.5 and will be removed in 1.0, use OAuth 2.0 instead.', E_USER_DEPRECATED);
+
 		$this->username = strval($username);
 		$this->token_secret = strval($token_secret);
 
@@ -473,13 +488,15 @@ final class Client implements ClientInterface
 	/**
 	 * Get a User Credentials
 	 *
-	 * @deprecated Since Youthweb-API 0.6
+	 * @deprecated since 0.5 and will be removed in 1.0. Use OAuth 2.0 instead
 	 *
 	 * @param string $key 'username' or 'token_secret'
 	 * @return string the requested user credential
 	 */
 	public function getUserCredential($key)
 	{
+		@trigger_error(__METHOD__ . ' is deprecated since version 0.5 and will be removed in 1.0, use OAuth 2.0 instead.', E_USER_DEPRECATED);
+
 		$key = strval($key);
 
 		if ( ! in_array($key, ['username', 'token_secret']) )
@@ -493,12 +510,25 @@ final class Client implements ClientInterface
 	/**
 	 * Set a http client
 	 *
-	 * @deprecated Will be set to private in future. Use the constructor instead
+	 * @deprecated since 0.5 and will be removed in 1.0. Don't use it anymore
 	 *
 	 * @param HttpClientInterface $client the http client
 	 * @return self
 	 */
 	public function setHttpClient(HttpClientInterface $client)
+	{
+		@trigger_error(__METHOD__ . ' is deprecated since version 0.5 and will be removed in 1.0, don\'t use it anymore.', E_USER_DEPRECATED);
+
+		return $this->setHttpClientInternally($client);
+	}
+
+	/**
+	 * Set a http client
+	 *
+	 * @param HttpClientInterface $client the http client
+	 * @return self
+	 */
+	private function setHttpClientInternally(HttpClientInterface $client)
 	{
 		$this->http_client = $client;
 
@@ -508,12 +538,25 @@ final class Client implements ClientInterface
 	/**
 	 * Set a cache provider
 	 *
-	 * @deprecated Will be set to private in future. Use the constructor instead
+	 * @deprecated since 0.5 and will be removed in 1.0. Don't use it anymore
 	 *
 	 * @param Psr\Cache\CacheItemPoolInterface $cache_provider the cache provider
 	 * @return self
 	 */
 	public function setCacheProvider(CacheItemPoolInterface $cache_provider)
+	{
+		@trigger_error(__METHOD__ . ' is deprecated since version 0.5 and will be removed in 1.0, use OAuth 2.0 instead.', E_USER_DEPRECATED);
+
+		return $this->setCacheProviderInternally($cache_provider);
+	}
+
+	/**
+	 * Set a cache provider
+	 *
+	 * @param Psr\Cache\CacheItemPoolInterface $cache_provider the cache provider
+	 * @return self
+	 */
+	private function setCacheProviderInternally(CacheItemPoolInterface $cache_provider)
 	{
 		$this->cache_provider = $cache_provider;
 
@@ -523,11 +566,23 @@ final class Client implements ClientInterface
 	/**
 	 * Get the cache provider
 	 *
-	 * @deprecated Will be set to private in future. Don't use it anymore
+	 * @deprecated since 0.5 and will be removed in 1.0. Don't use it anymore
 	 *
 	 * @return Psr\Cache\CacheItemPoolInterface the cache provider
 	 */
 	public function getCacheProvider()
+	{
+		@trigger_error(__METHOD__ . ' is deprecated since version 0.5 and will be removed in 1.0, don\'t use it anymore.', E_USER_DEPRECATED);
+
+		return $this->getCacheProviderInternally();
+	}
+
+	/**
+	 * Get the cache provider
+	 *
+	 * @return Psr\Cache\CacheItemPoolInterface the cache provider
+	 */
+	private function getCacheProviderInternally()
 	{
 		return $this->cache_provider;
 	}
@@ -538,9 +593,22 @@ final class Client implements ClientInterface
 	 * @deprecated Will be set to private in future. Don't use it anymore
 	 *
 	 * @param string $key The key
-	 * @return stirng The cache key
+	 * @return string The cache key
 	 **/
 	public function buildCacheKey($key)
+	{
+		@trigger_error(__METHOD__ . ' is deprecated since version 0.5 and will be removed in 1.0, don\'t use it anymore.', E_USER_DEPRECATED);
+
+		return $this->createCacheKey($key);
+	}
+
+	/**
+	 * Build a cache key
+	 *
+	 * @param string $key The key
+	 * @return string The cache key
+	 **/
+	private function createCacheKey($key)
 	{
 		return $this->cache_namespace . strval($key);
 	}

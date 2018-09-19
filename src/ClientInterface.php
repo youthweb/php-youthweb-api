@@ -140,7 +140,7 @@ interface ClientInterface
 	/**
 	 * Get the cache provider
 	 *
-	 * @deprecated Will be set to private in future. Don't use it anymore
+	 * @deprecated since 0.5 and will be removed in 1.0. Don't use it anymore
 	 *
 	 * @return Psr\Cache\CacheItemPoolInterface the cache provider
 	 */
@@ -149,7 +149,7 @@ interface ClientInterface
 	/**
 	 * Build a cache key
 	 *
-	 * @deprecated Will be set to private in future. Don't use it anymore
+	 * @deprecated since 0.5 and will be removed in 1.0. Don't use it anymore
 	 *
 	 * @param string $key The key
 	 * @return stirng The cache key
@@ -159,7 +159,7 @@ interface ClientInterface
 	/**
 	 * Returns the Url
 	 *
-	 * @deprecated Will be removed in future. Don't use it anymore
+	 * @deprecated since 0.5 and will be removed in 1.0. Don't use it anymore
 	 *
 	 * @return string
 	 */
@@ -168,7 +168,7 @@ interface ClientInterface
 	/**
 	 * Set the Url
 	 *
-	 * @deprecated Will be removed in future. Use the constructor instead
+	 * @deprecated since 0.5 and will be removed in 1.0. Don't use it anymore
 	 *
 	 * @param string $url The url
 	 * @return self
@@ -178,7 +178,7 @@ interface ClientInterface
 	/**
 	 * Set the User Credentials
 	 *
-	 * @deprecated Since Youthweb-API 0.6
+	 * @deprecated since 0.5 and will be removed in 1.0. Don't use it anymore
 	 *
 	 * @param string $username The username
 	 * @param string $token_secret The Token-Secret
@@ -189,7 +189,7 @@ interface ClientInterface
 	/**
 	 * Get a User Credentials
 	 *
-	 * @deprecated Since Youthweb-API 0.6
+	 * @deprecated since 0.5 and will be removed in 1.0. Don't use it anymore
 	 *
 	 * @param string $key 'username' or 'token_secret'
 	 * @return string the requested user credential
