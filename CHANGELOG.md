@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+
+- Update tests for PHPUnit 6 
+
 ## [0.5] - 2016-11-01
 
 ### Added
