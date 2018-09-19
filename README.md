@@ -10,14 +10,6 @@ PHP Youthweb API ist ein objektorientierter Wrapper in PHP 5.6+ für die [Youthw
 
 Unterstütze API Version: 0.12
 
-**Todo:**
-
-- Zugriff auf `/posts` Resourcen
-- Zugriff auf `/{object}/{object_id}/posts` Resourcen
-- Zugriff auf `/events` Resourcen
-- Zugriff auf `/friends` Resourcen
-- Zugriff auf `/{object}/{id}/friends` Resourcen
-
 ## Installation
 
 [Composer](http://getcomposer.org/):
@@ -93,4 +85,9 @@ Der Changelog ist [hier](CHANGELOG.md) zu finden und folgt den Empfehlungen von 
 
 ## Todo
 
+- Zugriff auf `/posts` Resourcen
+- Zugriff auf `/{object}/{object_id}/posts` Resourcen
+- Zugriff auf `/events` Resourcen
+- Zugriff auf `/friends` Resourcen
+- Zugriff auf `/{object}/{id}/friends` Resourcen
 - Request Error Handling
