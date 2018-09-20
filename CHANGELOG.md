@@ -7,12 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.1] - 2018-09-20
+
 ### Added
 
 - Every source file has now a license note
 - Allow tests with PHPUnit 7
 
-### Chnaged
+### Changed
 
 - Code Style was changed to PSR-2
 
@@ -105,7 +107,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - First workable client for Youthweb-API [Version 0.1](https://github.com/youthweb/youthweb-api/releases/tag/0.1)
 - Http client based on [guzzlehttp/guzzle ~5.0](https://github.com/guzzle/guzzle)
 
-[Unreleased]: https://github.com/youthweb/php-youthweb-api/compare/0.6...HEAD
+[Unreleased]: https://github.com/youthweb/php-youthweb-api/compare/0.6.1...HEAD
+[0.6.1]: https://github.com/youthweb/php-youthweb-api/compare/0.6...0.6.1
 [0.6]: https://github.com/youthweb/php-youthweb-api/compare/0.5...0.6
 [0.5]: https://github.com/youthweb/php-youthweb-api/compare/0.4...0.5
 [0.4]: https://github.com/youthweb/php-youthweb-api/compare/0.3...0.4
