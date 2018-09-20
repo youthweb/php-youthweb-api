@@ -9,18 +9,18 @@ use Youthweb\Api\ClientInterface;
  */
 trait ClientTrait
 {
-	/**
-	 * The client.
-	 *
-	 * @var Client
-	 */
-	private $client;
+    /**
+     * The client.
+     *
+     * @var Client
+     */
+    private $client;
 
-	/**
-	 * @param Client $client
-	 */
-	public function __construct(ClientInterface $client)
-	{
-		$this->client = $client;
-	}
+    /**
+     * @param Client $client
+     */
+    public function __construct(ClientInterface $client)
+    {
+        $this->client = $client;
+    }
 }

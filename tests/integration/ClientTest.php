@@ -6,13 +6,13 @@ use Youthweb\Api\Client;
 
 class ClientTest extends \PHPUnit\Framework\TestCase
 {
-	/**
-	 * @test
-	 */
-	public function testCreateClientWithoutParameters()
-	{
-		$client = new Client();
+    /**
+     * @test
+     */
+    public function testCreateClientWithoutParameters()
+    {
+        $client = new Client();
 
-		$this->assertInstanceOf('Youthweb\Api\ClientInterface', $client);
-	}
+        $this->assertInstanceOf('Youthweb\Api\ClientInterface', $client);
+    }
 }

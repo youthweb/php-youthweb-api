@@ -7,12 +7,13 @@ namespace Youthweb\Api;
  */
 interface ResourceFactoryInterface
 {
-	/**
-	 * Creates a API resource
-	 *
-	 * @param  string $name
-	 * @param  ClientInterface $client
-	 * @return RequestInterface
-	 */
-	public function createResource($name, ClientInterface $client);
+    /**
+     * Creates a API resource
+     *
+     * @param string          $name
+     * @param ClientInterface $client
+     *
+     * @return RequestInterface
+     */
+    public function createResource($name, ClientInterface $client);
 }

@@ -5,34 +5,35 @@ namespace Youthweb\Api\Resource;
 /**
  * Users
  *
- * @link docs.youthweb.apiary.io/#reference/users
+ * @see docs.youthweb.apiary.io/#reference/users
  */
 final class Users implements UsersInterface
 {
-	use ClientTrait;
+    use ClientTrait;
 
-	/**
-	 * Get a user
-	 *
-	 * @link docs.youthweb.apiary.io/#reference/users
-	 *
-	 * @param string $id
-	 * @return array the stats
-	 */
-	public function show($id)
-	{
-		return $this->client->get('/users/' . $id);
-	}
+    /**
+     * Get a user
+     *
+     * @see docs.youthweb.apiary.io/#reference/users
+     *
+     * @param string $id
+     *
+     * @return array the stats
+     */
+    public function show($id)
+    {
+        return $this->client->get('/users/' . $id);
+    }
 
-	/**
-	 * Get the resource owner
-	 *
-	 * @link http://docs.youthweb.apiary.io/#reference/users/me
-	 *
-	 * @return  Art4\JsonApiClient\Document
-	 */
-	public function showMe()
-	{
-		return $this->client->get('/me');
-	}
+    /**
+     * Get the resource owner
+     *
+     * @see http://docs.youthweb.apiary.io/#reference/users/me
+     *
+     * @return Art4\JsonApiClient\Document
+     */
+    public function showMe()
+    {
+        return $this->client->get('/me');
+    }
 }

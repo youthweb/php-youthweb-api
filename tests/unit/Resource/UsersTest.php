@@ -7,62 +7,62 @@ use InvalidArgumentException;
 
 class UsersTest extends \PHPUnit\Framework\TestCase
 {
-	/**
-	 * @test show()
-	 */
-	public function testShowUserReturnsDocumentInterface()
-	{
-		$document = $this->createMock('\Art4\JsonApiClient\DocumentInterface');
+    /**
+     * @test show()
+     */
+    public function testShowUserReturnsDocumentInterface()
+    {
+        $document = $this->createMock('\Art4\JsonApiClient\DocumentInterface');
 
-		$client = $this->createMock('Youthweb\Api\ClientInterface');
+        $client = $this->createMock('Youthweb\Api\ClientInterface');
 
-		$client->expects($this->once())
-			->method('get')
-			->willReturn($document);
+        $client->expects($this->once())
+            ->method('get')
+            ->willReturn($document);
 
-		$users = new Users($client);
+        $users = new Users($client);
 
-		$user_id = 123456;
+        $user_id = 123456;
 
-		$this->assertSame($document, $users->show($user_id));
-	}
+        $this->assertSame($document, $users->show($user_id));
+    }
 
-	/**
-	 * @test show() with Exception
-	 */
-	public function testShowFoobarThrowsException()
-	{
-		$exception = new \Exception('Resource not found', 404);
+    /**
+     * @test show() with Exception
+     */
+    public function testShowFoobarThrowsException()
+    {
+        $exception = new \Exception('Resource not found', 404);
 
-		$client = $this->createMock('Youthweb\Api\ClientInterface');
+        $client = $this->createMock('Youthweb\Api\ClientInterface');
 
-		$client->expects($this->any())
-			->method('get')
-			->will($this->throwException($exception));
+        $client->expects($this->any())
+            ->method('get')
+            ->will($this->throwException($exception));
 
-		$users = new Users($client);
+        $users = new Users($client);
 
-		$this->expectException('Exception');
-		$this->expectExceptionMessage('Resource not found');
+        $this->expectException('Exception');
+        $this->expectExceptionMessage('Resource not found');
 
-		$response = $users->show('invalid_user_id');
-	}
+        $response = $users->show('invalid_user_id');
+    }
 
-	/**
-	 * @test showMe()
-	 */
-	public function testShowMeReturnsDocumentInterface()
-	{
-		$document = $this->createMock('\Art4\JsonApiClient\DocumentInterface');
+    /**
+     * @test showMe()
+     */
+    public function testShowMeReturnsDocumentInterface()
+    {
+        $document = $this->createMock('\Art4\JsonApiClient\DocumentInterface');
 
-		$client = $this->createMock('Youthweb\Api\ClientInterface');
+        $client = $this->createMock('Youthweb\Api\ClientInterface');
 
-		$client->expects($this->once())
-			->method('get')
-			->willReturn($document);
+        $client->expects($this->once())
+            ->method('get')
+            ->willReturn($document);
 
-		$users = new Users($client);
+        $users = new Users($client);
 
-		$this->assertSame($document, $users->showMe());
-	}
+        $this->assertSame($document, $users->showMe());
+    }
 }

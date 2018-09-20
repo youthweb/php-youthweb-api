@@ -7,28 +7,28 @@ namespace Youthweb\Api;
  */
 final class ResourceFactory implements ResourceFactoryInterface
 {
-	/**
-	 * Creates a API resource
-	 *
-	 * @param  string $name
-	 * @param  ClientInterface $client
-	 * @return RequestInterface
-	 */
-	public function createResource($name, ClientInterface $client)
-	{
-		$classes = array(
-			'auth'  => 'Youthweb\\Api\\Resource\\Auth',
-			'stats' => 'Youthweb\\Api\\Resource\\Stats',
-			'users' => 'Youthweb\\Api\\Resource\\Users',
-		);
+    /**
+     * Creates a API resource
+     *
+     * @param string          $name
+     * @param ClientInterface $client
+     *
+     * @return RequestInterface
+     */
+    public function createResource($name, ClientInterface $client)
+    {
+        $classes = [
+            'auth'  => 'Youthweb\\Api\\Resource\\Auth',
+            'stats' => 'Youthweb\\Api\\Resource\\Stats',
+            'users' => 'Youthweb\\Api\\Resource\\Users',
+        ];
 
-		if ( ! isset($classes[$name]) )
-		{
-			throw new \InvalidArgumentException('The resource "' . $name . '" does not exists.');
-		}
+        if (! isset($classes[$name])) {
+            throw new \InvalidArgumentException('The resource "' . $name . '" does not exists.');
+        }
 
-		$resource = $classes[$name];
+        $resource = $classes[$name];
 
-		return new $resource($client);
-	}
+        return new $resource($client);
+    }
 }

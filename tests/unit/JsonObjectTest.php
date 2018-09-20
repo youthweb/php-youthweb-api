@@ -6,13 +6,13 @@ use Youthweb\Api\JsonObject;
 
 class JsonObjectTest extends \PHPUnit\Framework\TestCase
 {
-	/**
-	 * @test
-	 */
-	public function testToStringReturnsJson()
-	{
-		$class = new JsonObject;
+    /**
+     * @test
+     */
+    public function testToStringReturnsJson()
+    {
+        $class = new JsonObject;
 
-		$this->assertSame('{}', strval($class));
-	}
+        $this->assertSame('{}', strval($class));
+    }
 }
