@@ -29,8 +29,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Youthweb\\Api\\Tests\\Integration\\": "tests/integration",
-            "Youthweb\\Api\\Tests\\Unit\\": "tests/unit"
+            "Youthweb\\Api\\Tests\\": "tests"
         }
     },
     "config": {
