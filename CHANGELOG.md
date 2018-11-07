@@ -7,9 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7] - 2018-11-07
+
 ### Added
 
 - Support for PHP 7.3 added
+
+### Changed
+
+- **Breaking:** API Resources returning the data as `Art4\JsonApiClient\Accessable` instance instead of `Art4\JsonApiClient\Document`
 
 ## [0.6.1] - 2018-09-20
 
@@ -111,7 +117,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - First workable client for Youthweb-API [Version 0.1](https://github.com/youthweb/youthweb-api/releases/tag/0.1)
 - Http client based on [guzzlehttp/guzzle ~5.0](https://github.com/guzzle/guzzle)
 
-[Unreleased]: https://github.com/youthweb/php-youthweb-api/compare/0.6.1...HEAD
+[Unreleased]: https://github.com/youthweb/php-youthweb-api/compare/0.7...HEAD
+[0.7]: https://github.com/youthweb/php-youthweb-api/compare/0.6.1...0.7
 [0.6.1]: https://github.com/youthweb/php-youthweb-api/compare/0.6...0.6.1
 [0.6]: https://github.com/youthweb/php-youthweb-api/compare/0.5...0.6
 [0.5]: https://github.com/youthweb/php-youthweb-api/compare/0.4...0.5
