@@ -29,7 +29,7 @@ class StatsTest extends \PHPUnit\Framework\TestCase
      */
     public function testShowAccountReturnsDocumentInterface()
     {
-        $document = $this->createMock('\Art4\JsonApiClient\DocumentInterface');
+        $document = $this->createMock('\Art4\JsonApiClient\Accessable');
 
         $client = $this->createMock('Youthweb\Api\ClientInterface');
 
@@ -41,7 +41,7 @@ class StatsTest extends \PHPUnit\Framework\TestCase
 
         $response = $stats->show('account');
 
-        $this->assertInstanceOf('\Art4\JsonApiClient\DocumentInterface', $response);
+        $this->assertInstanceOf('\Art4\JsonApiClient\Accessable', $response);
     }
 
     /**
@@ -49,7 +49,7 @@ class StatsTest extends \PHPUnit\Framework\TestCase
      */
     public function testShowForumReturnsObject()
     {
-        $document = $this->createMock('\Art4\JsonApiClient\DocumentInterface');
+        $document = $this->createMock('\Art4\JsonApiClient\Accessable');
 
         $client = $this->createMock('Youthweb\Api\ClientInterface');
 
@@ -61,7 +61,7 @@ class StatsTest extends \PHPUnit\Framework\TestCase
 
         $response = $stats->show('forum');
 
-        $this->assertInstanceOf('\Art4\JsonApiClient\DocumentInterface', $response);
+        $this->assertInstanceOf('\Art4\JsonApiClient\Accessable', $response);
     }
 
     /**
@@ -69,7 +69,7 @@ class StatsTest extends \PHPUnit\Framework\TestCase
      */
     public function testShowGroupsReturnsObject()
     {
-        $document = $this->createMock('\Art4\JsonApiClient\DocumentInterface');
+        $document = $this->createMock('\Art4\JsonApiClient\Accessable');
 
         $client = $this->createMock('Youthweb\Api\ClientInterface');
 
@@ -81,7 +81,7 @@ class StatsTest extends \PHPUnit\Framework\TestCase
 
         $response = $stats->show('groups');
 
-        $this->assertInstanceOf('\Art4\JsonApiClient\DocumentInterface', $response);
+        $this->assertInstanceOf('\Art4\JsonApiClient\Accessable', $response);
     }
 
     /**

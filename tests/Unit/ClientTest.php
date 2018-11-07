@@ -535,7 +535,7 @@ class ClientTest extends \PHPUnit\Framework\TestCase
             ]
         );
 
-        $this->assertInstanceOf('\Art4\JsonApiClient\Document', $client->get('foobar'));
+        $this->assertInstanceOf('\Art4\JsonApiClient\Accessable', $client->get('foobar'));
     }
 
     /**
@@ -574,7 +574,7 @@ class ClientTest extends \PHPUnit\Framework\TestCase
             ]
         );
 
-        $this->assertInstanceOf('\Art4\JsonApiClient\Document', $client->getUnauthorized('foobar'));
+        $this->assertInstanceOf('\Art4\JsonApiClient\Accessable', $client->getUnauthorized('foobar'));
     }
 
     /**
@@ -613,7 +613,7 @@ class ClientTest extends \PHPUnit\Framework\TestCase
             ]
         );
 
-        $this->assertInstanceOf('\Art4\JsonApiClient\Document', $client->postUnauthorized('foobar', ['body' => '{}']));
+        $this->assertInstanceOf('\Art4\JsonApiClient\Accessable', $client->postUnauthorized('foobar', ['body' => '{}']));
     }
 
     /**
@@ -677,7 +677,7 @@ class ClientTest extends \PHPUnit\Framework\TestCase
             ]
         );
 
-        $this->assertInstanceOf('\Art4\JsonApiClient\Document', $client->get('foobar'));
+        $this->assertInstanceOf('\Art4\JsonApiClient\Accessable', $client->get('foobar'));
     }
 
     /**

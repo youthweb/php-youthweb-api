@@ -47,7 +47,7 @@ final class Users implements UsersInterface
      *
      * @see http://docs.youthweb.apiary.io/#reference/users/me
      *
-     * @return Art4\JsonApiClient\Document
+     * @return \Art4\JsonApiClient\Accessable
      */
     public function showMe()
     {

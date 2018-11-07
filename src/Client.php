@@ -19,7 +19,7 @@
 
 namespace Youthweb\Api;
 
-use Art4\JsonApiClient\Utils\Manager as JsonApiClientManager;
+use Art4\JsonApiClient\Helper\Parser as JsonApiParser;
 use Cache\Adapter\Void\VoidCachePool;
 use DateInterval;
 use DateTime;
@@ -750,13 +750,13 @@ final class Client implements ClientInterface
      *
      * @throws \Exception If anything goes wrong on the request
      *
-     * @return \Art4\JsonApiClient\Document
+     * @return \Art4\JsonApiClient\Accessable
      */
     private function parseResponse(ResponseInterface $response)
     {
         $body = $response->getBody()->getContents();
 
-        return (new JsonApiClientManager())->parse($body);
+        return JsonApiParser::parseResponseString($body);
     }
 
     /**

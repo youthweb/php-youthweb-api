@@ -29,7 +29,7 @@ class UsersTest extends \PHPUnit\Framework\TestCase
      */
     public function testShowUserReturnsDocumentInterface()
     {
-        $document = $this->createMock('\Art4\JsonApiClient\DocumentInterface');
+        $document = $this->createMock('\Art4\JsonApiClient\Accessable');
 
         $client = $this->createMock('Youthweb\Api\ClientInterface');
 
@@ -70,7 +70,7 @@ class UsersTest extends \PHPUnit\Framework\TestCase
      */
     public function testShowMeReturnsDocumentInterface()
     {
-        $document = $this->createMock('\Art4\JsonApiClient\DocumentInterface');
+        $document = $this->createMock('\Art4\JsonApiClient\Accessable');
 
         $client = $this->createMock('Youthweb\Api\ClientInterface');
 

@@ -19,7 +19,6 @@
 
 namespace Youthweb\Api;
 
-use Art4\JsonApiClient\Utils\Manager as JsonApiClientManager;
 use Cache\Adapter\Void\VoidCachePool;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Psr7\Request;

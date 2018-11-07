@@ -73,7 +73,7 @@ class AuthTest extends \PHPUnit\Framework\TestCase
                 ['token_secret', 'secret'],
             ]));
 
-        $document = $this->createMock('Art4\JsonApiClient\DocumentInterface');
+        $document = $this->createMock('Art4\JsonApiClient\Accessable');
 
         $document->expects($this->exactly(2))
             ->method('has')

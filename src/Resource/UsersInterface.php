@@ -33,7 +33,7 @@ interface UsersInterface extends ResourceInterface
      *
      * @param string $id
      *
-     * @return Art4\JsonApiClient\Document
+     * @return \Art4\JsonApiClient\Accessable
      */
     public function show($id);
 
@@ -42,7 +42,7 @@ interface UsersInterface extends ResourceInterface
      *
      * @see http://docs.youthweb.apiary.io/#reference/users/me
      *
-     * @return Art4\JsonApiClient\Document
+     * @return \Art4\JsonApiClient\Accessable
      */
     public function showMe();
 }
