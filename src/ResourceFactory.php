@@ -35,7 +35,6 @@ final class ResourceFactory implements ResourceFactoryInterface
     public function createResource($name, ClientInterface $client)
     {
         $classes = [
-            'auth'  => 'Youthweb\\Api\\Resource\\Auth',
             'stats' => 'Youthweb\\Api\\Resource\\Stats',
             'users' => 'Youthweb\\Api\\Resource\\Users',
         ];

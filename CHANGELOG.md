@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+
+- **Breaking:** `Youthweb\Api\Client::setUserCredentials()` was removed, use `Youthweb\Api\AuthenticatorInterface` instead.
+- **Breaking:** `Youthweb\Api\Client::getUserCredential()` was removed, use `Youthweb\Api\AuthenticatorInterface` instead.
+- **Breaking:** `Youthweb\Api\Client::setHttpClient()` was removed, use `Youthweb\Api\Client::__construct()` instead.
+- **Breaking:** `Youthweb\Api\Client::setCacheProvider()` was removed, use `Youthweb\Api\Client::__construct()` instead.
+- **Breaking:** `Youthweb\Api\Client::getCacheProvider()` was removed, use `Youthweb\Api\Client::getCacheItem($key)`, `Youthweb\Api\Client::saveCacheItem($item)` and `Youthweb\Api\Client::deleteCacheItem($item)` instead.
+- **Breaking:** `Youthweb\Api\Client::getUrl()` was removed.
+- **Breaking:** `Youthweb\Api\Client::setUrl()` was removed.
+- **Breaking:** `Youthweb\Api\Client::buildCacheKey()` was removed.
+- **Breaking:** `Youthweb\Api\ClientInterface::getUserCredential()` was removed.
+- **Breaking:** `Youthweb\Api\ClientInterface::setUserCredentials()` was removed.
+- **Breaking:** `Youthweb\Api\ClientInterface::getCacheProvider()` was removed.
+- **Breaking:** `Youthweb\Api\ClientInterface::getUrl()` was removed.
+- **Breaking:** `Youthweb\Api\ClientInterface::setUrl()` was removed.
+- **Breaking:** `Youthweb\Api\ClientInterface::buildCacheKey()` was removed.
+- **Breaking:** `Youthweb\Api\Resource\Auth` was removed.
+- **Breaking:** `Youthweb\Api\Resource\AuthInterface` was removed.
+
 ## [0.7] - 2018-11-07
 
 ### Added
@@ -33,6 +52,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - [Youthweb-API 0.12](https://developer.youthweb.net/20170716-Youthweb-API-0.12.html) support, but there is still code missing for accessing the new resources
+- Update tests for PHPUnit 6
+
+### Deprecated
+
 - `Youthweb\Api\Client::getUrl()` is deprecated and triggers an `E_USER_DEPRECATED` error if used
 - `Youthweb\Api\Client::setUrl()` is deprecated and triggers an `E_USER_DEPRECATED` error if used
 - `Youthweb\Api\Client::setUserCredentials()` is deprecated and triggers an `E_USER_DEPRECATED` error if used
@@ -43,36 +66,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Youthweb\Api\Client::buildCacheKey()` is deprecated and triggers an `E_USER_DEPRECATED` error if used
 - `Youthweb\Api\Resource\Auth` is deprecated and triggers an `E_USER_DEPRECATED` error if used
 - `Youthweb\Api\Resource\AuthInterface` is deprecated and triggers an `E_USER_DEPRECATED` error if used
-- Update tests for PHPUnit 6
 
 ## [0.5] - 2016-11-01
 
 ### Added
 
 - Implementation for OAuth2 Authorization Code Grant was added.
-- New setting for config and collaborators through `Client::__construct($config, $collaborators)`.
-- New method `Resource\Users::showMe()` for new API endpoint `/me`.
+- New setting for config and collaborators through `Youthweb\Api\Client::__construct($config, $collaborators)`.
+- New method `Youthweb\Api\Resource\Users::showMe()` for new API endpoint `/me`.
 - New factories for `Resource` and PSR-7 `Request` creation.
-- New `Client` methods `getCacheItem($key)`, `saveCacheItem($item)` and `deleteCacheItem($item)` in replace for deprecated `Client::setCacheProvider()`.
-- New method `Client::isAuthorized()` to check if the client has a valid access_token.
-- New method `Client::authorize()` to authorize a grant.
-- New method `Client::getAuthorizationUrl()` to get an authorization url.
-- New method `Client::getState()` to get a random state.
+- New `Youthweb\Api\Client` methods `getCacheItem($key)`, `saveCacheItem($item)` and `deleteCacheItem($item)` in replace for deprecated `Youthweb\Api\Client::setCacheProvider()`.
+- New method `Youthweb\Api\Client::isAuthorized()` to check if the client has a valid access_token.
+- New method `Youthweb\Api\Client::authorize()` to authorize a grant.
+- New method `Youthweb\Api\Client::getAuthorizationUrl()` to get an authorization url.
+- New method `Youthweb\Api\Client::getState()` to get a random state.
 
 ### Changed
 
 - [Youthweb-API 0.6](https://github.com/youthweb/youthweb-api/releases/tag/0.6) Support.
 - **Breaking:** All classes are set to `final` and implement interfaces. All protected methods are now private. If you had extend some classes, implement the interface instead.
-- **Breaking:** `$data` in `Client::getUnauthorized()`, `Client::getUnauthorized()` and `Client::postUnauthorized()` must be an array. It cannot be `null` anymore.
+- **Breaking:** `$data` in `Youthweb\Api\Client::getUnauthorized()`, `Youthweb\Api\Client::getUnauthorized()` and `Youthweb\Api\Client::postUnauthorized()` must be an array. It cannot be `null` anymore.
 - Switch LICENSE from GPLv2 to GPLv3.
 
 ### Deprecated
 
-- `Client::setUserCredentials()` is deprecated and will be replaced with OAuth2 client.
-- `Client::getUserCredential()` is deprecated and will be replaced with OAuth2 client.
-- `Client::setHttpClient()` is deprecated. Use `Client::__construct()` instead.
-- `Client::setCacheProvider()` is deprecated. Use `Client::__construct()` instead.
-- `Client::getCacheProvider()` is deprecated. Use the new cache methods in `Client` instead.
+- `Youthweb\Api\Client::setUserCredentials()` is deprecated and will be replaced with OAuth2 client.
+- `Youthweb\Api\Client::getUserCredential()` is deprecated and will be replaced with OAuth2 client.
+- `Youthweb\Api\Client::setHttpClient()` is deprecated. Use `Youthweb\Api\Client::__construct()` instead.
+- `Youthweb\Api\Client::setCacheProvider()` is deprecated. Use `Youthweb\Api\Client::__construct()` instead.
+- `Youthweb\Api\Client::getCacheProvider()` is deprecated. Use the new cache methods in `Youthweb\Api\Client` instead.
 
 ### Removed
 

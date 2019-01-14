@@ -159,14 +159,10 @@ class YouthwebAuthenticator implements AuthenticatorInterface
      * Set a oauth2 provider
      *
      * @param Youthweb\OAuth2\Client\Provider\Youthweb $oauth2_provider the oauth2 provider
-     *
-     * @return self
      */
     private function setOauth2Provider(Oauth2Provider $oauth2_provider)
     {
         $this->oauth2_provider = $oauth2_provider;
-
-        return $this;
     }
 
     /**

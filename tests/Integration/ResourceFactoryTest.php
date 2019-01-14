@@ -58,7 +58,6 @@ class ResourceFactoryTest extends \PHPUnit\Framework\TestCase
     public function getResourseClassesProvider()
     {
         return [
-            ['auth', 'Youthweb\Api\Resource\AuthInterface'],
             ['stats', 'Youthweb\Api\Resource\StatsInterface'],
             ['users', 'Youthweb\Api\Resource\UsersInterface'],
         ];

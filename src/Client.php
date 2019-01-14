@@ -112,20 +112,6 @@ final class Client implements ClientInterface
     private $redirect_url = '';
 
     /**
-     * @var string
-     *
-     * @deprecated Since Youthweb-API 0.6
-     */
-    private $username = '';
-
-    /**
-     * @var string
-     *
-     * @deprecated Since Youthweb-API 0.6
-     */
-    private $token_secret = '';
-
-    /**
      * Constructs the Client.
      *
      * @param array $options       an array of options to set on the client.
@@ -189,7 +175,7 @@ final class Client implements ClientInterface
             $collaborators['cache_provider'] = new VoidCachePool();
         }
 
-        $this->setCacheProvider($collaborators['cache_provider']);
+        $this->setCacheProviderInternally($collaborators['cache_provider']);
 
         if (empty($collaborators['request_factory'])) {
             $collaborators['request_factory'] = new RequestFactory();
@@ -271,14 +257,6 @@ final class Client implements ClientInterface
         }
 
         $this->deleteCacheItem($access_token_item);
-
-        // BC: Try to get a token with deprecated user token
-        try {
-            $this->getResource('auth')->getBearerToken();
-
-            return true;
-        } catch (\Exception $e) {
-        }
 
         return false;
     }
@@ -431,101 +409,11 @@ final class Client implements ClientInterface
     /**
      * Returns the Url
      *
-     * @deprecated since 0.5 and will be removed in 1.0. Don't use it anymore
-     *
-     * @return string
-     */
-    public function getUrl()
-    {
-        @trigger_error(__METHOD__ . ' is deprecated since version 0.5 and will be removed in 1.0, don\'t use it anymore.', E_USER_DEPRECATED);
-
-        return $this->getApiUrl();
-    }
-
-    /**
-     * Returns the Url
-     *
      * @return string
      */
     private function getApiUrl()
     {
         return $this->api_domain;
-    }
-
-    /**
-     * Set the Url
-     *
-     * @deprecated since 0.5 and will be removed in 1.0. Don't use it anymore
-     *
-     * @param string $url The url
-     *
-     * @return self
-     */
-    public function setUrl($url)
-    {
-        @trigger_error(__METHOD__ . ' is deprecated since version 0.5 and will be removed in 1.0, don\'t use it anymore.', E_USER_DEPRECATED);
-
-        $this->api_domain = (string) $url;
-
-        return $this;
-    }
-
-    /**
-     * Set the User Credentials
-     *
-     * @deprecated since 0.5 and will be removed in 1.0. Use OAuth 2.0 instead
-     *
-     * @param string $username     The username
-     * @param string $token_secret The Token-Secret
-     *
-     * @return self
-     */
-    public function setUserCredentials($username, $token_secret)
-    {
-        @trigger_error(__METHOD__ . ' is deprecated since version 0.5 and will be removed in 1.0, use OAuth 2.0 instead.', E_USER_DEPRECATED);
-
-        $this->username = strval($username);
-        $this->token_secret = strval($token_secret);
-
-        return $this;
-    }
-
-    /**
-     * Get a User Credentials
-     *
-     * @deprecated since 0.5 and will be removed in 1.0. Use OAuth 2.0 instead
-     *
-     * @param string $key 'username' or 'token_secret'
-     *
-     * @return string the requested user credential
-     */
-    public function getUserCredential($key)
-    {
-        @trigger_error(__METHOD__ . ' is deprecated since version 0.5 and will be removed in 1.0, use OAuth 2.0 instead.', E_USER_DEPRECATED);
-
-        $key = strval($key);
-
-        if (! in_array($key, ['username', 'token_secret'])) {
-            throw new \UnexpectedValueException('"' . $key . '" is not a valid key for user credentials.');
-        }
-
-        return $this->$key;
-    }
-
-    /**
-     * Set a http client
-     *
-     * @deprecated since 0.5 and will be removed in 1.0. Don't use it anymore
-     *
-     * @param HttpClientInterface $client the http client
-     *
-     * @return self
-     */
-    public function setHttpClient(HttpClientInterface $client)
-    {
-        @trigger_error(__METHOD__ . ' is deprecated since version 0.5 and will be removed in 1.0, don\'t use it anymore.', E_USER_DEPRECATED);
-
-        return $this->setHttpClientInternally($client);
     }
 
     /**
@@ -545,22 +433,6 @@ final class Client implements ClientInterface
     /**
      * Set a cache provider
      *
-     * @deprecated since 0.5 and will be removed in 1.0. Don't use it anymore
-     *
-     * @param Psr\Cache\CacheItemPoolInterface $cache_provider the cache provider
-     *
-     * @return self
-     */
-    public function setCacheProvider(CacheItemPoolInterface $cache_provider)
-    {
-        @trigger_error(__METHOD__ . ' is deprecated since version 0.5 and will be removed in 1.0, use OAuth 2.0 instead.', E_USER_DEPRECATED);
-
-        return $this->setCacheProviderInternally($cache_provider);
-    }
-
-    /**
-     * Set a cache provider
-     *
      * @param Psr\Cache\CacheItemPoolInterface $cache_provider the cache provider
      *
      * @return self
@@ -575,41 +447,11 @@ final class Client implements ClientInterface
     /**
      * Get the cache provider
      *
-     * @deprecated since 0.5 and will be removed in 1.0. Don't use it anymore
-     *
-     * @return Psr\Cache\CacheItemPoolInterface the cache provider
-     */
-    public function getCacheProvider()
-    {
-        @trigger_error(__METHOD__ . ' is deprecated since version 0.5 and will be removed in 1.0, don\'t use it anymore.', E_USER_DEPRECATED);
-
-        return $this->getCacheProviderInternally();
-    }
-
-    /**
-     * Get the cache provider
-     *
      * @return Psr\Cache\CacheItemPoolInterface the cache provider
      */
     private function getCacheProviderInternally()
     {
         return $this->cache_provider;
-    }
-
-    /**
-     * Build a cache key
-     *
-     * @deprecated Will be set to private in future. Don't use it anymore
-     *
-     * @param string $key The key
-     *
-     * @return string The cache key
-     **/
-    public function buildCacheKey($key)
-    {
-        @trigger_error(__METHOD__ . ' is deprecated since version 0.5 and will be removed in 1.0, don\'t use it anymore.', E_USER_DEPRECATED);
-
-        return $this->createCacheKey($key);
     }
 
     /**
@@ -633,8 +475,7 @@ final class Client implements ClientInterface
     {
         $access_token_item = $this->getCacheItem('access_token');
         $access_token_item->set($token->getToken());
-        $date = new DateTime('@' . $token->getExpires());
-        $access_token_item->expiresAt($date);
+        $access_token_item->expiresAt(new DateTime('@' . $token->getExpires()));
         $this->saveCacheItem($access_token_item);
     }
 
@@ -672,7 +513,7 @@ final class Client implements ClientInterface
     private function getAccessToken()
     {
         if (! $this->isAuthorized()) {
-            throw new UnauthorizedException;
+            throw new UnauthorizedException('Unauthorized', 401);
         }
 
         $access_token_item = $this->getCacheItem('access_token');
@@ -680,9 +521,6 @@ final class Client implements ClientInterface
         if ($access_token_item->isHit()) {
             return $access_token_item->get();
         }
-
-        // BC: Try to get a token with deprecated user token
-        return $this->getResource('auth')->getBearerToken();
     }
 
     /**
