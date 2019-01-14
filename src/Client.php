@@ -43,7 +43,7 @@ final class Client implements ClientInterface
     /**
      * @var string
      */
-    private $api_version = '0.12';
+    private $api_version = '0.14';
 
     /**
      * @var string
