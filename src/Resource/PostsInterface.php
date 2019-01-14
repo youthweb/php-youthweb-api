@@ -20,37 +20,20 @@
 namespace Youthweb\Api\Resource;
 
 /**
- * Users
+ * Posts
  *
- * @see https://developer.youthweb.net/api_endpoint_users.html
+ * @see https://developer.youthweb.net/api_endpoint_posts.html
  */
-final class Users implements UsersInterface
+interface PostsInterface extends ResourceInterface
 {
-    use ClientTrait;
-
     /**
-     * Get a user
+     * Get a post
      *
-     * @see https://developer.youthweb.net/api_endpoint_users.html
+     * @see https://developer.youthweb.net/api_endpoint_posts.html
      *
      * @param string $id
      *
-     * @return array the stats
-     */
-    public function show($id)
-    {
-        return $this->client->get('/users/' . strval($id));
-    }
-
-    /**
-     * Get the resource owner
-     *
-     * @see http://docs.youthweb.apiary.io/#reference/users/me
-     *
      * @return \Art4\JsonApiClient\Accessable
      */
-    public function showMe()
-    {
-        return $this->client->get('/me');
-    }
+    public function show($id);
 }
