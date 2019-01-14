@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- [Youthweb-API 0.14](https://developer.youthweb.net/20190113-Youthweb-API-0.14.html) Support
+- New class `Youthweb\Api\Resource\Posts` to get posts.
+- New method `Youthweb\Api\Resource\Users::showPosts()` to get posts of a user.
+
 ### Removed
 
 - **Breaking:** `Youthweb\Api\Client::setUserCredentials()` was removed, use `Youthweb\Api\AuthenticatorInterface` instead.

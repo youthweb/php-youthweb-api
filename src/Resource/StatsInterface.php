@@ -22,14 +22,14 @@ namespace Youthweb\Api\Resource;
 /**
  * Get the stats
  *
- * @see docs.youthweb.apiary.io/#reference/stats
+ * @see https://developer.youthweb.net/api_endpoint_stats.html
  */
 interface StatsInterface extends ResourceInterface
 {
     /**
      * Get the stats
      *
-     * @see docs.youthweb.apiary.io/#reference/stats
+     * @see https://developer.youthweb.net/api_endpoint_stats.html
      *
      * @param string $id Can be `account`, `forum` or `groups`
      *

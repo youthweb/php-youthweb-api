@@ -35,7 +35,7 @@ final class Users implements UsersInterface
      *
      * @param string $id
      *
-     * @return array the stats
+     * @return array the user data
      */
     public function show($id)
     {
@@ -43,9 +43,23 @@ final class Users implements UsersInterface
     }
 
     /**
+     * Get the posts of a user
+     *
+     * @see https://developer.youthweb.net/api_endpoint_object_posts.html#read
+     *
+     * @param string $id
+     *
+     * @return array the posts data
+     */
+    public function showPosts($id)
+    {
+        return $this->client->get('/users/' . strval($id));
+    }
+
+    /**
      * Get the resource owner
      *
-     * @see http://docs.youthweb.apiary.io/#reference/users/me
+     * @see https://developer.youthweb.net/api_endpoint_me.html
      *
      * @return \Art4\JsonApiClient\Accessable
      */

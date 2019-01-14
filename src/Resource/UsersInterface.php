@@ -22,14 +22,14 @@ namespace Youthweb\Api\Resource;
 /**
  * Users
  *
- * @see docs.youthweb.apiary.io/#reference/users
+ * @see https://developer.youthweb.net/api_endpoint_users.html
  */
 interface UsersInterface extends ResourceInterface
 {
     /**
      * Get a user
      *
-     * @see http://docs.youthweb.apiary.io/#reference/users/user
+     * @see https://developer.youthweb.net/api_endpoint_users.html
      *
      * @param string $id
      *
@@ -38,9 +38,20 @@ interface UsersInterface extends ResourceInterface
     public function show($id);
 
     /**
+     * Get the posts of a user
+     *
+     * @see https://developer.youthweb.net/api_endpoint_object_posts.html#read
+     *
+     * @param string $id
+     *
+     * @return array the posts data
+     */
+    public function showPosts($id);
+
+    /**
      * Get the resource owner
      *
-     * @see http://docs.youthweb.apiary.io/#reference/users/me
+     * @see https://developer.youthweb.net/api_endpoint_me.html
      *
      * @return \Art4\JsonApiClient\Accessable
      */

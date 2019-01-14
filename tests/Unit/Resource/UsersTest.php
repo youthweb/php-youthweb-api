@@ -27,7 +27,7 @@ class UsersTest extends \PHPUnit\Framework\TestCase
     /**
      * @test show()
      */
-    public function testShowUserReturnsDocumentInterface()
+    public function testShowReturnsDocumentInterface()
     {
         $document = $this->createMock('\Art4\JsonApiClient\Accessable');
 
@@ -39,15 +39,15 @@ class UsersTest extends \PHPUnit\Framework\TestCase
 
         $users = new Users($client);
 
-        $user_id = 123456;
+        $userId = '123456';
 
-        $this->assertSame($document, $users->show($user_id));
+        $this->assertSame($document, $users->show($userId));
     }
 
     /**
      * @test show() with Exception
      */
-    public function testShowFoobarThrowsException()
+    public function testShowThrowsException()
     {
         $exception = new \Exception('Resource not found', 404);
 
@@ -63,6 +63,47 @@ class UsersTest extends \PHPUnit\Framework\TestCase
         $this->expectExceptionMessage('Resource not found');
 
         $response = $users->show('invalid_user_id');
+    }
+
+    /**
+     * @test showPosts()
+     */
+    public function testShowPostsReturnsDocumentInterface()
+    {
+        $document = $this->createMock('\Art4\JsonApiClient\Accessable');
+
+        $client = $this->createMock('Youthweb\Api\ClientInterface');
+
+        $client->expects($this->once())
+            ->method('get')
+            ->willReturn($document);
+
+        $users = new Users($client);
+
+        $userId = '123456';
+
+        $this->assertSame($document, $users->showPosts($userId));
+    }
+
+    /**
+     * @test show() with Exception
+     */
+    public function testShowPostsThrowsException()
+    {
+        $exception = new \Exception('Resource not found', 404);
+
+        $client = $this->createMock('Youthweb\Api\ClientInterface');
+
+        $client->expects($this->any())
+            ->method('get')
+            ->will($this->throwException($exception));
+
+        $users = new Users($client);
+
+        $this->expectException('Exception');
+        $this->expectExceptionMessage('Resource not found');
+
+        $response = $users->showPosts('invalid_user_id');
     }
 
     /**

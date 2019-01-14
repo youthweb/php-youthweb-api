@@ -22,7 +22,7 @@ namespace Youthweb\Api\Resource;
 /**
  * Get the stats
  *
- * @see docs.youthweb.apiary.io/#reference/stats
+ * @see https://developer.youthweb.net/api_endpoint_stats.html
  */
 final class Stats implements StatsInterface
 {
@@ -31,7 +31,7 @@ final class Stats implements StatsInterface
     /**
      * Get the stats
      *
-     * @see docs.youthweb.apiary.io/#reference/stats
+     * @see https://developer.youthweb.net/api_endpoint_stats.html
      *
      * @param string $id
      *
