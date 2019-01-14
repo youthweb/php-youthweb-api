@@ -420,28 +420,20 @@ final class Client implements ClientInterface
      * Set a http client
      *
      * @param HttpClientInterface $client the http client
-     *
-     * @return self
      */
     private function setHttpClientInternally(HttpClientInterface $client)
     {
         $this->http_client = $client;
-
-        return $this;
     }
 
     /**
      * Set a cache provider
      *
      * @param Psr\Cache\CacheItemPoolInterface $cache_provider the cache provider
-     *
-     * @return self
      */
     private function setCacheProviderInternally(CacheItemPoolInterface $cache_provider)
     {
         $this->cache_provider = $cache_provider;
-
-        return $this;
     }
 
     /**
@@ -483,14 +475,10 @@ final class Client implements ClientInterface
      * Set a oauth2 provider
      *
      * @param AuthenticatorInterface $oauth2_provider the oauth2 provider
-     *
-     * @return self
      */
     private function setOauth2Provider(AuthenticatorInterface $oauth2_provider)
     {
         $this->oauth2_provider = $oauth2_provider;
-
-        return $this;
     }
 
     /**
@@ -611,14 +599,10 @@ final class Client implements ClientInterface
      * Set a request_factory
      *
      * @param RequestFactoryInterface $request_factory the request factory
-     *
-     * @return self
      */
     private function setRequestFactory(RequestFactoryInterface $request_factory)
     {
         $this->request_factory = $request_factory;
-
-        return $this;
     }
 
     /**
@@ -635,14 +619,10 @@ final class Client implements ClientInterface
      * Set a resource_factory
      *
      * @param ResourceFactoryInterface $resource_factory the resource factory
-     *
-     * @return self
      */
     private function setResourceFactory(ResourceFactoryInterface $resource_factory)
     {
         $this->resource_factory = $resource_factory;
-
-        return $this;
     }
 
     /**
