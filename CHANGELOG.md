@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8] - 2019-01-15
+
 ### Added
 
 - [Youthweb-API 0.14](https://developer.youthweb.net/20190113-Youthweb-API-0.14.html) Support
@@ -145,7 +147,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - First workable client for Youthweb-API [Version 0.1](https://github.com/youthweb/youthweb-api/releases/tag/0.1)
 - Http client based on [guzzlehttp/guzzle ~5.0](https://github.com/guzzle/guzzle)
 
-[Unreleased]: https://github.com/youthweb/php-youthweb-api/compare/0.7...HEAD
+[Unreleased]: https://github.com/youthweb/php-youthweb-api/compare/0.8...HEAD
+[0.8]: https://github.com/youthweb/php-youthweb-api/compare/0.7...0.8
 [0.7]: https://github.com/youthweb/php-youthweb-api/compare/0.6.1...0.7
 [0.6.1]: https://github.com/youthweb/php-youthweb-api/compare/0.6...0.6.1
 [0.6]: https://github.com/youthweb/php-youthweb-api/compare/0.5...0.6
