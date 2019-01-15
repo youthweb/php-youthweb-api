@@ -146,4 +146,86 @@ class PostsTest extends \PHPUnit\Framework\TestCase
 
         $response = $posts->showAuthorRelationship('invalid_post_id');
     }
+
+    /**
+     * @test showParent()
+     */
+    public function testShowParentReturnsDocumentInterface()
+    {
+        $document = $this->createMock('\Art4\JsonApiClient\Accessable');
+
+        $client = $this->createMock('Youthweb\Api\ClientInterface');
+
+        $client->expects($this->once())
+            ->method('get')
+            ->willReturn($document);
+
+        $posts = new Posts($client);
+
+        $postId = 'af25fe45-a796-449c-8a42-44e647e2454f';
+
+        $this->assertSame($document, $posts->showParent($postId));
+    }
+
+    /**
+     * @test showParent() with Exception
+     */
+    public function testShowParentThrowsException()
+    {
+        $exception = new \Exception('Resource not found', 404);
+
+        $client = $this->createMock('Youthweb\Api\ClientInterface');
+
+        $client->expects($this->any())
+            ->method('get')
+            ->will($this->throwException($exception));
+
+        $posts = new Posts($client);
+
+        $this->expectException('Exception');
+        $this->expectExceptionMessage('Resource not found');
+
+        $response = $posts->showParent('invalid_post_id');
+    }
+
+    /**
+     * @test showParentRelationship()
+     */
+    public function testShowParentRelationshipReturnsDocumentInterface()
+    {
+        $document = $this->createMock('\Art4\JsonApiClient\Accessable');
+
+        $client = $this->createMock('Youthweb\Api\ClientInterface');
+
+        $client->expects($this->once())
+            ->method('get')
+            ->willReturn($document);
+
+        $posts = new Posts($client);
+
+        $postId = 'af25fe45-a796-449c-8a42-44e647e2454f';
+
+        $this->assertSame($document, $posts->showParentRelationship($postId));
+    }
+
+    /**
+     * @test showParentRelationship() with Exception
+     */
+    public function testShowParentRelationshipThrowsException()
+    {
+        $exception = new \Exception('Resource not found', 404);
+
+        $client = $this->createMock('Youthweb\Api\ClientInterface');
+
+        $client->expects($this->any())
+            ->method('get')
+            ->will($this->throwException($exception));
+
+        $posts = new Posts($client);
+
+        $this->expectException('Exception');
+        $this->expectExceptionMessage('Resource not found');
+
+        $response = $posts->showParentRelationship('invalid_post_id');
+    }
 }
