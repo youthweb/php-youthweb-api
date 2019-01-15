@@ -38,17 +38,6 @@ interface UsersInterface extends ResourceInterface
     public function show($id);
 
     /**
-     * Get the posts of a user
-     *
-     * @see https://developer.youthweb.net/api_endpoint_object_posts.html#read
-     *
-     * @param string $id
-     *
-     * @return array the posts data
-     */
-    public function showPosts($id);
-
-    /**
      * Get the resource owner
      *
      * @see https://developer.youthweb.net/api_endpoint_me.html

@@ -43,6 +43,18 @@ final class Users implements UsersInterface
     }
 
     /**
+     * Get the authorized user
+     *
+     * @see https://developer.youthweb.net/api_endpoint_me.html
+     *
+     * @return \Art4\JsonApiClient\Accessable
+     */
+    public function showMe()
+    {
+        return $this->client->get('/me');
+    }
+
+    /**
      * Get the posts of a user
      *
      * @see https://developer.youthweb.net/api_endpoint_object_posts.html#read
@@ -54,17 +66,5 @@ final class Users implements UsersInterface
     public function showPosts($id)
     {
         return $this->client->get('/users/' . strval($id));
-    }
-
-    /**
-     * Get the resource owner
-     *
-     * @see https://developer.youthweb.net/api_endpoint_me.html
-     *
-     * @return \Art4\JsonApiClient\Accessable
-     */
-    public function showMe()
-    {
-        return $this->client->get('/me');
     }
 }

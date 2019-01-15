@@ -27,7 +27,7 @@ class PostsTest extends \PHPUnit\Framework\TestCase
     /**
      * @test show()
      */
-    public function testShowUserReturnsDocumentInterface()
+    public function testShowReturnsDocumentInterface()
     {
         $document = $this->createMock('\Art4\JsonApiClient\Accessable');
 
@@ -47,7 +47,7 @@ class PostsTest extends \PHPUnit\Framework\TestCase
     /**
      * @test show() with Exception
      */
-    public function testShowFoobarThrowsException()
+    public function testShowThrowsException()
     {
         $exception = new \Exception('Resource not found', 404);
 
@@ -63,5 +63,87 @@ class PostsTest extends \PHPUnit\Framework\TestCase
         $this->expectExceptionMessage('Resource not found');
 
         $response = $posts->show('invalid_post_id');
+    }
+
+    /**
+     * @test showAuthor()
+     */
+    public function testShowAuthorReturnsDocumentInterface()
+    {
+        $document = $this->createMock('\Art4\JsonApiClient\Accessable');
+
+        $client = $this->createMock('Youthweb\Api\ClientInterface');
+
+        $client->expects($this->once())
+            ->method('get')
+            ->willReturn($document);
+
+        $posts = new Posts($client);
+
+        $postId = 'af25fe45-a796-449c-8a42-44e647e2454f';
+
+        $this->assertSame($document, $posts->showAuthor($postId));
+    }
+
+    /**
+     * @test showAuthor() with Exception
+     */
+    public function testShowAuthorThrowsException()
+    {
+        $exception = new \Exception('Resource not found', 404);
+
+        $client = $this->createMock('Youthweb\Api\ClientInterface');
+
+        $client->expects($this->any())
+            ->method('get')
+            ->will($this->throwException($exception));
+
+        $posts = new Posts($client);
+
+        $this->expectException('Exception');
+        $this->expectExceptionMessage('Resource not found');
+
+        $response = $posts->showAuthor('invalid_post_id');
+    }
+
+    /**
+     * @test showAuthorRelationship()
+     */
+    public function testShowAuthorRelationshipReturnsDocumentInterface()
+    {
+        $document = $this->createMock('\Art4\JsonApiClient\Accessable');
+
+        $client = $this->createMock('Youthweb\Api\ClientInterface');
+
+        $client->expects($this->once())
+            ->method('get')
+            ->willReturn($document);
+
+        $posts = new Posts($client);
+
+        $postId = 'af25fe45-a796-449c-8a42-44e647e2454f';
+
+        $this->assertSame($document, $posts->showAuthorRelationship($postId));
+    }
+
+    /**
+     * @test showAuthorRelationship() with Exception
+     */
+    public function testShowAuthorRelationshipThrowsException()
+    {
+        $exception = new \Exception('Resource not found', 404);
+
+        $client = $this->createMock('Youthweb\Api\ClientInterface');
+
+        $client->expects($this->any())
+            ->method('get')
+            ->will($this->throwException($exception));
+
+        $posts = new Posts($client);
+
+        $this->expectException('Exception');
+        $this->expectExceptionMessage('Resource not found');
+
+        $response = $posts->showAuthorRelationship('invalid_post_id');
     }
 }

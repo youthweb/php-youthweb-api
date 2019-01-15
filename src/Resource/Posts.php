@@ -29,7 +29,7 @@ final class Posts implements PostsInterface
     use ClientTrait;
 
     /**
-     * Get a user
+     * Get a post
      *
      * @see https://developer.youthweb.net/api_endpoint_posts.html
      *
@@ -40,5 +40,61 @@ final class Posts implements PostsInterface
     public function show($id)
     {
         return $this->client->get('/posts/' . strval($id));
+    }
+
+    /**
+     * Get the author of a post
+     *
+     * @see https://developer.youthweb.net/api_endpoint_posts.html#beziehungen
+     *
+     * @param string $id
+     *
+     * @return \Art4\JsonApiClient\Accessable
+     */
+    public function showAuthor($id)
+    {
+        return $this->client->get('/posts/' . strval($id) . '/author');
+    }
+
+    /**
+     * Get the author relationship of a post
+     *
+     * @see https://developer.youthweb.net/api_endpoint_posts.html#beziehungen
+     *
+     * @param string $id
+     *
+     * @return \Art4\JsonApiClient\Accessable
+     */
+    public function showAuthorRelationship($id)
+    {
+        return $this->client->get('/posts/' . strval($id) . '/relationships/author');
+    }
+
+    /**
+     * Get the parent of a post
+     *
+     * @see https://developer.youthweb.net/api_endpoint_posts.html#beziehungen
+     *
+     * @param string $id
+     *
+     * @return \Art4\JsonApiClient\Accessable
+     */
+    public function showParent($id)
+    {
+        return $this->client->get('/posts/' . strval($id) . '/parent');
+    }
+
+    /**
+     * Get the parent relationship of a post
+     *
+     * @see https://developer.youthweb.net/api_endpoint_posts.html#beziehungen
+     *
+     * @param string $id
+     *
+     * @return \Art4\JsonApiClient\Accessable
+     */
+    public function showParentRelationship($id)
+    {
+        return $this->client->get('/posts/' . strval($id) . '/relationships/parent');
     }
 }
