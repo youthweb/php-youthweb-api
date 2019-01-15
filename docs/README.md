@@ -2,7 +2,6 @@
 
 ## APIs:
 
-* [Auth](resource_auth.md)
 * [Stats](resource_stats.md)
 * [Users](resource_users.md)
 
