@@ -366,6 +366,78 @@ class ClientTest extends \PHPUnit\Framework\TestCase
     /**
      * @test
      */
+    public function testIsAuthorizeReturnsTrue()
+    {
+        $http_client = $this->createMock('Youthweb\Api\HttpClientInterface');
+        $cache_provider = $this->createMock('Psr\Cache\CacheItemPoolInterface');
+        $cache_item_state = $this->createMock('Psr\Cache\CacheItemInterface');
+
+        $cache_item_state->expects($this->any())
+            ->method('isHit')
+            ->willReturn(true);
+
+        $cache_item_state->expects($this->once())
+            ->method('get')
+            ->willReturn('random_string');
+
+        $cache_provider->expects($this->exactly(1))
+            ->method('getItem')
+            ->will($this->returnValueMap([
+                ['php_youthweb_api.access_token', $cache_item_state],
+            ]));
+
+        $client = $this->createClient(
+            [
+                'client_id'     => 'client_id',
+                'client_secret' => 'client_secret',
+                'redirect_url'  => 'https://example.org/callback',
+            ],
+            [
+                'http_client' => $http_client,
+                'cache_provider' => $cache_provider,
+            ]
+        );
+
+        $this->assertTrue($client->isAuthorized());
+    }
+
+    /**
+     * @test
+     */
+    public function testIsAuthorizeReturnsFalse()
+    {
+        $http_client = $this->createMock('Youthweb\Api\HttpClientInterface');
+        $cache_provider = $this->createMock('Psr\Cache\CacheItemPoolInterface');
+        $cache_item_state = $this->createMock('Psr\Cache\CacheItemInterface');
+
+        $cache_item_state->expects($this->any())
+            ->method('isHit')
+            ->willReturn(false);
+
+        $cache_provider->expects($this->exactly(1))
+            ->method('getItem')
+            ->will($this->returnValueMap([
+                ['php_youthweb_api.access_token', $cache_item_state],
+            ]));
+
+        $client = $this->createClient(
+            [
+                'client_id'     => 'client_id',
+                'client_secret' => 'client_secret',
+                'redirect_url'  => 'https://example.org/callback',
+            ],
+            [
+                'http_client' => $http_client,
+                'cache_provider' => $cache_provider,
+            ]
+        );
+
+        $this->assertFalse($client->isAuthorized());
+    }
+
+    /**
+     * @test
+     */
     public function testAuthorizedGetRequestReturnsObject()
     {
         $cache_provider = $this->createMock('Psr\Cache\CacheItemPoolInterface');
