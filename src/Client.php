@@ -40,6 +40,8 @@ use Youthweb\Api\Exception\UnauthorizedException;
  */
 final class Client implements ClientInterface
 {
+    const CACHEKEY_ACCESS_TOKEN = 'access_token';
+
     /**
      * @var string
      */
@@ -250,15 +252,13 @@ final class Client implements ClientInterface
     public function isAuthorized()
     {
         // Check the access token
-        $access_token_item = $this->getCacheItem('access_token');
+        try {
+            $this->getAccessToken();
 
-        if ($access_token_item->isHit()) {
             return true;
+        } catch (UnauthorizedException $e) {
+            return false;
         }
-
-        $this->deleteCacheItem($access_token_item);
-
-        return false;
     }
 
     /**
@@ -465,7 +465,7 @@ final class Client implements ClientInterface
      */
     private function saveAccessToken(AccessToken $token)
     {
-        $access_token_item = $this->getCacheItem('access_token');
+        $access_token_item = $this->getCacheItem(self::CACHEKEY_ACCESS_TOKEN);
         $access_token_item->set($token->getToken());
         $access_token_item->expiresAt(new DateTime('@' . $token->getExpires()));
         $this->saveCacheItem($access_token_item);
@@ -500,15 +500,15 @@ final class Client implements ClientInterface
      */
     private function getAccessToken()
     {
-        if (! $this->isAuthorized()) {
-            throw new UnauthorizedException('Unauthorized', 401);
-        }
-
-        $access_token_item = $this->getCacheItem('access_token');
+        $access_token_item = $this->getCacheItem(self::CACHEKEY_ACCESS_TOKEN);
 
         if ($access_token_item->isHit()) {
             return $access_token_item->get();
         }
+
+        $this->deleteCacheItem($access_token_item);
+
+        throw new UnauthorizedException('Unauthorized', 401);
     }
 
     /**
@@ -673,7 +673,7 @@ final class Client implements ClientInterface
 
         // Delete the access token if a 401 error occured
         if (strval($e->getCode()) === '401') {
-            $access_token_item = $this->getCacheItem('access_token');
+            $access_token_item = $this->getCacheItem(self::CACHEKEY_ACCESS_TOKEN);
             $this->deleteCacheItem($access_token_item);
         }
 

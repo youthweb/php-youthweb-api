@@ -376,15 +376,15 @@ class ClientTest extends \PHPUnit\Framework\TestCase
         $response = $this->createMock('Psr\Http\Message\ResponseInterface');
         $http_client = $this->createMock('Youthweb\Api\HttpClientInterface');
 
-        $cache_item_access->expects($this->exactly(2))
+        $cache_item_access->expects($this->once())
             ->method('isHit')
             ->willReturn(true);
 
-        $cache_item_access->expects($this->exactly(1))
+        $cache_item_access->expects($this->once())
             ->method('get')
             ->willReturn('access_token');
 
-        $cache_provider->expects($this->exactly(2))
+        $cache_provider->expects($this->once())
             ->method('getItem')
             ->will($this->returnValueMap([
                 ['php_youthweb_api.access_token', $cache_item_access],
@@ -555,11 +555,11 @@ class ClientTest extends \PHPUnit\Framework\TestCase
             ->method('createRequest')
             ->willReturn($request);
 
-        $cache_item_access->expects($this->exactly(2))
+        $cache_item_access->expects($this->once())
             ->method('isHit')
             ->willReturn(true);
 
-        $cache_provider->expects($this->exactly(3))
+        $cache_provider->expects($this->exactly(2))
             ->method('getItem')
             ->will($this->returnValueMap([
                 ['php_youthweb_api.access_token', $cache_item_access],
@@ -626,11 +626,11 @@ class ClientTest extends \PHPUnit\Framework\TestCase
             ->method('getStatusCode')
             ->willReturn(401);
 
-        $cache_item_access->expects($this->exactly(2))
+        $cache_item_access->expects($this->once())
             ->method('isHit')
             ->willReturn(true);
 
-        $cache_provider->expects($this->exactly(3))
+        $cache_provider->expects($this->exactly(2))
             ->method('getItem')
             ->will($this->returnValueMap([
                 ['php_youthweb_api.access_token', $cache_item_access],
