@@ -85,8 +85,7 @@ Der Changelog ist [hier](CHANGELOG.md) zu finden und folgt den Empfehlungen von 
 
 ## Todo
 
-- Zugriff auf `/posts` Resourcen
-- Zugriff auf `/{object}/{object_id}/posts` Resourcen
+- Erstellen von Posts auf Endpoint `/{object}/{object_id}/posts`
 - Zugriff auf `/events` Resourcen
 - Zugriff auf `/friends` Resourcen
 - Zugriff auf `/{object}/{id}/friends` Resourcen
