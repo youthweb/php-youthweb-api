@@ -29,6 +29,11 @@ class YouthwebAuthenticator implements AuthenticatorInterface
     /**
      * @var string
      */
+    private $api_version = '0.15';
+
+    /**
+     * @var string
+     */
     private $api_domain = 'https://api.youthweb.net';
 
     /**
@@ -69,6 +74,7 @@ class YouthwebAuthenticator implements AuthenticatorInterface
     public function __construct(array $options = [], array $collaborators = [])
     {
         $allowed_options = [
+            'api_version',
             'api_domain',
             'auth_domain',
             'client_id',
@@ -89,6 +95,7 @@ class YouthwebAuthenticator implements AuthenticatorInterface
                 'clientId'     => $this->client_id,
                 'clientSecret' => $this->client_secret,
                 'redirectUri'  => $this->redirect_url,
+                'apiVersion'   => $this->api_version,
                 'apiDomain'    => $this->api_domain,
                 'domain'       => $this->auth_domain,
             ]);

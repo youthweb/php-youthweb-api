@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- api version will be automatically set into Oauth2Provider
+- default api version was set to [Youthweb-API 0.15](https://developer.youthweb.net/20190908-Youthweb-API-0.15.html)
+
+### Changed
+
+- Drop support for PHP 5.6, 7.0 and 7.1
+
 ## [0.8] - 2019-01-15
 
 ### Added

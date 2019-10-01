@@ -45,7 +45,7 @@ final class Client implements ClientInterface
     /**
      * @var string
      */
-    private $api_version = '0.14';
+    private $api_version = '0.15';
 
     /**
      * @var string
@@ -166,6 +166,7 @@ final class Client implements ClientInterface
                 'client_id'     => $this->client_id,
                 'client_secret' => $this->client_secret,
                 'redirect_url'  => $this->redirect_url,
+                'api_version'   => $this->api_version,
                 'api_domain'    => $this->api_domain,
                 'auth_domain'   => $this->auth_domain,
             ]);
