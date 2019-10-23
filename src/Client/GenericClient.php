@@ -17,79 +17,85 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-namespace Youthweb\Api;
+namespace Youthweb\Api\Client;
 
+use Art4\JsonApiClient\Accessable;
 use Art4\JsonApiClient\Helper\Parser as JsonApiParser;
-use Cache\Adapter\Void\VoidCachePool;
-use Cache\Bridge\SimpleCache\SimpleCacheBridge;
 use DateInterval;
 use DateTime;
-use GuzzleHttp\Exception\ClientException;
-use GuzzleHttp\Psr7\Request;
 use InvalidArgumentException;
 use League\OAuth2\Client\Token\AccessToken;
-use Psr\Cache\CacheItemInterface;
-use Psr\Cache\CacheItemPoolInterface;
-use Psr\Http\Message\RequestFactoryInterface as PsrRequestFactoryInterface;
+use Psr\SimpleCache\CacheInterface;
+use Psr\Http\Client\ClientInterface;
+use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
-use Youthweb\Api\Client\GenericClient;
+use Psr\Http\Message\UriInterface;
+use Youthweb\Api\AuthenticatorInterface;
 use Youthweb\Api\Exception\UnauthorizedException;
 use Youthweb\Api\Resource\ResourceInterface;
+use Youthweb\Api\YouthwebAuthenticator;
 
 /**
- * Simple PHP Youthweb client
- *
- * Website: http://github.com/youthweb/php-youthweb-api
+ * Generic client
  */
-final class Client implements ClientInterface
+final class GenericClient implements Client
 {
-    const CACHEKEY_ACCESS_TOKEN = 'access_token';
-
     /**
-     * @var \Youthweb\Api\Client\Client;
+     * Constructs the Client from providers.
+     *
+     * @param \Youthweb\Api\AuthenticatorInterface $oauth2Provider
      */
-    private $genericClient;
+    public static function createFromProviders(
+        AuthenticatorInterface $oauth2client,
+        ClientInterface $httpClient,
+        CacheInterface $cacheClient,
+        RequestFactoryInterface $requestFactory
+    ) {
+        return new self(
+            $oauth2client,
+            $httpClient,
+            $cacheClient,
+            $requestFactory
+        );
+    }
 
-    /**
-     * @var string
-     */
-    private $api_version = '0.15';
-
-    /**
-     * @var string
-     */
-    private $api_domain = 'https://api.youthweb.net';
-
-    /**
-     * @var string
-     */
-    private $auth_domain = 'https://youthweb.net';
-
-    /**
-     * @var array
-     */
-    private $scope = [];
-
-    /**
-     * @var HttpClientInterface
-     */
-    private $http_client;
-
-    /**
-     * @var League\OAuth2\Client\Provider\AbstractProvider
-     */
-    private $oauth2_client;
-
-    /**
-     * @var CacheItemPoolInterface
-     */
-    private $cache_provider;
+    private const CACHEKEY_ACCESS_TOKEN = 'access_token';
 
     /**
      * @var string
      */
-    private $cache_namespace = 'php_youthweb_api.';
+    private $apiVersion = '0.15';
+
+    /**
+     * @var string
+     */
+    private $apiDomain = 'https://api.youthweb.net';
+
+    /**
+    * @var \Youthweb\Api\AuthenticatorInterface
+    */
+    private $oauth2client;
+
+    /**
+     * @var \Psr\Http\Client\ClientInterface
+     */
+    private $httpClient;
+
+    /**
+     * @var \Psr\SimpleCache\CacheInterface
+     */
+    private $cacheClient;
+
+    /**
+    * @var \Psr\Http\Message\RequestFactoryInterface
+    */
+    private $requestFactory;
+
+    /**
+     * @var string
+     */
+    private $cacheNamespace = 'php_youthweb_api.';
 
     /**
      * @var array
@@ -97,126 +103,28 @@ final class Client implements ClientInterface
     private $resources = [];
 
     /**
-     * @var RequestFactoryInterface
-     */
-    private $request_factory;
-
-    /**
-     * @var string
-     *
-     * @since Youthweb-API 0.6
-     */
-    private $client_id;
-
-    /**
-     * @var string
-     *
-     * @since Youthweb-API 0.6
-     */
-    private $client_secret;
-
-    /**
-     * @var string
-     *
-     * @since Youthweb-API 0.6
-     */
-    private $redirect_url = '';
-
-    /**
      * Constructs the Client.
      *
-     * @param array $options       an array of options to set on the client.
-     *                             Options include `api_version`, `api_domain`, `auth_domain`,
-     *                             `cache_namespace`, `client_id`, `client_secret`, `redirect_url` and `scope`
-     * @param array $collaborators An array of collaborators that may be used to
-     *                             override this provider's default behavior. Collaborators include
-     *                             http_client`, `oauth2_provider`, `cache_provider`, `request_factory`
-     *                             and `resource_factory`.
+     * @param \Youthweb\Api\AuthenticatorInterface $oauth2Provider
      */
-    public function __construct(array $options = [], array $collaborators = [])
+    private function __construct(
+        AuthenticatorInterface $oauth2client,
+        ClientInterface $httpClient,
+        CacheInterface $cacheClient,
+        RequestFactoryInterface $requestFactory
+    ) {
+        $this->oauth2client = $oauth2client;
+        $this->httpClient = $httpClient;
+        $this->cacheClient = $cacheClient;
+        $this->requestFactory = $requestFactory;
+    }
+
+    /**
+     * Get the PSR-16 simple cache.
+     */
+    public function getSimpleCache(): CacheInterface
     {
-        $allowed_options = [
-            'api_version',
-            'api_domain',
-            'auth_domain',
-            'cache_namespace',
-            'client_id',
-            'client_secret',
-            'redirect_url',
-            'scope',
-        ];
-
-        foreach ($options as $option => $value) {
-            if (in_array($option, $allowed_options)) {
-                if ($option !== 'scope') {
-                    $value = strval($value);
-                }
-                // scope must be an array
-                elseif (! is_array($value)) {
-                    $value = [strval($value)];
-                }
-
-                $this->{$option} = $value;
-            }
-        }
-
-        if (empty($collaborators['http_client'])) {
-            $collaborators['http_client'] = new HttpClient(
-                [
-                    // Guzzle config
-                ]
-            );
-        }
-
-        $this->setHttpClientInternally($collaborators['http_client']);
-
-        if (empty($collaborators['oauth2_provider'])) {
-            $collaborators['oauth2_provider'] = new YouthwebAuthenticator([
-                'client_id'     => $this->client_id,
-                'client_secret' => $this->client_secret,
-                'redirect_url'  => $this->redirect_url,
-                'api_version'   => $this->api_version,
-                'api_domain'    => $this->api_domain,
-                'auth_domain'   => $this->auth_domain,
-            ]);
-        }
-
-        $this->setOauth2Provider($collaborators['oauth2_provider']);
-
-        if (empty($collaborators['cache_provider'])) {
-            $collaborators['cache_provider'] = new VoidCachePool();
-        }
-
-        $this->setCacheProviderInternally($collaborators['cache_provider']);
-
-        if (empty($collaborators['request_factory'])) {
-            $collaborators['request_factory'] = new RequestFactory();
-        }
-
-        $this->setRequestFactory($collaborators['request_factory']);
-
-        if (empty($collaborators['resource_factory'])) {
-            $collaborators['resource_factory'] = new ResourceFactory();
-        }
-
-        $this->setResourceFactory($collaborators['resource_factory']);
-
-        $requestFactory = new class($this->getRequestFactory()) implements PsrRequestFactoryInterface {
-            private $factory;
-            public function __construct(RequestFactoryInterface $factory) {
-                $this->factory = $factory;
-            }
-            public function createRequest(string $method, $uri): RequestInterface {
-                return $this->factory->createRequest($method, $uri);
-            }
-        };
-
-        $this->genericClient = GenericClient::createFromProviders(
-            $this->getOauth2Provider(),
-            $this->getHttpClient(),
-            new SimpleCacheBridge($this->getCacheProviderInternally()),
-            $requestFactory
-        );
+        return $this->cacheClient;
     }
 
     /**
@@ -226,10 +134,10 @@ final class Client implements ClientInterface
      *
      * @return Resource\AbstractResource
      */
-    public function getResource($name)
+    public function getResource(/*string */$name)/*: ResourceInterface*/
     {
         if (! isset($this->resources[$name])) {
-            $this->resources[$name] = $this->getResourceFactory()->createResource($name, $this);
+            $this->resources[$name] = $this->createResource($name);
         }
 
         return $this->resources[$name];
@@ -244,7 +152,7 @@ final class Client implements ClientInterface
      */
     public function getCacheItem($key)
     {
-        $key = $this->createCacheKey($key);
+        $key = $this->cacheNamespace . strval($key);
 
         return $this->getCacheProviderInternally()->getItem($key);
     }
@@ -276,7 +184,7 @@ final class Client implements ClientInterface
      *
      * @return bool
      */
-    public function isAuthorized()
+    public function isAuthorized()/*: bool*/
     {
         // Check the access token
         try {
@@ -303,7 +211,7 @@ final class Client implements ClientInterface
      *
      * @return bool true, if a new access token was saved
      */
-    public function authorize($grant, array $params = [])
+    public function authorize(/*string */$grant, array $params = [])/*: bool*/
     {
         if (! isset($params['code'])) {
             throw new UnauthorizedException;
@@ -323,11 +231,14 @@ final class Client implements ClientInterface
         $this->deleteCacheItem($state_item);
 
         // Try to get an access token (using the authorization code grant)
-        $token = $this->getOauth2Provider()->getAccessToken($grant, [
+        $token = $this->oauth2Provider->getAccessToken($grant, [
             'code' => $params['code'],
         ]);
 
-        $this->saveAccessToken($token);
+        $access_token_item = $this->getCacheItem(self::CACHEKEY_ACCESS_TOKEN);
+        $access_token_item->set($token->getToken());
+        $access_token_item->expiresAt(new DateTime('@' . $token->getExpires()));
+        $this->saveCacheItem($access_token_item);
 
         return true;
     }
@@ -339,7 +250,7 @@ final class Client implements ClientInterface
      *
      * @return string Authorization URL
      */
-    public function getAuthorizationUrl(array $options = [])
+    public function getAuthorizationUrl(array $options = [])/*: string*/
     {
         $default_options = [
             'scope' => $this->scope,
@@ -348,7 +259,7 @@ final class Client implements ClientInterface
 
         $options = array_merge($default_options, $options);
 
-        return $this->getOauth2Provider()->getAuthorizationUrl($options);
+        return $this->oauth2Provider->getAuthorizationUrl($options);
     }
 
     /**
@@ -358,12 +269,12 @@ final class Client implements ClientInterface
      *
      * @return string
      */
-    public function getState()
+    public function getState()/*: string*/
     {
         $state_item = $this->getCacheItem('state');
 
         if (! $state_item->isHit()) {
-            $state = $this->getOauth2Provider()->getState();
+            $state = $this->oauth2Provider->getState();
 
             $state_item->set($state);
 
@@ -373,6 +284,43 @@ final class Client implements ClientInterface
         }
 
         return $state_item->get();
+    }
+
+    /**
+     * Create a new authorized request.
+     *
+     * @param string $method The HTTP method associated with the request.
+     * @param string $uri The URI associated with the request.
+     */
+    public function createRequest(string $method, string $uri): RequestInterface
+    {
+        return $this->requestFactory->createRequest($method, $uri);
+    }
+
+    /**
+     * Create a new unauthorized request.
+     *
+     * @param string $method The HTTP method associated with the request.
+     * @param string $uri The URI associated with the request.
+     */
+    public function createUnauthorizedRequest(string $method, string $uri): RequestInterface
+    {
+        return $this->requestFactory->createRequest($method, $uri);
+    }
+
+    /**
+     * Sends a PSR-7 request and returns an Accessable.
+     *
+     * @param RequestInterface $request
+     *
+     * @return \Art4\JsonApiClient\Accessable
+     *
+     * @throws \Psr\Http\Client\ClientExceptionInterface If an error happens while processing the request.
+     * @throws \Exception If anything goes wrong on the request
+     */
+    public function handleRequest(RequestInterface $request): Accessable
+    {
+        return $this->runRequest($request);
     }
 
     /**
@@ -389,7 +337,7 @@ final class Client implements ClientInterface
     {
         $data['headers']['Authorization'] = 'Bearer ' . $this->getAccessToken();
 
-        $request = $this->createRequest('GET', $this->getApiUrl() . $path, $data);
+        $request = $this->createRequestInternally('GET', $this->apiDomain . $path, $data);
 
         return $this->runRequest($request);
     }
@@ -404,7 +352,7 @@ final class Client implements ClientInterface
      */
     public function getUnauthorized($path, array $data = [])
     {
-        $request = $this->createRequest('GET', $this->getApiUrl() . $path, $data);
+        $request = $this->createRequestInternally('GET', $this->apiDomain . $path, $data);
 
         return $this->runRequest($request);
     }
@@ -419,103 +367,33 @@ final class Client implements ClientInterface
      */
     public function postUnauthorized($path, array $data = [])
     {
-        $request = $this->createRequest('POST', $this->getApiUrl() . $path, $data);
+        $request = $this->createRequestInternally('POST', $this->apiDomain . $path, $data);
 
         return $this->runRequest($request);
     }
 
     /**
-     * destructor
-     **/
-    public function __destruct()
-    {
-        // Save deferred items
-        $this->getCacheProviderInternally()->commit();
-    }
-
-    /**
-     * Returns the Url
+     * Creates a API resource
      *
-     * @return string
+     * @param string $name
+     *
+     * @return RequestInterface
      */
-    private function getApiUrl()
+    private function createResource($name)
     {
-        return $this->api_domain;
-    }
+        $classes = [
+            'posts' => 'Youthweb\\Api\\Resource\\Posts',
+            'stats' => 'Youthweb\\Api\\Resource\\Stats',
+            'users' => 'Youthweb\\Api\\Resource\\Users',
+        ];
 
-    /**
-     * Set a http client
-     *
-     * @param HttpClientInterface $client the http client
-     */
-    private function setHttpClientInternally(HttpClientInterface $client)
-    {
-        $this->http_client = $client;
-    }
+        if (! isset($classes[$name])) {
+            throw new \InvalidArgumentException('The resource "' . $name . '" does not exists.');
+        }
 
-    /**
-     * Set a cache provider
-     *
-     * @param Psr\Cache\CacheItemPoolInterface $cache_provider the cache provider
-     */
-    private function setCacheProviderInternally(CacheItemPoolInterface $cache_provider)
-    {
-        $this->cache_provider = $cache_provider;
-    }
+        $resource = $classes[$name];
 
-    /**
-     * Get the cache provider
-     *
-     * @return Psr\Cache\CacheItemPoolInterface the cache provider
-     */
-    private function getCacheProviderInternally()
-    {
-        return $this->cache_provider;
-    }
-
-    /**
-     * Build a cache key
-     *
-     * @param string $key The key
-     *
-     * @return string The cache key
-     **/
-    private function createCacheKey($key)
-    {
-        return $this->cache_namespace . strval($key);
-    }
-
-    /**
-     * Save a access token in cache provider
-     *
-     * @param AccessToken $token The access token
-     */
-    private function saveAccessToken(AccessToken $token)
-    {
-        $access_token_item = $this->getCacheItem(self::CACHEKEY_ACCESS_TOKEN);
-        $access_token_item->set($token->getToken());
-        $access_token_item->expiresAt(new DateTime('@' . $token->getExpires()));
-        $this->saveCacheItem($access_token_item);
-    }
-
-    /**
-     * Set a oauth2 provider
-     *
-     * @param AuthenticatorInterface $oauth2_provider the oauth2 provider
-     */
-    private function setOauth2Provider(AuthenticatorInterface $oauth2_provider)
-    {
-        $this->oauth2_provider = $oauth2_provider;
-    }
-
-    /**
-     * Get the oauth2 provider
-     *
-     * @return AuthenticatorInterface the oauth2 provider
-     */
-    private function getOauth2Provider()
-    {
-        return $this->oauth2_provider;
+        return new $resource($this);
     }
 
     /**
@@ -548,7 +426,7 @@ final class Client implements ClientInterface
     private function runRequest(RequestInterface $request)
     {
         try {
-            $response = $this->getHttpClient()->send($request);
+            $response = $this->httpClient->send($request);
         } catch (\Exception $e) {
             throw $this->handleClientException($e);
         }
@@ -565,18 +443,18 @@ final class Client implements ClientInterface
      *
      * @return RequestInterface
      */
-    private function createRequest($method, $url, array $options)
+    private function createRequestInternally($method, $url, array $options)
     {
         $options = $this->parseOptions($options);
 
         $default_headers = [
             'Content-Type' => 'application/vnd.api+json',
-            'Accept' => 'application/vnd.api+json, application/vnd.api+json; net.youthweb.api.version=' . $this->api_version,
+            'Accept' => 'application/vnd.api+json, application/vnd.api+json; net.youthweb.api.version=' . $this->apiVersion,
         ];
 
         $headers = array_merge($default_headers, $options['headers']);
 
-        return $this->getRequestFactory()->createRequest($method, $url, $headers, $options['body'], $options['version']);
+        return $this->requestFactory->createRequest($method, $url, $headers, $options['body'], $options['version']);
     }
 
     /**
@@ -610,56 +488,6 @@ final class Client implements ClientInterface
         $body = $response->getBody()->getContents();
 
         return JsonApiParser::parseResponseString($body);
-    }
-
-    /**
-     * Returns the http client
-     *
-     * @return HttpClientInterface The Http client
-     */
-    private function getHttpClient()
-    {
-        return $this->http_client;
-    }
-
-    /**
-     * Set a request_factory
-     *
-     * @param RequestFactoryInterface $request_factory the request factory
-     */
-    private function setRequestFactory(RequestFactoryInterface $request_factory)
-    {
-        $this->request_factory = $request_factory;
-    }
-
-    /**
-     * Get the request factory
-     *
-     * @return RequestFactoryInterface the request factory
-     */
-    private function getRequestFactory()
-    {
-        return $this->request_factory;
-    }
-
-    /**
-     * Set a resource_factory
-     *
-     * @param ResourceFactoryInterface $resource_factory the resource factory
-     */
-    private function setResourceFactory(ResourceFactoryInterface $resource_factory)
-    {
-        $this->resource_factory = $resource_factory;
-    }
-
-    /**
-     * Get the resource factory
-     *
-     * @return ResourceFactoryInterface the resource factory
-     */
-    private function getResourceFactory()
-    {
-        return $this->resource_factory;
     }
 
     /**

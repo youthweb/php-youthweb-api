@@ -29,7 +29,7 @@ use Psr\Http\Message\ResponseInterface;
 /**
  * Interface for client
  */
-interface ClientInterface
+interface ClientInterface extends MinimalClientInterface
 {
     /**
      * Constructs the Client.
@@ -66,58 +66,6 @@ interface ClientInterface
      * @param Psr\Cache\CacheItemInterface $item The item
      */
     public function deleteCacheItem(CacheItemInterface $item);
-
-    /**
-     * @param string $name
-     *
-     * @throws \InvalidArgumentException
-     *
-     * @return Resource\AbstractResource
-     */
-    public function getResource($name);
-
-    /**
-     * Check if we have a access token
-     *
-     * @return bool
-     */
-    public function isAuthorized();
-
-    /**
-     * Authorize the client credentials
-     *
-     * @param string $grant  the grant, e.g. `authorization_code`
-     * @param array  $params for authorization code:
-     *                       [
-     *                       'code' => 'authorization_code_from_callback_url...',
-     *                       'state' => 'state_from_callback_url_for_csrf_protection',
-     *                       ]
-     *
-     * @throws InvalidArgumentException    If a wrong state was set
-     * @throws MissingCredentialsException If no user or client credentials are set
-     * @throws UnauthorizedException       contains the url to get an authorization code
-     *
-     * @return bool true, if a new access token was saved
-     */
-    public function authorize($grant, array $params = []);
-
-    /**
-     * Returns an authorization code url
-     *
-     * @param array $options
-     *
-     * @return string Authorization URL
-     */
-    public function getAuthorizationUrl(array $options = []);
-
-    /**
-     * Returns the current value of the state parameter.
-     *
-     * This can be accessed by the redirect handler during authorization.
-     *
-     * @return string
-     */
-    public function getState();
 
     /**
      * HTTP GETs a json $path and decodes it to an object

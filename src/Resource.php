@@ -17,18 +17,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-namespace Youthweb\Api\Resource;
+namespace Youthweb\Api;
 
-use Youthweb\Api\Resource;
 use Youthweb\Api\ClientInterface;
 
 /**
  * interface for resources.
  */
-interface ResourceInterface extends Resource
-{
-    /**
-     * @param Client $client
-     */
-    public function __construct(ClientInterface $client);
-}
+interface Resource {}

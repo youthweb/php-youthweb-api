@@ -21,10 +21,28 @@ namespace Youthweb\Api;
 
 use Exception;
 use GuzzleHttp\Client as GuzzleClient;
+use Psr\Http\Client\ClientInterface as PsrHttpClientInterface;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * Http client based on GuzzleHttp
  */
-final class HttpClient extends GuzzleClient implements HttpClientInterface
+/*final */class HttpClient extends GuzzleClient implements HttpClientInterface, PsrHttpClientInterface
 {
+    /**
+     * Sends a PSR-7 request and returns a PSR-7 response.
+     *
+     * @param RequestInterface $request
+     *
+     * @return ResponseInterface
+     *
+     * @throws \Psr\Http\Client\ClientExceptionInterface If an error happens while processing the request.
+     */
+    public function sendRequest(RequestInterface $request): ResponseInterface
+    {
+        $promise = $this->sendAsyncRequest($request);
+
+        return $promise->wait();
+    }
 }
