@@ -5,9 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [Unreleased](https://github.com/youthweb/php-youthweb-api/compare/0.9.0...master)
 
-## [0.9.0] - 2019-10-01
+### Added
+
+- Add support for PHP 7.4 and PHP 8.0
+
+### Changed
+
+- default api version was set to [Youthweb-API 0.18](https://developer.youthweb.net/20210221-Youthweb-API-0.18.html)
+- Drop support for PHP 7.2 and 7.3
+
+## [0.9.0](https://github.com/youthweb/php-youthweb-api/compare/0.8...0.9.0) - 2019-10-01
 
 ### Added
 
@@ -18,7 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Drop support for PHP 5.6, 7.0 and 7.1
 
-## [0.8.0] - 2019-01-15
+## [0.8.0](https://github.com/youthweb/php-youthweb-api/compare/0.7...0.8) - 2019-01-15
 
 ### Added
 
@@ -45,7 +54,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Breaking:** `Youthweb\Api\Resource\Auth` was removed.
 - **Breaking:** `Youthweb\Api\Resource\AuthInterface` was removed.
 
-## [0.7.0] - 2018-11-07
+## [0.7.0](https://github.com/youthweb/php-youthweb-api/compare/0.6.1...0.7) - 2018-11-07
 
 ### Added
 
@@ -55,7 +64,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Breaking:** API Resources returning the data as `Art4\JsonApiClient\Accessable` instance instead of `Art4\JsonApiClient\Document`
 
-## [0.6.1] - 2018-09-20
+## [0.6.1](https://github.com/youthweb/php-youthweb-api/compare/0.6...0.6.1) - 2018-09-20
 
 ### Added
 
@@ -66,7 +75,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Code Style was changed to PSR-2
 
-## [0.6.0] - 2018-09-19
+## [0.6.0](https://github.com/youthweb/php-youthweb-api/compare/0.5...0.6) - 2018-09-19
 
 ### Changed
 
@@ -86,7 +95,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Youthweb\Api\Resource\Auth` is deprecated and triggers an `E_USER_DEPRECATED` error if used
 - `Youthweb\Api\Resource\AuthInterface` is deprecated and triggers an `E_USER_DEPRECATED` error if used
 
-## [0.5.0] - 2016-11-01
+## [0.5.0](https://github.com/youthweb/php-youthweb-api/compare/0.4...0.5) - 2016-11-01
 
 ### Added
 
@@ -119,7 +128,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Breaking:** Support for PHP 5.5 was dropped. Minimum requirement is now PHP 5.6.
 
-## [0.4.0] - 2016-08-01
+## [0.4.0](https://github.com/youthweb/php-youthweb-api/compare/0.3...0.4) - 2016-08-01
 
 ### Changed
 
@@ -130,7 +139,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - set user credentials with `setUserCredentials('Username', 'User-Token')`
 - new resources `users/<user_id>` and `auth/token` added
 
-## [0.3.0] - 2015-11-20
+## [0.3.0](https://github.com/youthweb/php-youthweb-api/compare/0.2...0.3) - 2015-11-20
 
 ### Changed
 
@@ -142,7 +151,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Breaking:** Drop PHP 5.4 support
 - **Breaking:** Manuel installation via `autoload.php`. Use composer instead
 
-## [0.2.0] - 2015-06-21
+## [0.2.0](https://github.com/youthweb/php-youthweb-api/compare/0.1...0.2) - 2015-06-21
 
 ### Added
 
@@ -151,21 +160,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Travis-CI Support
 - this CHANGELOG.md
 
-## [0.1.0] - 2015-04-20
+## [0.1.0](https://github.com/youthweb/php-youthweb-api/compare/4edfb72fb1c989ac4ee91d8ed7d68d4b32c4a143...0.1) - 2015-04-20
 
 ### Added
 
 - First workable client for Youthweb-API [Version 0.1](https://github.com/youthweb/youthweb-api/releases/tag/0.1)
 - Http client based on [guzzlehttp/guzzle ~5.0](https://github.com/guzzle/guzzle)
-
-[Unreleased]: https://github.com/youthweb/php-youthweb-api/compare/0.9.0...HEAD
-[0.9.0]: https://github.com/youthweb/php-youthweb-api/compare/0.8...0.9.0
-[0.8.0]: https://github.com/youthweb/php-youthweb-api/compare/0.7...0.8
-[0.7.0]: https://github.com/youthweb/php-youthweb-api/compare/0.6.1...0.7
-[0.6.1]: https://github.com/youthweb/php-youthweb-api/compare/0.6...0.6.1
-[0.6.0]: https://github.com/youthweb/php-youthweb-api/compare/0.5...0.6
-[0.5.0]: https://github.com/youthweb/php-youthweb-api/compare/0.4...0.5
-[0.4.0]: https://github.com/youthweb/php-youthweb-api/compare/0.3...0.4
-[0.3.0]: https://github.com/youthweb/php-youthweb-api/compare/0.2...0.3
-[0.2.0]: https://github.com/youthweb/php-youthweb-api/compare/0.1...0.2
-[0.1.0]: https://github.com/youthweb/php-youthweb-api/compare/4edfb72fb1c989ac4ee91d8ed7d68d4b32c4a143...0.1
