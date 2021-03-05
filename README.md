@@ -8,8 +8,6 @@
 
 PHP Youthweb API ist ein objektorientierter Wrapper in PHP 5.6+ für die [Youthweb API](https://github.com/youthweb/youthweb-api).
 
-Unterstütze API Version: 0.14
-
 ## Installation
 
 [Composer](http://getcomposer.org/):
@@ -35,6 +33,7 @@ $scope = ['user:read']; // See http://developer.youthweb.net/api_general_scopes.
 require 'vendor/autoload.php';
 
 $client = new Youthweb\Api\Client([
+    'api_version'   => '0.18',
     'client_id'     => $client_id,
     'client_secret' => $client_secret,
     'redirect_url'  => $redirect_url,
