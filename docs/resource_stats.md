@@ -9,7 +9,7 @@ Lädt statistische Daten. Umfasst die [Youthweb Stats API](http://docs.youthweb.
 $account_stats = $client->getResource('stats')->show('account');
 ```
 
-Liefert ein [`Art4\JsonApiClient\Document` Objekt](https://github.com/Art4/json-api-client/blob/master/docs/objects-document.md) mit den Daten zurück.
+Liefert ein [`Art4\JsonApiClient\Document` Objekt](https://github.com/Art4/json-api-client/blob/v1.x/docs/objects-document.md) mit den Daten zurück.
 
 In der Dokumentation kannst du nachsehen, welche Daten verfügbar sind: http://docs.youthweb.apiary.io/#reference/stats/account-stats/retrieve-the-account-stats
 
@@ -19,7 +19,7 @@ In der Dokumentation kannst du nachsehen, welche Daten verfügbar sind: http://d
 $account_stats = $client->getResource('stats')->show('forum');
 ```
 
-Liefert ein [`Art4\JsonApiClient\Document` Objekt](https://github.com/Art4/json-api-client/blob/master/docs/objects-document.md) mit den Daten zurück.
+Liefert ein [`Art4\JsonApiClient\Document` Objekt](https://github.com/Art4/json-api-client/blob/v1.x/docs/objects-document.md) mit den Daten zurück.
 
 In der Dokumentation kannst du nachsehen, welche Daten verfügbar sind: http://docs.youthweb.apiary.io/#reference/stats/forum-stats/retrieve-the-forum-stats
 
@@ -29,6 +29,6 @@ In der Dokumentation kannst du nachsehen, welche Daten verfügbar sind: http://d
 $account_stats = $client->getResource('stats')->show('groups');
 ```
 
-Liefert ein [`Art4\JsonApiClient\Document` Objekt](https://github.com/Art4/json-api-client/blob/master/docs/objects-document.md) mit den Daten zurück.
+Liefert ein [`Art4\JsonApiClient\Document` Objekt](https://github.com/Art4/json-api-client/blob/v1.x/docs/objects-document.md) mit den Daten zurück.
 
 In der Dokumentation kannst du nachsehen, welche Daten verfügbar sind: http://docs.youthweb.apiary.io/#reference/stats/groups-stats/retrieve-the-groups-stats

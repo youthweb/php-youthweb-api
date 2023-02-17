@@ -14,7 +14,7 @@ Dieses Beispiel zeigt, wie ein Login-Button mit der Youthweb-API realisiert wird
 Für dieses Beispiel wird `youthweb/php-youthweb-api` über Composer installiert. Um die Access-Token zu speichern, empfiehlt es sich einen PSR-6 kompatiblen Cache-Provider zu verwenden, der die Daten dauerhaft cachen kann.
 
 ```
-php composer.phar require youthweb/php-youthweb-api:dev-master
+php composer.phar require youthweb/php-youthweb-api:dev-v0.x
 php composer.phar require cache/filesystem-adapter
 ```
 
