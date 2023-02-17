@@ -28,7 +28,7 @@ class JsonObjectTest extends \PHPUnit\Framework\TestCase
      */
     public function testToStringReturnsJson()
     {
-        $class = new JsonObject;
+        $class = new JsonObject();
 
         $this->assertSame('{}', strval($class));
     }

@@ -24,7 +24,6 @@ use Cache\Adapter\Void\VoidCachePool;
 use DateInterval;
 use DateTime;
 use GuzzleHttp\Exception\ClientException;
-use GuzzleHttp\Psr7\Request;
 use InvalidArgumentException;
 use League\OAuth2\Client\Token\AccessToken;
 use Psr\Cache\CacheItemInterface;
@@ -40,7 +39,7 @@ use Youthweb\Api\Exception\UnauthorizedException;
  */
 final class Client implements ClientInterface
 {
-    const CACHEKEY_ACCESS_TOKEN = 'access_token';
+    public const CACHEKEY_ACCESS_TOKEN = 'access_token';
 
     /**
      * @var string
@@ -280,7 +279,7 @@ final class Client implements ClientInterface
     public function authorize($grant, array $params = [])
     {
         if (! isset($params['code'])) {
-            throw new UnauthorizedException;
+            throw new UnauthorizedException();
         }
 
         $state_item = $this->getCacheItem('state');
