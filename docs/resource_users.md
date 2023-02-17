@@ -14,7 +14,7 @@ $client->setUserCredentials($username, $user_token);
 $user = $client->getResource('users')->show($user_id);
 ```
 
-Liefert ein [`Art4\JsonApiClient\Document` Objekt](https://github.com/Art4/json-api-client/blob/master/docs/objects-document.md) mit den Daten zurück.
+Liefert ein [`Art4\JsonApiClient\Document` Objekt](https://github.com/Art4/json-api-client/blob/v1.x/docs/objects-document.md) mit den Daten zurück.
 
 In der Dokumentation kannst du nachsehen, welche Daten verfügbar sind: http://docs.youthweb.apiary.io/#reference/users/user/daten-zu-einem-user-abrufen
 
@@ -26,6 +26,6 @@ $client->setUserCredentials($username, $user_token);
 $user = $client->getResource('users')->showMe();
 ```
 
-Liefert ein [`Art4\JsonApiClient\Document` Objekt](https://github.com/Art4/json-api-client/blob/master/docs/objects-document.md) mit den Daten zurück.
+Liefert ein [`Art4\JsonApiClient\Document` Objekt](https://github.com/Art4/json-api-client/blob/v1.x/docs/objects-document.md) mit den Daten zurück.
 
 In der Dokumentation kannst du nachsehen, welche Daten verfügbar sind: http://docs.youthweb.apiary.io/#reference/users/user/me

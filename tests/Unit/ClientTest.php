@@ -217,6 +217,9 @@ class ClientTest extends \PHPUnit\Framework\TestCase
             ->method('isHit')
             ->willReturn(false);
 
+        $cache_item_state->method('getKey')
+            ->willReturn('');
+
         $cache_item_access->expects($this->any())
             ->method('isHit')
             ->willReturn(false);
@@ -280,6 +283,9 @@ class ClientTest extends \PHPUnit\Framework\TestCase
             ->method('get')
             ->willReturn('random_string');
 
+        $cache_item_state->method('getKey')
+            ->willReturn('');
+
         $cache_item_access->expects($this->any())
             ->method('isHit')
             ->willReturn(false);
@@ -331,6 +337,9 @@ class ClientTest extends \PHPUnit\Framework\TestCase
         $cache_item_state->expects($this->any())
             ->method('isHit')
             ->willReturn(true);
+
+        $cache_item_state->method('getKey')
+            ->willReturn('');
 
         $cache_item_state->expects($this->once())
             ->method('get')
@@ -413,6 +422,9 @@ class ClientTest extends \PHPUnit\Framework\TestCase
         $cache_item_state->expects($this->any())
             ->method('isHit')
             ->willReturn(false);
+
+        $cache_item_state->method('getKey')
+            ->willReturn('');
 
         $cache_provider->expects($this->exactly(1))
             ->method('getItem')
@@ -587,6 +599,9 @@ class ClientTest extends \PHPUnit\Framework\TestCase
             ->method('isHit')
             ->willReturn(false);
 
+        $cache_item_access->method('getKey')
+            ->willReturn(true);
+
         $cache_provider->expects($this->exactly(1))
             ->method('getItem')
             ->will($this->returnValueMap([
@@ -630,6 +645,9 @@ class ClientTest extends \PHPUnit\Framework\TestCase
         $cache_item_access->expects($this->once())
             ->method('isHit')
             ->willReturn(true);
+
+        $cache_item_access->method('getKey')
+            ->willReturn('');
 
         $cache_provider->expects($this->exactly(2))
             ->method('getItem')
@@ -701,6 +719,9 @@ class ClientTest extends \PHPUnit\Framework\TestCase
         $cache_item_access->expects($this->once())
             ->method('isHit')
             ->willReturn(true);
+
+        $cache_item_access->method('getKey')
+            ->willReturn('');
 
         $cache_provider->expects($this->exactly(2))
             ->method('getItem')
