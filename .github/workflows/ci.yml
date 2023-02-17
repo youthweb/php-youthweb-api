@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  # Run on all pushes and on all pull requests.
+  push:
+  pull_request:
+  # Allow manually triggering the workflow.
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['7.4', '8.0', '8.1', '8.2', '8.3']
+        coverage: [false]
+        include:
+          ## Run code coverage on highest supported PHP version.
+          - php: '8.2'
+            coverage: true
+
+    name: "PHPUnit on PHP ${{ matrix.php }}"
+    continue-on-error: ${{ matrix.php == '8.3' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install PHP with latest composer
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          ini-values: error_reporting=-1, display_errors=On, log_errors_max_len=0
+          coverage: ${{ matrix.coverage && 'xdebug' || 'none' }}
+          tools: none
+
+      # Install dependencies and handle caching in one go.
+      # @link https://github.com/marketplace/actions/install-php-dependencies-with-composer
+      - name: "Install Composer dependencies (PHP < 8.3)"
+        if: ${{ matrix.php < '8.3' }}
+        uses: "ramsey/composer-install@v2"
+
+      - name: "Install Composer dependencies (PHP 8.3)"
+        if: ${{ matrix.php >= '8.3' }}
+        uses: "ramsey/composer-install@v2"
+        with:
+          composer-options: --ignore-platform-reqs
+
+      - name: Run unit tests without code coverage
+        if: ${{ matrix.coverage == false }}
+        run: vendor/bin/phpunit
+
+      - name: Run unit tests with code coverage
+        if: ${{ matrix.coverage == true }}
+        run: vendor/bin/phpunit --coverage-clover clover.xml
+
+      - name: Send coverage report to Codecov
+        if: ${{ success() && matrix.coverage == true }}
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./clover.xml
+          fail_ci_if_error: true
+          verbose: true
