@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 /*
  * PHP Youthweb API is an object-oriented wrapper for PHP of the Youthweb API.
  * Copyright (C) 2015-2019  Youthweb e.V.  https://youthweb.net
@@ -32,7 +34,7 @@ final class ResourceFactory implements ResourceFactoryInterface
      *
      * @return RequestInterface
      */
-    public function createResource($name, ClientInterface $client)
+    public function createResource(string $name, ClientInterface $client)
     {
         $classes = [
             'posts' => 'Youthweb\\Api\\Resource\\Posts',

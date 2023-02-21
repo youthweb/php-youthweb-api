@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 /*
  * PHP Youthweb API is an object-oriented wrapper for PHP of the Youthweb API.
  * Copyright (C) 2015-2019  Youthweb e.V.  https://youthweb.net
@@ -51,7 +53,7 @@ interface ClientInterface
      *
      * @return Psr\Cache\CacheItemInterface the cache item
      */
-    public function getCacheItem($key);
+    public function getCacheItem(string $key);
 
     /**
      * Save a cache item
@@ -74,7 +76,7 @@ interface ClientInterface
      *
      * @return Resource\AbstractResource
      */
-    public function getResource($name);
+    public function getResource(string $name);
 
     /**
      * Check if we have a access token
@@ -99,7 +101,7 @@ interface ClientInterface
      *
      * @return bool true, if a new access token was saved
      */
-    public function authorize($grant, array $params = []);
+    public function authorize(string $grant, array $params = []);
 
     /**
      * Returns an authorization code url
@@ -127,7 +129,7 @@ interface ClientInterface
      *
      * @return array
      */
-    public function get($path, array $data = []);
+    public function get(string $path, array $data = []);
 
     /**
      * HTTP GETs a json $path without Authorization and decodes it to an object
@@ -137,7 +139,7 @@ interface ClientInterface
      *
      * @return array
      */
-    public function getUnauthorized($path, array $data = []);
+    public function getUnauthorized(string $path, array $data = []);
 
     /**
      * HTTP POSTs a json $path without Authorization and decodes it to an object
@@ -147,5 +149,5 @@ interface ClientInterface
      *
      * @return array
      */
-    public function postUnauthorized($path, array $data = []);
+    public function postUnauthorized(string $path, array $data = []);
 }

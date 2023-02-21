@@ -9,10 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Add tests for PHP 8.1 and 8.2
+- Add tests for PHP 8.1, 8.2 and 8.3
 
 ### Changed
 
+- Add parameter types and return types in nearly all classes
+- Change code style to PER coding style
+- Declare strict_types=1 in all PHP files
 - Move CI tests from Travis-CI to Github Actions
 - Move code coverage from Coveralls to Codecov.io
 

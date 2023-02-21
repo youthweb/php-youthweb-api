@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 /*
  * PHP Youthweb API is an object-oriented wrapper for PHP of the Youthweb API.
  * Copyright (C) 2015-2019  Youthweb e.V.  https://youthweb.net
@@ -44,7 +46,7 @@ class YouthwebAuthenticatorTest extends \PHPUnit\Framework\TestCase
     /**
      * @test
      */
-    public function testGetAuthorizationUrlReturnsUrl()
+    public function testGetAuthorizationUrlReturnsUrl(): void
     {
         $oauth2_provider = $this->createMock('Youthweb\OAuth2\Client\Provider\Youthweb');
 
@@ -64,7 +66,7 @@ class YouthwebAuthenticatorTest extends \PHPUnit\Framework\TestCase
     /**
      * @test
      */
-    public function testGetStateReturnsState()
+    public function testGetStateReturnsState(): void
     {
         $oauth2_provider = $this->createMock('Youthweb\OAuth2\Client\Provider\Youthweb');
 
@@ -84,7 +86,7 @@ class YouthwebAuthenticatorTest extends \PHPUnit\Framework\TestCase
     /**
      * @test
      */
-    public function testGetStateWorkaroundReturnsState()
+    public function testGetStateWorkaroundReturnsState(): void
     {
         $oauth2_provider = $this->createMock('Youthweb\OAuth2\Client\Provider\Youthweb');
 
@@ -104,7 +106,7 @@ class YouthwebAuthenticatorTest extends \PHPUnit\Framework\TestCase
     /**
      * @test
      */
-    public function testGetAccessTokenWithWrongGrantThrowsException()
+    public function testGetAccessTokenWithWrongGrantThrowsException(): void
     {
         $authenticator = $this->createAuthenticator();
 
@@ -117,7 +119,7 @@ class YouthwebAuthenticatorTest extends \PHPUnit\Framework\TestCase
     /**
      * @test
      */
-    public function testGetAccessTokenWithAuthCodeAndStateSavesToken()
+    public function testGetAccessTokenWithAuthCodeAndStateSavesToken(): void
     {
         $oauth2_provider = $this->createMock('Youthweb\OAuth2\Client\Provider\Youthweb');
         $access_token = $this->createMock('League\OAuth2\Client\Token\AccessToken');

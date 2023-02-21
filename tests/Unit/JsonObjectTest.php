@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 /*
  * PHP Youthweb API is an object-oriented wrapper for PHP of the Youthweb API.
  * Copyright (C) 2015-2019  Youthweb e.V.  https://youthweb.net
@@ -26,9 +28,9 @@ class JsonObjectTest extends \PHPUnit\Framework\TestCase
     /**
      * @test
      */
-    public function testToStringReturnsJson()
+    public function testToStringReturnsJson(): void
     {
-        $class = new JsonObject;
+        $class = new JsonObject();
 
         $this->assertSame('{}', strval($class));
     }

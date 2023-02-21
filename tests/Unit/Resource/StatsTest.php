@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 /*
  * PHP Youthweb API is an object-oriented wrapper for PHP of the Youthweb API.
  * Copyright (C) 2015-2019  Youthweb e.V.  https://youthweb.net
@@ -27,7 +29,7 @@ class StatsTest extends \PHPUnit\Framework\TestCase
     /**
      * @test
      */
-    public function testShowAccountReturnsDocumentInterface()
+    public function testShowAccountReturnsDocumentInterface(): void
     {
         $document = $this->createMock('\Art4\JsonApiClient\Accessable');
 
@@ -47,7 +49,7 @@ class StatsTest extends \PHPUnit\Framework\TestCase
     /**
      * @test
      */
-    public function testShowForumReturnsObject()
+    public function testShowForumReturnsObject(): void
     {
         $document = $this->createMock('\Art4\JsonApiClient\Accessable');
 
@@ -67,7 +69,7 @@ class StatsTest extends \PHPUnit\Framework\TestCase
     /**
      * @test
      */
-    public function testShowGroupsReturnsObject()
+    public function testShowGroupsReturnsObject(): void
     {
         $document = $this->createMock('\Art4\JsonApiClient\Accessable');
 
@@ -87,7 +89,7 @@ class StatsTest extends \PHPUnit\Framework\TestCase
     /**
      * @test
      */
-    public function testShowFoobarThrowsException()
+    public function testShowFoobarThrowsException(): void
     {
         $client = $this->createMock('Youthweb\Api\ClientInterface');
 

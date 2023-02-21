@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 /*
  * PHP Youthweb API is an object-oriented wrapper for PHP of the Youthweb API.
  * Copyright (C) 2015-2019  Youthweb e.V.  https://youthweb.net
@@ -149,7 +151,7 @@ class YouthwebAuthenticator implements AuthenticatorInterface
      *
      * @throws InvalidArgumentException If a wrong state or grant was set
      */
-    public function getAccessToken($grant, array $params = [])
+    public function getAccessToken(string $grant, array $params = [])
     {
         $allowed_grants = [
             'authorization_code',
@@ -167,7 +169,7 @@ class YouthwebAuthenticator implements AuthenticatorInterface
      *
      * @param Youthweb\OAuth2\Client\Provider\Youthweb $oauth2_provider the oauth2 provider
      */
-    private function setOauth2Provider(Oauth2Provider $oauth2_provider)
+    private function setOauth2Provider(Oauth2Provider $oauth2_provider): void
     {
         $this->oauth2_provider = $oauth2_provider;
     }
