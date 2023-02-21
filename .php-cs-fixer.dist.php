@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 $finder = (new PhpCsFixer\Finder())
     ->in('src')
     ->in('tests')
+    ->append(['.php-cs-fixer.dist.php'])
 ;
 
 return (new PhpCsFixer\Config())

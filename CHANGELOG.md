@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Add parameter types and return types in nearly all classes
+- Change code style to PER coding style
+- Declare strict_types=1 in all PHP files
 - Move CI tests from Travis-CI to Github Actions
 - Move code coverage from Coveralls to Codecov.io
 
