@@ -39,7 +39,7 @@ final class Stats implements StatsInterface
      *
      * @param string $id
      *
-     * @return array the stats
+     * @return \Art4\JsonApiClient\Accessable the stats
      */
     public function show(string $id)
     {

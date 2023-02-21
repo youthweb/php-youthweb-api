@@ -37,7 +37,7 @@ final class Posts implements PostsInterface
      *
      * @param string $id
      *
-     * @return array the post data
+     * @return \Art4\JsonApiClient\Accessable the post data
      */
     public function show(string $id)
     {

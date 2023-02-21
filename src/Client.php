@@ -366,7 +366,7 @@ final class Client implements ClientInterface
      *
      * @throws UnauthorizedException contains the url to get an authorization code
      *
-     * @return array
+     * @return \Art4\JsonApiClient\Accessable
      */
     public function get(string $path, array $data = [])
     {
@@ -383,7 +383,7 @@ final class Client implements ClientInterface
      * @param string $path
      * @param array  $data
      *
-     * @return array
+     * @return \Art4\JsonApiClient\Accessable
      */
     public function getUnauthorized(string $path, array $data = [])
     {
@@ -398,7 +398,7 @@ final class Client implements ClientInterface
      * @param string $path
      * @param array  $data
      *
-     * @return array
+     * @return \Art4\JsonApiClient\Accessable
      */
     public function postUnauthorized(string $path, array $data = [])
     {

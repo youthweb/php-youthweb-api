@@ -124,7 +124,7 @@ interface ClientInterface
      * @param string $path
      * @param array  $data
      *
-     * @return array
+     * @return \Art4\JsonApiClient\Accessable
      */
     public function get(string $path, array $data = []);
 
@@ -134,7 +134,7 @@ interface ClientInterface
      * @param string $path
      * @param array  $data
      *
-     * @return array
+     * @return \Art4\JsonApiClient\Accessable
      */
     public function getUnauthorized(string $path, array $data = []);
 
@@ -144,7 +144,7 @@ interface ClientInterface
      * @param string $path
      * @param array  $data
      *
-     * @return array
+     * @return \Art4\JsonApiClient\Accessable
      */
     public function postUnauthorized(string $path, array $data = []);
 }

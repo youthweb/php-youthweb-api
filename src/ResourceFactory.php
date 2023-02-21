@@ -21,7 +21,7 @@ declare(strict_types=1);
 
 namespace Youthweb\Api;
 
-use Psr\Http\Message\RequestInterface;
+use Youthweb\Api\Resource\ResourceInterface;
 
 /**
  * Factory for API Resources
@@ -34,7 +34,7 @@ final class ResourceFactory implements ResourceFactoryInterface
      * @param string          $name
      * @param ClientInterface $client
      *
-     * @return RequestInterface
+     * @return ResourceInterface
      */
     public function createResource(string $name, ClientInterface $client)
     {
