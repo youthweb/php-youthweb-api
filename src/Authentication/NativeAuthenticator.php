@@ -22,6 +22,7 @@ declare(strict_types=1);
 namespace Youthweb\Api\Authentication;
 
 use InvalidArgumentException;
+use League\OAuth2\Client\Provider\AbstractProvider;
 use League\OAuth2\Client\Token\AccessTokenInterface;
 use Youthweb\OAuth2\Client\Provider\Youthweb as Oauth2Provider;
 
@@ -30,61 +31,9 @@ use Youthweb\OAuth2\Client\Provider\Youthweb as Oauth2Provider;
  */
 class NativeAuthenticator implements Authenticator
 {
-    private string $apiVersion = '0.20';
-
-    private string $apiDomain = 'https://api.youthweb.net';
-
-    private string $authDomain = 'https://youthweb.net';
-
-    private string $clientId = '';
-
-    private string $clientSecret = '';
-
-    private string $redirectUrl = '';
-
-    private Oauth2Provider $oauth2Provider;
-
-    /**
-     * Constructs the Authenticator
-     *
-     * @param array $options       an array of options to set on the client.
-     *                             Options include `apiDomain`, `authDomain`, `clientId`,
-     *                             `clientSecret` and `redirectUrl`
-     * @param array $collaborators An array of collaborators that may be used to
-     *                             override this provider's default behavior. Collaborators include
-     *                             `oauth2Provider`.
-     */
-    public function __construct(array $options = [], array $collaborators = [])
-    {
-        $allowed_options = [
-            'apiVersion',
-            'apiDomain',
-            'authDomain',
-            'clientId',
-            'clientSecret',
-            'redirectUrl',
-        ];
-
-        foreach ($options as $option => $value) {
-            if (in_array($option, $allowed_options)) {
-                $value = strval($value);
-
-                $this->{$option} = $value;
-            }
-        }
-
-        if (empty($collaborators['oauth2Provider'])) {
-            $collaborators['oauth2Provider'] = new Oauth2Provider([
-                'clientId'     => $this->clientId,
-                'clientSecret' => $this->clientSecret,
-                'redirectUri'  => $this->redirectUrl,
-                'apiVersion'   => $this->apiVersion,
-                'apiDomain'    => $this->apiDomain,
-                'domain'       => $this->authDomain,
-            ]);
-        }
-
-        $this->setOauth2Provider($collaborators['oauth2Provider']);
+    public function __construct(
+        private AbstractProvider $oauth2Provider
+    ) {
     }
 
     /**
@@ -94,7 +43,7 @@ class NativeAuthenticator implements Authenticator
      */
     public function getAuthorizationUrl(array $options = []): string
     {
-        return $this->getOauth2Provider()->getAuthorizationUrl($options);
+        return $this->oauth2Provider->getAuthorizationUrl($options);
     }
 
     /**
@@ -104,7 +53,7 @@ class NativeAuthenticator implements Authenticator
      */
     public function getState(): string
     {
-        $state = $this->getOauth2Provider()->getState();
+        $state = $this->oauth2Provider->getState();
 
         // Workaround, if no state was generated so far
         if ($state === '') {
@@ -112,7 +61,7 @@ class NativeAuthenticator implements Authenticator
             $this->getAuthorizationUrl();
 
             // get the generated state
-            $state = $this->getOauth2Provider()->getState();
+            $state = $this->oauth2Provider->getState();
         }
 
         return $state;
@@ -121,8 +70,8 @@ class NativeAuthenticator implements Authenticator
     /**
      * Get an access token
      *
-     * @param string $grant  e.g. `authorization_code`
-     * @param array  $params for authorization code:
+     * @param string $grant Only `authorization_code` is supported atm
+     * @param array<string,string> $params for authorization code:
      *                       [
      *                       'code' => 'authorization_code_from_callback_url...',
      *                       'state' => 'state_from_callback_url_for_csrf_protection',
@@ -132,34 +81,14 @@ class NativeAuthenticator implements Authenticator
      */
     public function getAccessToken(string $grant, array $params = []): AccessTokenInterface
     {
-        $allowed_grants = [
+        $allowedGrants = [
             'authorization_code',
         ];
 
-        if (! in_array($grant, $allowed_grants)) {
+        if (! in_array($grant, $allowedGrants)) {
             throw new InvalidArgumentException('Unsupported grant "' . strval($grant) . '"');
         }
 
-        return $this->getOauth2Provider()->getAccessToken($grant, $params);
-    }
-
-    /**
-     * Set a oauth2 provider
-     *
-     * @param Oauth2Provider $oauth2Provider the oauth2 provider
-     */
-    private function setOauth2Provider(Oauth2Provider $oauth2Provider): void
-    {
-        $this->oauth2Provider = $oauth2Provider;
-    }
-
-    /**
-     * Get the oauth2 provider
-     *
-     * @return Oauth2Provider the oauth2 provider
-     */
-    private function getOauth2Provider(): Oauth2Provider
-    {
-        return $this->oauth2Provider;
+        return $this->oauth2Provider->getAccessToken($grant, $params);
     }
 }

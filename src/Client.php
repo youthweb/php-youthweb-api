@@ -38,6 +38,7 @@ use Youthweb\Api\Authentication\Authenticator;
 use Youthweb\Api\Authentication\NativeAuthenticator;
 use Youthweb\Api\Exception\UnauthorizedException;
 use Youthweb\Api\Resource\ResourceInterface;
+use Youthweb\OAuth2\Client\Provider\Youthweb as Oauth2Provider;
 
 /**
  * Simple PHP Youthweb client
@@ -173,14 +174,14 @@ final class Client implements ClientInterface
         $this->setHttpClientInternally($collaborators['http_client']);
 
         if (empty($collaborators['oauth2_provider'])) {
-            $collaborators['oauth2_provider'] = new NativeAuthenticator([
+            $collaborators['oauth2_provider'] = new NativeAuthenticator(new Oauth2Provider([
                 'clientId'     => $this->client_id,
                 'clientSecret' => $this->client_secret,
                 'redirectUrl'  => $this->redirect_url,
                 'apiVersion'   => $this->api_version,
                 'apiDomain'    => $this->api_domain,
                 'authDomain'   => $this->auth_domain,
-            ]);
+            ]));
         }
 
         $this->setOauth2Provider($collaborators['oauth2_provider']);

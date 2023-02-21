@@ -21,36 +21,19 @@ declare(strict_types=1);
 
 namespace Youthweb\Api\Tests\Unit\Authentication;
 
+use League\OAuth2\Client\Provider\AbstractProvider;
+use League\OAuth2\Client\Token\AccessTokenInterface;
 use PHPUnit\Framework\TestCase;
 use Youthweb\Api\Authentication\NativeAuthenticator;
-use Youthweb\OAuth2\Client\Provider\Youthweb;
 
 class YouthwebAuthenticatorTest extends TestCase
 {
-    /**
-     * Create a Authenticator with mocks of all collaborators
-     */
-    private function createAuthenticator(array $options = [], array $collaborators = [])
-    {
-        $default_options = [];
-
-        $options = array_merge($default_options, $options);
-
-        $default_collaborators = [
-            'oauth2Provider' => $this->createMock(Youthweb::class),
-        ];
-
-        $collaborators = array_merge($default_collaborators, $collaborators);
-
-        return new NativeAuthenticator($options, $collaborators);
-    }
-
     /**
      * @test
      */
     public function testGetAuthorizationUrlReturnsUrl(): void
     {
-        $oauth2Provider = $this->createMock(Youthweb::class);
+        $oauth2Provider = $this->createMock(AbstractProvider::class);
 
         $url = 'https://example.org';
 
@@ -58,9 +41,7 @@ class YouthwebAuthenticatorTest extends TestCase
             ->method('getAuthorizationUrl')
             ->willReturn($url);
 
-        $authenticator = $this->createAuthenticator([], [
-            'oauth2Provider' => $oauth2Provider,
-        ]);
+        $authenticator = new NativeAuthenticator($oauth2Provider);
 
         $this->assertSame($url, $authenticator->getAuthorizationUrl());
     }
@@ -70,7 +51,7 @@ class YouthwebAuthenticatorTest extends TestCase
      */
     public function testGetStateReturnsState(): void
     {
-        $oauth2Provider = $this->createMock(Youthweb::class);
+        $oauth2Provider = $this->createMock(AbstractProvider::class);
 
         $state = 'random_string';
 
@@ -78,9 +59,7 @@ class YouthwebAuthenticatorTest extends TestCase
             ->method('getState')
             ->willReturn($state);
 
-        $authenticator = $this->createAuthenticator([], [
-            'oauth2Provider' => $oauth2Provider,
-        ]);
+        $authenticator = new NativeAuthenticator($oauth2Provider);
 
         $this->assertSame($state, $authenticator->getState());
     }
@@ -90,7 +69,7 @@ class YouthwebAuthenticatorTest extends TestCase
      */
     public function testGetStateWorkaroundReturnsState(): void
     {
-        $oauth2Provider = $this->createMock(Youthweb::class);
+        $oauth2Provider = $this->createMock(AbstractProvider::class);
 
         $oauth2Provider->expects($this->once())
             ->method('getAuthorizationUrl')
@@ -102,9 +81,7 @@ class YouthwebAuthenticatorTest extends TestCase
             ->method('getState')
             ->will($this->onConsecutiveCalls('', $state));
 
-        $authenticator = $this->createAuthenticator([], [
-            'oauth2Provider' => $oauth2Provider,
-        ]);
+        $authenticator = new NativeAuthenticator($oauth2Provider);
 
         $this->assertSame($state, $authenticator->getState());
     }
@@ -114,7 +91,7 @@ class YouthwebAuthenticatorTest extends TestCase
      */
     public function testGetAccessTokenWithWrongGrantThrowsException(): void
     {
-        $authenticator = $this->createAuthenticator();
+        $authenticator = new NativeAuthenticator($this->createMock(AbstractProvider::class));
 
         $this->expectException('InvalidArgumentException');
         $this->expectExceptionMessage('Unsupported grant "wrong_grant"');
@@ -127,26 +104,17 @@ class YouthwebAuthenticatorTest extends TestCase
      */
     public function testGetAccessTokenWithAuthCodeAndStateSavesToken(): void
     {
-        $oauth2Provider = $this->createMock(Youthweb::class);
-        $access_token = $this->createMock('League\OAuth2\Client\Token\AccessToken');
+        $oauth2Provider = $this->createMock(AbstractProvider::class);
+        $accessToken = $this->createMock(AccessTokenInterface::class);
 
         $oauth2Provider->expects($this->once())
             ->method('getAccessToken')
-            ->willReturn($access_token);
+            ->willReturn($accessToken);
 
-        $authenticator = $this->createAuthenticator(
-            [
-                'clientId'     => 'client_id',
-                'clientSecret' => 'client_secret',
-                'redirectUrl'  => 'https://example.org/callback',
-            ],
-            [
-                'oauth2Provider' => $oauth2Provider,
-            ]
-        );
+        $authenticator = new NativeAuthenticator($oauth2Provider);
 
         $this->assertSame(
-            $access_token,
+            $accessToken,
             $authenticator->getAccessToken('authorization_code', [
                 'code' => 'auth_code',
                 'state' => 'random_string',
