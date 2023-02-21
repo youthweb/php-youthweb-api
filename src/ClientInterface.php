@@ -21,12 +21,10 @@ declare(strict_types=1);
 
 namespace Youthweb\Api;
 
-use Cache\Adapter\Void\VoidCachePool;
-use GuzzleHttp\Exception\ClientException;
-use GuzzleHttp\Psr7\Request;
-use Psr\Cache\CacheItemPoolInterface;
+use InvalidArgumentException;
 use Psr\Cache\CacheItemInterface;
-use Psr\Http\Message\ResponseInterface;
+use Youthweb\Api\Exception\UnauthorizedException;
+use Youthweb\Api\Resource\ResourceInterface;
 
 /**
  * Interface for client
@@ -51,30 +49,30 @@ interface ClientInterface
      *
      * @param string $key The item key
      *
-     * @return Psr\Cache\CacheItemInterface the cache item
+     * @return CacheItemInterface the cache item
      */
     public function getCacheItem(string $key);
 
     /**
      * Save a cache item
      *
-     * @param Psr\Cache\CacheItemInterface $item The item
+     * @param CacheItemInterface $item The item
      */
     public function saveCacheItem(CacheItemInterface $item);
 
     /**
      * Delete a cache item
      *
-     * @param Psr\Cache\CacheItemInterface $item The item
+     * @param CacheItemInterface $item The item
      */
     public function deleteCacheItem(CacheItemInterface $item);
 
     /**
      * @param string $name
      *
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      *
-     * @return Resource\AbstractResource
+     * @return ResourceInterface
      */
     public function getResource(string $name);
 
@@ -96,7 +94,6 @@ interface ClientInterface
      *                       ]
      *
      * @throws InvalidArgumentException    If a wrong state was set
-     * @throws MissingCredentialsException If no user or client credentials are set
      * @throws UnauthorizedException       contains the url to get an authorization code
      *
      * @return bool true, if a new access token was saved

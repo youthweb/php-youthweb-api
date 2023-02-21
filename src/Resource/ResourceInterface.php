@@ -28,8 +28,5 @@ use Youthweb\Api\ClientInterface;
  */
 interface ResourceInterface
 {
-    /**
-     * @param Client $client
-     */
     public function __construct(ClientInterface $client);
 }

@@ -21,6 +21,8 @@ declare(strict_types=1);
 
 namespace Youthweb\Api;
 
+use Psr\Http\Message\RequestInterface;
+
 /**
  * Factory for API Resources
  */

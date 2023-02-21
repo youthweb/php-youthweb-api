@@ -21,6 +21,9 @@ declare(strict_types=1);
 
 namespace Youthweb\Api;
 
+use InvalidArgumentException;
+use Youthweb\Api\Exception\UnauthorizedException;
+
 /**
  * Interface for authenticator
  */

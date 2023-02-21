@@ -21,6 +21,8 @@ declare(strict_types=1);
 
 namespace Youthweb\Api\Resource;
 
+use InvalidArgumentException;
+
 /**
  * Get the stats
  *
@@ -48,7 +50,7 @@ final class Stats implements StatsInterface
         ];
 
         if (! isset($ids[$id])) {
-            throw new \InvalidArgumentException('The ressource id "' . $id . '" does not exists.');
+            throw new InvalidArgumentException('The ressource id "' . $id . '" does not exists.');
         }
 
         return $this->client->getUnauthorized('/stats/' . $ids[$id]);

@@ -28,8 +28,6 @@ final class JsonObject implements \JsonSerializable
 {
     /**
      * serialize the object to a JSON string
-     *
-     * @return the JSON string
      */
     public function __toString(): string
     {
