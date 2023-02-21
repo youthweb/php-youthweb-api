@@ -39,7 +39,7 @@
     },
     "scripts": {
         "cs": "vendor/bin/php-cs-fixer fix",
-        "phpstan": "vendor/bin/phpstan analyze src tests --level=0",
+        "phpstan": "vendor/bin/phpstan --configuration=\".phpstan.neon\" analyze",
         "test": "vendor/bin/phpunit"
     }
 }
