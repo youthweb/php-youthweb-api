@@ -26,6 +26,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **BREAKING:** The interface `Youthweb\Api\AuthenticatorInterface` was removed, use `Youthweb\Api\Authentication\Authenticator` instead.
 - **BREAKING:** The class `Youthweb\Api\YouthwebAuthenticator` was removed, use `Youthweb\Api\Authentication\NativeAuthenticator` instead.
+- **BREAKING:** The interface `Youthweb\Api\RequestFactoryInterface` was removed, use `Psr\Http\Message\RequestFactoryInterface` instead.
+- **BREAKING:** The class `Youthweb\Api\RequestFactory` was removed, use implementation of `Psr\Http\Message\RequestFactoryInterface` instead.
 - Drop support for PHP 7.4
 
 ## [0.10.0](https://github.com/youthweb/php-youthweb-api/compare/0.9.0...0.10.0) - 2021-03-05
