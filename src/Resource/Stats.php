@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 /*
  * PHP Youthweb API is an object-oriented wrapper for PHP of the Youthweb API.
  * Copyright (C) 2015-2019  Youthweb e.V.  https://youthweb.net
@@ -37,7 +39,7 @@ final class Stats implements StatsInterface
      *
      * @return array the stats
      */
-    public function show($id)
+    public function show(string $id)
     {
         $ids = [
             'account' => 'account',

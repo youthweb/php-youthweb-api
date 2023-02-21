@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 /*
  * PHP Youthweb API is an object-oriented wrapper for PHP of the Youthweb API.
  * Copyright (C) 2015-2019  Youthweb e.V.  https://youthweb.net
@@ -27,7 +29,7 @@ class PostsTest extends \PHPUnit\Framework\TestCase
     /**
      * @test show()
      */
-    public function testShowReturnsDocumentInterface()
+    public function testShowReturnsDocumentInterface(): void
     {
         $document = $this->createMock('\Art4\JsonApiClient\Accessable');
 
@@ -47,7 +49,7 @@ class PostsTest extends \PHPUnit\Framework\TestCase
     /**
      * @test show() with Exception
      */
-    public function testShowThrowsException()
+    public function testShowThrowsException(): void
     {
         $exception = new \Exception('Resource not found', 404);
 
@@ -68,7 +70,7 @@ class PostsTest extends \PHPUnit\Framework\TestCase
     /**
      * @test showAuthor()
      */
-    public function testShowAuthorReturnsDocumentInterface()
+    public function testShowAuthorReturnsDocumentInterface(): void
     {
         $document = $this->createMock('\Art4\JsonApiClient\Accessable');
 
@@ -88,7 +90,7 @@ class PostsTest extends \PHPUnit\Framework\TestCase
     /**
      * @test showAuthor() with Exception
      */
-    public function testShowAuthorThrowsException()
+    public function testShowAuthorThrowsException(): void
     {
         $exception = new \Exception('Resource not found', 404);
 
@@ -109,7 +111,7 @@ class PostsTest extends \PHPUnit\Framework\TestCase
     /**
      * @test showAuthorRelationship()
      */
-    public function testShowAuthorRelationshipReturnsDocumentInterface()
+    public function testShowAuthorRelationshipReturnsDocumentInterface(): void
     {
         $document = $this->createMock('\Art4\JsonApiClient\Accessable');
 
@@ -129,7 +131,7 @@ class PostsTest extends \PHPUnit\Framework\TestCase
     /**
      * @test showAuthorRelationship() with Exception
      */
-    public function testShowAuthorRelationshipThrowsException()
+    public function testShowAuthorRelationshipThrowsException(): void
     {
         $exception = new \Exception('Resource not found', 404);
 
@@ -150,7 +152,7 @@ class PostsTest extends \PHPUnit\Framework\TestCase
     /**
      * @test showParent()
      */
-    public function testShowParentReturnsDocumentInterface()
+    public function testShowParentReturnsDocumentInterface(): void
     {
         $document = $this->createMock('\Art4\JsonApiClient\Accessable');
 
@@ -170,7 +172,7 @@ class PostsTest extends \PHPUnit\Framework\TestCase
     /**
      * @test showParent() with Exception
      */
-    public function testShowParentThrowsException()
+    public function testShowParentThrowsException(): void
     {
         $exception = new \Exception('Resource not found', 404);
 
@@ -191,7 +193,7 @@ class PostsTest extends \PHPUnit\Framework\TestCase
     /**
      * @test showParentRelationship()
      */
-    public function testShowParentRelationshipReturnsDocumentInterface()
+    public function testShowParentRelationshipReturnsDocumentInterface(): void
     {
         $document = $this->createMock('\Art4\JsonApiClient\Accessable');
 
@@ -211,7 +213,7 @@ class PostsTest extends \PHPUnit\Framework\TestCase
     /**
      * @test showParentRelationship() with Exception
      */
-    public function testShowParentRelationshipThrowsException()
+    public function testShowParentRelationshipThrowsException(): void
     {
         $exception = new \Exception('Resource not found', 404);
 

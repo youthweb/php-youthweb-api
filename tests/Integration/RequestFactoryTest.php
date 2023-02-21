@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 /*
  * PHP Youthweb API is an object-oriented wrapper for PHP of the Youthweb API.
  * Copyright (C) 2015-2019  Youthweb e.V.  https://youthweb.net
@@ -26,7 +28,7 @@ class RequestFactoryTest extends \PHPUnit\Framework\TestCase
     /**
      * @test
      */
-    public function testCreateFactory()
+    public function testCreateFactory(): void
     {
         $factory = new RequestFactory();
 
@@ -36,7 +38,7 @@ class RequestFactoryTest extends \PHPUnit\Framework\TestCase
     /**
      * @test
      */
-    public function testCreateRequest()
+    public function testCreateRequest(): void
     {
         $factory = new RequestFactory();
 

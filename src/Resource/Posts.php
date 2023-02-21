@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 /*
  * PHP Youthweb API is an object-oriented wrapper for PHP of the Youthweb API.
  * Copyright (C) 2015-2019  Youthweb e.V.  https://youthweb.net
@@ -37,7 +39,7 @@ final class Posts implements PostsInterface
      *
      * @return array the post data
      */
-    public function show($id)
+    public function show(string $id)
     {
         return $this->client->get('/posts/' . strval($id));
     }
@@ -51,7 +53,7 @@ final class Posts implements PostsInterface
      *
      * @return \Art4\JsonApiClient\Accessable
      */
-    public function showAuthor($id)
+    public function showAuthor(string $id)
     {
         return $this->client->get('/posts/' . strval($id) . '/author');
     }
@@ -65,7 +67,7 @@ final class Posts implements PostsInterface
      *
      * @return \Art4\JsonApiClient\Accessable
      */
-    public function showAuthorRelationship($id)
+    public function showAuthorRelationship(string $id)
     {
         return $this->client->get('/posts/' . strval($id) . '/relationships/author');
     }
@@ -79,7 +81,7 @@ final class Posts implements PostsInterface
      *
      * @return \Art4\JsonApiClient\Accessable
      */
-    public function showParent($id)
+    public function showParent(string $id)
     {
         return $this->client->get('/posts/' . strval($id) . '/parent');
     }
@@ -93,7 +95,7 @@ final class Posts implements PostsInterface
      *
      * @return \Art4\JsonApiClient\Accessable
      */
-    public function showParentRelationship($id)
+    public function showParentRelationship(string $id)
     {
         return $this->client->get('/posts/' . strval($id) . '/relationships/parent');
     }

@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 /*
  * PHP Youthweb API is an object-oriented wrapper for PHP of the Youthweb API.
  * Copyright (C) 2015-2019  Youthweb e.V.  https://youthweb.net
@@ -26,7 +28,7 @@ class ResourceFactoryTest extends \PHPUnit\Framework\TestCase
     /**
      * @test
      */
-    public function testCreateFactory()
+    public function testCreateFactory(): void
     {
         $factory = new ResourceFactory();
 
@@ -40,7 +42,7 @@ class ResourceFactoryTest extends \PHPUnit\Framework\TestCase
      * @param mixed $resource_name
      * @param mixed $class_name
      */
-    public function testCreateResource($resource_name, $class_name)
+    public function testCreateResource($resource_name, $class_name): void
     {
         $client = $this->createMock('Youthweb\Api\ClientInterface');
 
@@ -67,7 +69,7 @@ class ResourceFactoryTest extends \PHPUnit\Framework\TestCase
     /**
      * @test
      */
-    public function testGetUnknownResourceThrowsException()
+    public function testGetUnknownResourceThrowsException(): void
     {
         $client = $this->createMock('Youthweb\Api\ClientInterface');
 

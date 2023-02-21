@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 /*
  * PHP Youthweb API is an object-oriented wrapper for PHP of the Youthweb API.
  * Copyright (C) 2015-2019  Youthweb e.V.  https://youthweb.net
@@ -26,7 +28,7 @@ class ClientTest extends \PHPUnit\Framework\TestCase
     /**
      * @test
      */
-    public function testCreateClientWithoutParameters()
+    public function testCreateClientWithoutParameters(): void
     {
         $client = new Client();
 

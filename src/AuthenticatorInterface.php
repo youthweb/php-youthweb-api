@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 /*
  * PHP Youthweb API is an object-oriented wrapper for PHP of the Youthweb API.
  * Copyright (C) 2015-2019  Youthweb e.V.  https://youthweb.net
@@ -66,5 +68,5 @@ interface AuthenticatorInterface
      * @throws InvalidArgumentException If a wrong state was set
      * @throws UnauthorizedException    contains the url to get an authorization code
      */
-    public function getAccessToken($grant, array $params = []);
+    public function getAccessToken(string $grant, array $params = []);
 }

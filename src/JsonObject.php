@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 /*
  * PHP Youthweb API is an object-oriented wrapper for PHP of the Youthweb API.
  * Copyright (C) 2015-2019  Youthweb e.V.  https://youthweb.net
@@ -27,9 +29,9 @@ final class JsonObject implements \JsonSerializable
     /**
      * serialize the object to a JSON string
      *
-     * @retrun the JSON string
-     **/
-    public function __toString()
+     * @return the JSON string
+     */
+    public function __toString(): string
     {
         return json_encode($this);
     }
@@ -38,8 +40,9 @@ final class JsonObject implements \JsonSerializable
      * JsonSerializable implementation
      *
      * @return string
-     **/
-    public function JsonSerialize()
+     */
+    #[\ReturnTypeWillChange]
+    public function jsonSerialize()
     {
         return $this;
     }

@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 /*
  * PHP Youthweb API is an object-oriented wrapper for PHP of the Youthweb API.
  * Copyright (C) 2015-2019  Youthweb e.V.  https://youthweb.net
@@ -37,5 +39,5 @@ interface RequestFactoryInterface
      *
      * @return RequestInterface
      */
-    public function createRequest($method, $url, array $headers = [], $body = null, $version = '1.1');
+    public function createRequest(string $method, string $url, array $headers = [], $body = null, string $version = '1.1');
 }

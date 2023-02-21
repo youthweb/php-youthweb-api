@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 /*
  * PHP Youthweb API is an object-oriented wrapper for PHP of the Youthweb API.
  * Copyright (C) 2015-2019  Youthweb e.V.  https://youthweb.net
@@ -27,7 +29,7 @@ class UsersTest extends \PHPUnit\Framework\TestCase
     /**
      * @test show()
      */
-    public function testShowReturnsDocumentInterface()
+    public function testShowReturnsDocumentInterface(): void
     {
         $document = $this->createMock('\Art4\JsonApiClient\Accessable');
 
@@ -47,7 +49,7 @@ class UsersTest extends \PHPUnit\Framework\TestCase
     /**
      * @test show() with Exception
      */
-    public function testShowThrowsException()
+    public function testShowThrowsException(): void
     {
         $exception = new \Exception('Resource not found', 404);
 
@@ -68,7 +70,7 @@ class UsersTest extends \PHPUnit\Framework\TestCase
     /**
      * @test showPosts()
      */
-    public function testShowPostsReturnsDocumentInterface()
+    public function testShowPostsReturnsDocumentInterface(): void
     {
         $document = $this->createMock('\Art4\JsonApiClient\Accessable');
 
@@ -88,7 +90,7 @@ class UsersTest extends \PHPUnit\Framework\TestCase
     /**
      * @test show() with Exception
      */
-    public function testShowPostsThrowsException()
+    public function testShowPostsThrowsException(): void
     {
         $exception = new \Exception('Resource not found', 404);
 
@@ -109,7 +111,7 @@ class UsersTest extends \PHPUnit\Framework\TestCase
     /**
      * @test showMe()
      */
-    public function testShowMeReturnsDocumentInterface()
+    public function testShowMeReturnsDocumentInterface(): void
     {
         $document = $this->createMock('\Art4\JsonApiClient\Accessable');
 

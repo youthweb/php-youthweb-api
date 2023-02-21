@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 /*
  * PHP Youthweb API is an object-oriented wrapper for PHP of the Youthweb API.
  * Copyright (C) 2015-2019  Youthweb e.V.  https://youthweb.net
@@ -23,6 +25,7 @@ use Art4\JsonApiClient\Helper\Parser as JsonApiParser;
 use Cache\Adapter\Void\VoidCachePool;
 use DateInterval;
 use DateTime;
+use Exception;
 use GuzzleHttp\Exception\ClientException;
 use InvalidArgumentException;
 use League\OAuth2\Client\Token\AccessToken;
@@ -30,6 +33,7 @@ use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use Throwable;
 use Youthweb\Api\Exception\UnauthorizedException;
 
 /**
@@ -69,7 +73,7 @@ final class Client implements ClientInterface
     /**
      * @var League\OAuth2\Client\Provider\AbstractProvider
      */
-    private $oauth2_client;
+    private $oauth2_provider;
 
     /**
      * @var CacheItemPoolInterface
@@ -90,6 +94,11 @@ final class Client implements ClientInterface
      * @var RequestFactoryInterface
      */
     private $request_factory;
+
+    /**
+     * @var ResourceFactoryInterface
+     */
+    private $resource_factory;
 
     /**
      * @var string
@@ -195,11 +204,11 @@ final class Client implements ClientInterface
     /**
      * @param string $name
      *
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      *
      * @return Resource\AbstractResource
      */
-    public function getResource($name)
+    public function getResource(string $name)
     {
         if (! isset($this->resources[$name])) {
             $this->resources[$name] = $this->getResourceFactory()->createResource($name, $this);
@@ -213,9 +222,9 @@ final class Client implements ClientInterface
      *
      * @param string $key The item key
      *
-     * @return Psr\Cache\CacheItemInterface the cache item
+     * @return \Psr\Cache\CacheItemInterface the cache item
      */
-    public function getCacheItem($key)
+    public function getCacheItem(string $key)
     {
         $key = $this->createCacheKey($key);
 
@@ -225,9 +234,9 @@ final class Client implements ClientInterface
     /**
      * Save a cache item
      *
-     * @param Psr\Cache\CacheItemInterface $item The item
+     * @param \Psr\Cache\CacheItemInterface $item The item
      */
-    public function saveCacheItem(CacheItemInterface $item)
+    public function saveCacheItem(CacheItemInterface $item): void
     {
         $this->getCacheProviderInternally()->saveDeferred($item);
 
@@ -237,9 +246,9 @@ final class Client implements ClientInterface
     /**
      * Delete a cache item
      *
-     * @param Psr\Cache\CacheItemInterface $item The item
+     * @param \Psr\Cache\CacheItemInterface $item The item
      */
-    public function deleteCacheItem(CacheItemInterface $item)
+    public function deleteCacheItem(CacheItemInterface $item): void
     {
         $this->getCacheProviderInternally()->deleteItem($item->getKey());
     }
@@ -276,7 +285,7 @@ final class Client implements ClientInterface
      *
      * @return bool true, if a new access token was saved
      */
-    public function authorize($grant, array $params = [])
+    public function authorize(string $grant, array $params = [])
     {
         if (! isset($params['code'])) {
             throw new UnauthorizedException();
@@ -289,7 +298,7 @@ final class Client implements ClientInterface
             if (! $state_item->isHit() or $state_item->get() !== $params['state']) {
                 $this->deleteCacheItem($state_item);
 
-                throw new \InvalidArgumentException('Invalid state');
+                throw new InvalidArgumentException('Invalid state');
             }
         }
 
@@ -358,7 +367,7 @@ final class Client implements ClientInterface
      *
      * @return array
      */
-    public function get($path, array $data = [])
+    public function get(string $path, array $data = [])
     {
         $data['headers']['Authorization'] = 'Bearer ' . $this->getAccessToken();
 
@@ -375,7 +384,7 @@ final class Client implements ClientInterface
      *
      * @return array
      */
-    public function getUnauthorized($path, array $data = [])
+    public function getUnauthorized(string $path, array $data = [])
     {
         $request = $this->createRequest('GET', $this->getApiUrl() . $path, $data);
 
@@ -390,7 +399,7 @@ final class Client implements ClientInterface
      *
      * @return array
      */
-    public function postUnauthorized($path, array $data = [])
+    public function postUnauthorized(string $path, array $data = [])
     {
         $request = $this->createRequest('POST', $this->getApiUrl() . $path, $data);
 
@@ -421,7 +430,7 @@ final class Client implements ClientInterface
      *
      * @param HttpClientInterface $client the http client
      */
-    private function setHttpClientInternally(HttpClientInterface $client)
+    private function setHttpClientInternally(HttpClientInterface $client): void
     {
         $this->http_client = $client;
     }
@@ -431,7 +440,7 @@ final class Client implements ClientInterface
      *
      * @param Psr\Cache\CacheItemPoolInterface $cache_provider the cache provider
      */
-    private function setCacheProviderInternally(CacheItemPoolInterface $cache_provider)
+    private function setCacheProviderInternally(CacheItemPoolInterface $cache_provider): void
     {
         $this->cache_provider = $cache_provider;
     }
@@ -453,7 +462,7 @@ final class Client implements ClientInterface
      *
      * @return string The cache key
      **/
-    private function createCacheKey($key)
+    private function createCacheKey(string $key)
     {
         return $this->cache_namespace . strval($key);
     }
@@ -463,7 +472,7 @@ final class Client implements ClientInterface
      *
      * @param AccessToken $token The access token
      */
-    private function saveAccessToken(AccessToken $token)
+    private function saveAccessToken(AccessToken $token): void
     {
         $access_token_item = $this->getCacheItem(self::CACHEKEY_ACCESS_TOKEN);
         $access_token_item->set($token->getToken());
@@ -476,7 +485,7 @@ final class Client implements ClientInterface
      *
      * @param AuthenticatorInterface $oauth2_provider the oauth2 provider
      */
-    private function setOauth2Provider(AuthenticatorInterface $oauth2_provider)
+    private function setOauth2Provider(AuthenticatorInterface $oauth2_provider): void
     {
         $this->oauth2_provider = $oauth2_provider;
     }
@@ -538,7 +547,7 @@ final class Client implements ClientInterface
      *
      * @return RequestInterface
      */
-    private function createRequest($method, $url, array $options)
+    private function createRequest(string $method, string $url, array $options)
     {
         $options = $this->parseOptions($options);
 
@@ -600,7 +609,7 @@ final class Client implements ClientInterface
      *
      * @param RequestFactoryInterface $request_factory the request factory
      */
-    private function setRequestFactory(RequestFactoryInterface $request_factory)
+    private function setRequestFactory(RequestFactoryInterface $request_factory): void
     {
         $this->request_factory = $request_factory;
     }
@@ -620,7 +629,7 @@ final class Client implements ClientInterface
      *
      * @param ResourceFactoryInterface $resource_factory the resource factory
      */
-    private function setResourceFactory(ResourceFactoryInterface $resource_factory)
+    private function setResourceFactory(ResourceFactoryInterface $resource_factory): void
     {
         $this->resource_factory = $resource_factory;
     }
@@ -638,18 +647,18 @@ final class Client implements ClientInterface
     /**
      * Handels a Exception from the Client
      *
-     * @param \Exception $e The exception
+     * @param Throwable $e The exception
      *
-     * @return \Exception An exception for re-throwing
+     * @return Throwable An exception for re-throwing
      **/
-    private function handleClientException(\Exception $e)
+    private function handleClientException(Throwable $th)
     {
         $message = null;
         $response = null;
 
         // Try to get the response
-        if ($e instanceof ClientException or is_callable([$e, 'getResponse'])) {
-            $response = $e->getResponse();
+        if ($th instanceof ClientException or is_callable([$th, 'getResponse'])) {
+            $response = $th->getResponse();
         }
 
         if (is_object($response) and $response instanceof ResponseInterface) {
@@ -672,11 +681,11 @@ final class Client implements ClientInterface
         }
 
         // Delete the access token if a 401 error occured
-        if (strval($e->getCode()) === '401') {
+        if (strval($th->getCode()) === '401') {
             $access_token_item = $this->getCacheItem(self::CACHEKEY_ACCESS_TOKEN);
             $this->deleteCacheItem($access_token_item);
         }
 
-        return new \Exception($message, $e->getCode(), $e);
+        return new Exception($message, $th->getCode(), $th);
     }
 }
