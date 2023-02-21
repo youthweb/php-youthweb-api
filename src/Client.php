@@ -28,14 +28,17 @@ use DateTime;
 use Exception;
 use GuzzleHttp\Exception\ClientException;
 use InvalidArgumentException;
-use League\OAuth2\Client\Token\AccessToken;
+use League\OAuth2\Client\Token\AccessTokenInterface;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Throwable;
+use Youthweb\Api\Authentication\Authenticator;
+use Youthweb\Api\Authentication\NativeAuthenticator;
 use Youthweb\Api\Exception\UnauthorizedException;
 use Youthweb\Api\Resource\ResourceInterface;
+use Youthweb\OAuth2\Client\Provider\Youthweb as Oauth2Provider;
 
 /**
  * Simple PHP Youthweb client
@@ -72,7 +75,7 @@ final class Client implements ClientInterface
     private $http_client;
 
     /**
-     * @var AuthenticatorInterface
+     * @var Authenticator
      */
     private $oauth2_provider;
 
@@ -171,14 +174,14 @@ final class Client implements ClientInterface
         $this->setHttpClientInternally($collaborators['http_client']);
 
         if (empty($collaborators['oauth2_provider'])) {
-            $collaborators['oauth2_provider'] = new YouthwebAuthenticator([
-                'client_id'     => $this->client_id,
-                'client_secret' => $this->client_secret,
-                'redirect_url'  => $this->redirect_url,
-                'api_version'   => $this->api_version,
-                'api_domain'    => $this->api_domain,
-                'auth_domain'   => $this->auth_domain,
-            ]);
+            $collaborators['oauth2_provider'] = new NativeAuthenticator(new Oauth2Provider([
+                'clientId'     => $this->client_id,
+                'clientSecret' => $this->client_secret,
+                'redirectUrl'  => $this->redirect_url,
+                'apiVersion'   => $this->api_version,
+                'apiDomain'    => $this->api_domain,
+                'authDomain'   => $this->auth_domain,
+            ]));
         }
 
         $this->setOauth2Provider($collaborators['oauth2_provider']);
@@ -470,10 +473,8 @@ final class Client implements ClientInterface
 
     /**
      * Save a access token in cache provider
-     *
-     * @param AccessToken $token The access token
      */
-    private function saveAccessToken(AccessToken $token): void
+    private function saveAccessToken(AccessTokenInterface $token): void
     {
         $access_token_item = $this->getCacheItem(self::CACHEKEY_ACCESS_TOKEN);
         $access_token_item->set($token->getToken());
@@ -484,9 +485,9 @@ final class Client implements ClientInterface
     /**
      * Set a oauth2 provider
      *
-     * @param AuthenticatorInterface $oauth2_provider the oauth2 provider
+     * @param Authenticator $oauth2_provider the oauth2 provider
      */
-    private function setOauth2Provider(AuthenticatorInterface $oauth2_provider): void
+    private function setOauth2Provider(Authenticator $oauth2_provider): void
     {
         $this->oauth2_provider = $oauth2_provider;
     }
@@ -494,9 +495,9 @@ final class Client implements ClientInterface
     /**
      * Get the oauth2 provider
      *
-     * @return AuthenticatorInterface the oauth2 provider
+     * @return Authenticator the oauth2 provider
      */
-    private function getOauth2Provider()
+    private function getOauth2Provider(): Authenticator
     {
         return $this->oauth2_provider;
     }

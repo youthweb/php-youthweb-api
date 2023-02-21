@@ -19,44 +19,30 @@ declare(strict_types=1);
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-namespace Youthweb\Api;
+namespace Youthweb\Api\Authentication;
 
 use InvalidArgumentException;
+use League\OAuth2\Client\Token\AccessTokenInterface;
 use Youthweb\Api\Exception\UnauthorizedException;
 
 /**
  * Interface for authenticator
  */
-interface AuthenticatorInterface
+interface Authenticator
 {
-    /**
-     * Constructs the Authenticator
-     *
-     * @param array $options       an array of options to set on the client.
-     *                             Options include `api_version`, `api_domain`, `auth_domain`,
-     *                             `cache_namespace`, `client_id`, `client_secret` and `redirect_url`
-     * @param array $collaborators An array of collaborators that may be used to
-     *                             override this provider's default behavior. Collaborators include
-     *                             http_client`, `oauth2_provider`, `cache_provider`, `request_factory`
-     *                             and `resource_factory`.
-     */
-    public function __construct(array $options = [], array $collaborators = []);
-
     /**
      * get the authorization url
      *
      * @param array $options
-     *
-     * @return string
      */
-    public function getAuthorizationUrl(array $options = []);
+    public function getAuthorizationUrl(array $options = []): string;
 
     /**
      * get a random state
      *
-     * @return string
+     * @return string Could be empty
      */
-    public function getState();
+    public function getState(): string;
 
     /**
      * Get an access token
@@ -69,7 +55,6 @@ interface AuthenticatorInterface
      *                       ]
      *
      * @throws InvalidArgumentException If a wrong state was set
-     * @throws UnauthorizedException    contains the url to get an authorization code
      */
-    public function getAccessToken(string $grant, array $params = []);
+    public function getAccessToken(string $grant, array $params = []): AccessTokenInterface;
 }
