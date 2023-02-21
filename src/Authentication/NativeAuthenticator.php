@@ -28,7 +28,7 @@ use League\OAuth2\Client\Token\AccessTokenInterface;
 /**
  * Native authenticator based on a league/oauth2-client provider
  */
-class NativeAuthenticator implements Authenticator
+final class NativeAuthenticator implements Authenticator
 {
     public function __construct(
         private AbstractProvider $oauth2Provider

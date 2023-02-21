@@ -55,7 +55,6 @@ interface Authenticator
      *                       ]
      *
      * @throws InvalidArgumentException If a wrong state was set
-     * @throws UnauthorizedException    contains the url to get an authorization code
      */
     public function getAccessToken(string $grant, array $params = []): AccessTokenInterface;
 }
