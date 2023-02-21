@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- New interface `Youthweb\Api\Authentication\Authenticator` was added.
+- New class  `Youthweb\Api\Authentication\NativeAuthenticator` was added.
 - Add tests for PHP 8.1, 8.2 and 8.3
 - Add static code analyze with PHPStan
 
@@ -19,6 +21,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Declare strict_types=1 in all PHP files
 - Move CI tests from Travis-CI to Github Actions
 - Move code coverage from Coveralls to Codecov.io
+
+### Removed
+
+- **BREAKING:** The interface `Youthweb\Api\AuthenticatorInterface` was removed, use `Youthweb\Api\Authentication\Authenticator` instead.
+- **BREAKING:** The class `Youthweb\Api\YouthwebAuthenticator` was removed, use `Youthweb\Api\Authentication\NativeAuthenticator` instead.
 
 ## [0.10.0](https://github.com/youthweb/php-youthweb-api/compare/0.9.0...0.10.0) - 2021-03-05
 

@@ -19,70 +19,50 @@ declare(strict_types=1);
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-namespace Youthweb\Api;
+namespace Youthweb\Api\Authentication;
 
 use InvalidArgumentException;
+use League\OAuth2\Client\Token\AccessTokenInterface;
 use Youthweb\OAuth2\Client\Provider\Youthweb as Oauth2Provider;
 
 /**
  * Interface for authenticator
  */
-class YouthwebAuthenticator implements AuthenticatorInterface
+class NativeAuthenticator implements Authenticator
 {
-    /**
-     * @var string
-     */
-    private $api_version = '0.15';
+    private string $apiVersion = '0.20';
 
-    /**
-     * @var string
-     */
-    private $api_domain = 'https://api.youthweb.net';
+    private string $apiDomain = 'https://api.youthweb.net';
 
-    /**
-     * @var string
-     */
-    private $auth_domain = 'https://youthweb.net';
+    private string $authDomain = 'https://youthweb.net';
 
-    /**
-     * @var string
-     */
-    private $client_id;
+    private string $clientId = '';
 
-    /**
-     * @var string
-     */
-    private $client_secret;
+    private string $clientSecret = '';
 
-    /**
-     * @var string
-     */
-    private $redirect_url = '';
+    private string $redirectUrl = '';
 
-    /**
-     * @var Oauth2Provider
-     */
-    private $oauth2_provider;
+    private Oauth2Provider $oauth2Provider;
 
     /**
      * Constructs the Authenticator
      *
      * @param array $options       an array of options to set on the client.
-     *                             Options include `api_domain`, `auth_domain`, `client_id`,
-     *                             `client_secret` and `redirect_url`
+     *                             Options include `apiDomain`, `authDomain`, `clientId`,
+     *                             `clientSecret` and `redirectUrl`
      * @param array $collaborators An array of collaborators that may be used to
      *                             override this provider's default behavior. Collaborators include
-     *                             `oauth2_provider`.
+     *                             `oauth2Provider`.
      */
     public function __construct(array $options = [], array $collaborators = [])
     {
         $allowed_options = [
-            'api_version',
-            'api_domain',
-            'auth_domain',
-            'client_id',
-            'client_secret',
-            'redirect_url',
+            'apiVersion',
+            'apiDomain',
+            'authDomain',
+            'clientId',
+            'clientSecret',
+            'redirectUrl',
         ];
 
         foreach ($options as $option => $value) {
@@ -93,28 +73,26 @@ class YouthwebAuthenticator implements AuthenticatorInterface
             }
         }
 
-        if (empty($collaborators['oauth2_provider'])) {
-            $collaborators['oauth2_provider'] = new Oauth2Provider([
-                'clientId'     => $this->client_id,
-                'clientSecret' => $this->client_secret,
-                'redirectUri'  => $this->redirect_url,
-                'apiVersion'   => $this->api_version,
-                'apiDomain'    => $this->api_domain,
-                'domain'       => $this->auth_domain,
+        if (empty($collaborators['oauth2Provider'])) {
+            $collaborators['oauth2Provider'] = new Oauth2Provider([
+                'clientId'     => $this->clientId,
+                'clientSecret' => $this->clientSecret,
+                'redirectUri'  => $this->redirectUrl,
+                'apiVersion'   => $this->apiVersion,
+                'apiDomain'    => $this->apiDomain,
+                'domain'       => $this->authDomain,
             ]);
         }
 
-        $this->setOauth2Provider($collaborators['oauth2_provider']);
+        $this->setOauth2Provider($collaborators['oauth2Provider']);
     }
 
     /**
      * get the authorization url
      *
      * @param array $options
-     *
-     * @return string
      */
-    public function getAuthorizationUrl(array $options = [])
+    public function getAuthorizationUrl(array $options = []): string
     {
         return $this->getOauth2Provider()->getAuthorizationUrl($options);
     }
@@ -122,9 +100,9 @@ class YouthwebAuthenticator implements AuthenticatorInterface
     /**
      * get a random state
      *
-     * @return string
+     * @return string Could be empty
      */
-    public function getState()
+    public function getState(): string
     {
         $state = $this->getOauth2Provider()->getState();
 
@@ -152,7 +130,7 @@ class YouthwebAuthenticator implements AuthenticatorInterface
      *
      * @throws InvalidArgumentException If a wrong state or grant was set
      */
-    public function getAccessToken(string $grant, array $params = [])
+    public function getAccessToken(string $grant, array $params = []): AccessTokenInterface
     {
         $allowed_grants = [
             'authorization_code',
@@ -168,11 +146,11 @@ class YouthwebAuthenticator implements AuthenticatorInterface
     /**
      * Set a oauth2 provider
      *
-     * @param Oauth2Provider $oauth2_provider the oauth2 provider
+     * @param Oauth2Provider $oauth2Provider the oauth2 provider
      */
-    private function setOauth2Provider(Oauth2Provider $oauth2_provider): void
+    private function setOauth2Provider(Oauth2Provider $oauth2Provider): void
     {
-        $this->oauth2_provider = $oauth2_provider;
+        $this->oauth2Provider = $oauth2Provider;
     }
 
     /**
@@ -182,6 +160,6 @@ class YouthwebAuthenticator implements AuthenticatorInterface
      */
     private function getOauth2Provider(): Oauth2Provider
     {
-        return $this->oauth2_provider;
+        return $this->oauth2Provider;
     }
 }
