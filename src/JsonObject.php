@@ -21,15 +21,15 @@ declare(strict_types=1);
 
 namespace Youthweb\Api;
 
+use JsonSerializable;
+
 /**
  * Json Object class
  */
-final class JsonObject implements \JsonSerializable
+final class JsonObject implements JsonSerializable
 {
     /**
      * serialize the object to a JSON string
-     *
-     * @return the JSON string
      */
     public function __toString(): string
     {
@@ -39,7 +39,7 @@ final class JsonObject implements \JsonSerializable
     /**
      * JsonSerializable implementation
      *
-     * @return string
+     * @return mixed
      */
     #[\ReturnTypeWillChange]
     public function jsonSerialize()

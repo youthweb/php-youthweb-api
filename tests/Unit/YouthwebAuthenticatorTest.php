@@ -94,7 +94,7 @@ class YouthwebAuthenticatorTest extends \PHPUnit\Framework\TestCase
 
         $oauth2_provider->expects($this->exactly(2))
             ->method('getState')
-            ->will($this->onConsecutiveCalls(null, $state));
+            ->will($this->onConsecutiveCalls('', $state));
 
         $authenticator = $this->createAuthenticator([], [
             'oauth2_provider' => $oauth2_provider,

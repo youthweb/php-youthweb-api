@@ -35,6 +35,7 @@ use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Throwable;
 use Youthweb\Api\Exception\UnauthorizedException;
+use Youthweb\Api\Resource\ResourceInterface;
 
 /**
  * Simple PHP Youthweb client
@@ -71,7 +72,7 @@ final class Client implements ClientInterface
     private $http_client;
 
     /**
-     * @var League\OAuth2\Client\Provider\AbstractProvider
+     * @var AuthenticatorInterface
      */
     private $oauth2_provider;
 
@@ -206,7 +207,7 @@ final class Client implements ClientInterface
      *
      * @throws InvalidArgumentException
      *
-     * @return Resource\AbstractResource
+     * @return ResourceInterface
      */
     public function getResource(string $name)
     {
@@ -365,7 +366,7 @@ final class Client implements ClientInterface
      *
      * @throws UnauthorizedException contains the url to get an authorization code
      *
-     * @return array
+     * @return \Art4\JsonApiClient\Accessable
      */
     public function get(string $path, array $data = [])
     {
@@ -382,7 +383,7 @@ final class Client implements ClientInterface
      * @param string $path
      * @param array  $data
      *
-     * @return array
+     * @return \Art4\JsonApiClient\Accessable
      */
     public function getUnauthorized(string $path, array $data = [])
     {
@@ -397,7 +398,7 @@ final class Client implements ClientInterface
      * @param string $path
      * @param array  $data
      *
-     * @return array
+     * @return \Art4\JsonApiClient\Accessable
      */
     public function postUnauthorized(string $path, array $data = [])
     {
@@ -438,7 +439,7 @@ final class Client implements ClientInterface
     /**
      * Set a cache provider
      *
-     * @param Psr\Cache\CacheItemPoolInterface $cache_provider the cache provider
+     * @param CacheItemPoolInterface $cache_provider the cache provider
      */
     private function setCacheProviderInternally(CacheItemPoolInterface $cache_provider): void
     {
@@ -448,7 +449,7 @@ final class Client implements ClientInterface
     /**
      * Get the cache provider
      *
-     * @return Psr\Cache\CacheItemPoolInterface the cache provider
+     * @return CacheItemPoolInterface the cache provider
      */
     private function getCacheProviderInternally()
     {
@@ -647,7 +648,7 @@ final class Client implements ClientInterface
     /**
      * Handels a Exception from the Client
      *
-     * @param Throwable $e The exception
+     * @param Throwable $th The exception
      *
      * @return Throwable An exception for re-throwing
      **/

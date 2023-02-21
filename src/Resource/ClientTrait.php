@@ -31,13 +31,10 @@ trait ClientTrait
     /**
      * The client.
      *
-     * @var Client
+     * @var ClientInterface
      */
     private $client;
 
-    /**
-     * @param Client $client
-     */
     public function __construct(ClientInterface $client)
     {
         $this->client = $client;

@@ -35,7 +35,7 @@ interface StatsInterface extends ResourceInterface
      *
      * @param string $id Can be `account`, `forum` or `groups`
      *
-     * @return array the stats
+     * @return \Art4\JsonApiClient\Accessable the stats
      */
     public function show(string $id);
 }

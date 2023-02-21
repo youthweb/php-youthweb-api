@@ -22,6 +22,8 @@ declare(strict_types=1);
 namespace Youthweb\Api;
 
 use GuzzleHttp\Psr7\Request;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\StreamInterface;
 
 /**
  * Factory for PSR-7 Requests

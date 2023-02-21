@@ -21,6 +21,7 @@ declare(strict_types=1);
 
 namespace Youthweb\Api;
 
+use InvalidArgumentException;
 use Youthweb\OAuth2\Client\Provider\Youthweb as Oauth2Provider;
 
 /**
@@ -59,7 +60,7 @@ class YouthwebAuthenticator implements AuthenticatorInterface
     private $redirect_url = '';
 
     /**
-     * @var Youthweb\OAuth2\Client\Provider\Youthweb
+     * @var Oauth2Provider
      */
     private $oauth2_provider;
 
@@ -128,7 +129,7 @@ class YouthwebAuthenticator implements AuthenticatorInterface
         $state = $this->getOauth2Provider()->getState();
 
         // Workaround, if no state was generated so far
-        if ($state === null) {
+        if ($state === '') {
             // get the url so a new state will be generated
             $this->getAuthorizationUrl();
 
@@ -158,7 +159,7 @@ class YouthwebAuthenticator implements AuthenticatorInterface
         ];
 
         if (! in_array($grant, $allowed_grants)) {
-            throw new \InvalidArgumentException('Unsupported grant "' . strval($grant) . '"');
+            throw new InvalidArgumentException('Unsupported grant "' . strval($grant) . '"');
         }
 
         return $this->getOauth2Provider()->getAccessToken($grant, $params);
@@ -167,7 +168,7 @@ class YouthwebAuthenticator implements AuthenticatorInterface
     /**
      * Set a oauth2 provider
      *
-     * @param Youthweb\OAuth2\Client\Provider\Youthweb $oauth2_provider the oauth2 provider
+     * @param Oauth2Provider $oauth2_provider the oauth2 provider
      */
     private function setOauth2Provider(Oauth2Provider $oauth2_provider): void
     {
@@ -177,9 +178,9 @@ class YouthwebAuthenticator implements AuthenticatorInterface
     /**
      * Get the oauth2 provider
      *
-     * @return Youthweb\OAuth2\Client\Provider\Youthweb the oauth2 provider
+     * @return Oauth2Provider the oauth2 provider
      */
-    private function getOauth2Provider()
+    private function getOauth2Provider(): Oauth2Provider
     {
         return $this->oauth2_provider;
     }

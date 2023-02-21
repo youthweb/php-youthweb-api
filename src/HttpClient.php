@@ -27,6 +27,7 @@ use GuzzleHttp\Client as GuzzleClient;
 /**
  * Http client based on GuzzleHttp
  */
+/** @phpstan-ignore-next-line */
 final class HttpClient extends GuzzleClient implements HttpClientInterface
 {
 }

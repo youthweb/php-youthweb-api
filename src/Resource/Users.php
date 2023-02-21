@@ -37,7 +37,7 @@ final class Users implements UsersInterface
      *
      * @param string $id
      *
-     * @return array the user data
+     * @return \Art4\JsonApiClient\Accessable the user data
      */
     public function show(string $id)
     {
@@ -63,7 +63,7 @@ final class Users implements UsersInterface
      *
      * @param string $id
      *
-     * @return array the posts data
+     * @return \Art4\JsonApiClient\Accessable the posts data
      */
     public function showPosts(string $id)
     {
