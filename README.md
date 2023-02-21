@@ -5,7 +5,7 @@
 [![Build Status](https://github.com/youthweb/php-youthweb-api/actions/workflows/ci.yml/badge.svg?branch=v0.x)](https://github.com/youthweb/php-youthweb-api/actions)
 [![codecov](https://codecov.io/gh/youthweb/php-youthweb-api/branch/v0.x/graph/badge.svg?token=vWBAUXTFLI)](https://codecov.io/gh/youthweb/php-youthweb-api)
 
-PHP Youthweb API ist ein objektorientierter Wrapper in PHP 5.6+ für die [Youthweb API](https://github.com/youthweb/youthweb-api).
+PHP Youthweb API ist ein objektorientierter Wrapper in PHP 8.0+ für die [Youthweb API](https://github.com/youthweb/youthweb-api).
 
 ## Installation
 

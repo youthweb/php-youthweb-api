@@ -13,7 +13,7 @@
         }
     ],
     "require": {
-        "php": "^7.4 || ^8.0",
+        "php": "^8.0",
         "art4/json-api-client": "^1.0",
         "cache/void-adapter": "^1.1",
         "guzzlehttp/guzzle": "^7.2",

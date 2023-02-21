@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **BREAKING:** The interface `Youthweb\Api\AuthenticatorInterface` was removed, use `Youthweb\Api\Authentication\Authenticator` instead.
 - **BREAKING:** The class `Youthweb\Api\YouthwebAuthenticator` was removed, use `Youthweb\Api\Authentication\NativeAuthenticator` instead.
+- Drop support for PHP 7.4
 
 ## [0.10.0](https://github.com/youthweb/php-youthweb-api/compare/0.9.0...0.10.0) - 2021-03-05
 
@@ -36,6 +37,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - default api version was set to [Youthweb-API 0.18](https://developer.youthweb.net/20210221-Youthweb-API-0.18.html)
+
+### Removed
+
 - Drop support for PHP 7.2 and 7.3
 
 ## [0.9.0](https://github.com/youthweb/php-youthweb-api/compare/0.8...0.9.0) - 2019-10-01
@@ -45,7 +49,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - api version will be automatically set into Oauth2Provider
 - default api version was set to [Youthweb-API 0.15](https://developer.youthweb.net/20190908-Youthweb-API-0.15.html)
 
-### Changed
+### Removed
 
 - Drop support for PHP 5.6, 7.0 and 7.1
 
@@ -148,7 +152,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-- **Breaking:** Support for PHP 5.5 was dropped. Minimum requirement is now PHP 5.6.
+- Support for PHP 5.5 was dropped. Minimum requirement is now PHP 5.6.
 
 ## [0.4.0](https://github.com/youthweb/php-youthweb-api/compare/0.3...0.4) - 2016-08-01
 
@@ -170,8 +174,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-- **Breaking:** Drop PHP 5.4 support
 - **Breaking:** Manuel installation via `autoload.php`. Use composer instead
+- Drop support for PHP 5.4
 
 ## [0.2.0](https://github.com/youthweb/php-youthweb-api/compare/0.1...0.2) - 2015-06-21
 
