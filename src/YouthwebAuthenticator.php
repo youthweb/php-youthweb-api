@@ -129,7 +129,7 @@ class YouthwebAuthenticator implements AuthenticatorInterface
         $state = $this->getOauth2Provider()->getState();
 
         // Workaround, if no state was generated so far
-        if ($state === null) {
+        if ($state === '') {
             // get the url so a new state will be generated
             $this->getAuthorizationUrl();
 
