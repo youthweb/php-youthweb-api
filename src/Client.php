@@ -36,6 +36,7 @@ use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamFactoryInterface;
+use Psr\Http\Message\UriFactoryInterface;
 use Throwable;
 use Youthweb\Api\Authentication\Authenticator;
 use Youthweb\Api\Authentication\NativeAuthenticator;
@@ -100,6 +101,8 @@ final class Client implements ClientInterface
     private RequestFactoryInterface $requestFactory;
 
     private StreamFactoryInterface $streamFactory;
+
+    private UriFactoryInterface $uriFactory;
 
     /**
      * @var ResourceFactoryInterface
@@ -200,6 +203,7 @@ final class Client implements ClientInterface
 
         $this->requestFactory = $collaborators['request_factory'];
         $this->streamFactory = new HttpFactory();
+        $this->uriFactory = new HttpFactory();
 
         if (empty($collaborators['resource_factory'])) {
             $collaborators['resource_factory'] = new ResourceFactory();
@@ -550,7 +554,10 @@ final class Client implements ClientInterface
      */
     private function createRequest(string $method, string $url, array $options): RequestInterface
     {
-        $request = $this->requestFactory->createRequest($method, $url);
+        $request = $this->requestFactory->createRequest(
+            $method,
+            $this->uriFactory->createUri($url),
+        );
 
         // Should match default values for getRequest
         $defaultOptions = [
