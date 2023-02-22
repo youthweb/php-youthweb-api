@@ -45,12 +45,8 @@ class ClientTest extends TestCase
     /**
      * Create a client with mocks of all collaborators
      */
-    private function createClient(array $options = [], array $collaborators = [])
+    private function createClient(array $options = [], array $collaborators = []): Client
     {
-        $default_options = [];
-
-        $options = array_merge($default_options, $options);
-
         $default_collaborators = [
             'http_client' => $this->createMock(HttpClientInterface::class),
             'oauth2_provider' => $this->createMock(Authenticator::class),
