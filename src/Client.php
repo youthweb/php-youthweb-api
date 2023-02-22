@@ -27,12 +27,16 @@ use DateInterval;
 use DateTime;
 use Exception;
 use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Psr7\HttpFactory;
 use InvalidArgumentException;
 use League\OAuth2\Client\Token\AccessTokenInterface;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
+use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\StreamFactoryInterface;
+use Psr\Http\Message\UriFactoryInterface;
 use Throwable;
 use Youthweb\Api\Authentication\Authenticator;
 use Youthweb\Api\Authentication\NativeAuthenticator;
@@ -94,10 +98,11 @@ final class Client implements ClientInterface
      */
     private $resources = [];
 
-    /**
-     * @var RequestFactoryInterface
-     */
-    private $request_factory;
+    private RequestFactoryInterface $requestFactory;
+
+    private StreamFactoryInterface $streamFactory;
+
+    private UriFactoryInterface $uriFactory;
 
     /**
      * @var ResourceFactoryInterface
@@ -193,10 +198,12 @@ final class Client implements ClientInterface
         $this->setCacheProviderInternally($collaborators['cache_provider']);
 
         if (empty($collaborators['request_factory'])) {
-            $collaborators['request_factory'] = new RequestFactory();
+            $collaborators['request_factory'] = new HttpFactory();
         }
 
-        $this->setRequestFactory($collaborators['request_factory']);
+        $this->requestFactory = $collaborators['request_factory'];
+        $this->streamFactory = new HttpFactory();
+        $this->uriFactory = new HttpFactory();
 
         if (empty($collaborators['resource_factory'])) {
             $collaborators['resource_factory'] = new ResourceFactory();
@@ -543,43 +550,40 @@ final class Client implements ClientInterface
     /**
      * Creates a PSR-7 request instance.
      *
-     * @param string $method
-     * @param string $url
      * @param array  $options
-     *
-     * @return RequestInterface
      */
-    private function createRequest(string $method, string $url, array $options)
+    private function createRequest(string $method, string $url, array $options): RequestInterface
     {
-        $options = $this->parseOptions($options);
+        $request = $this->requestFactory->createRequest(
+            $method,
+            $this->uriFactory->createUri($url),
+        );
 
-        $default_headers = [
+        // Should match default values for getRequest
+        /** @var (null|array|string)[] */
+        $defaultOptions = [
+            'headers' => [],
+            'body'    => null,
+        ];
+
+        $options = array_merge($defaultOptions, $options);
+
+        $defaultHeaders = [
             'Content-Type' => 'application/vnd.api+json',
             'Accept' => 'application/vnd.api+json, application/vnd.api+json; net.youthweb.api.version=' . $this->api_version,
         ];
 
-        $headers = array_merge($default_headers, $options['headers']);
+        $headers = array_merge($defaultHeaders, $options['headers']);
 
-        return $this->getRequestFactory()->createRequest($method, $url, $headers, $options['body'], $options['version']);
-    }
+        foreach ($headers as $name => $headerValue) {
+            $request = $request->withAddedHeader($name, explode(',', $headerValue));
+        }
 
-    /**
-     * Parses simplified options.
-     *
-     * @param array $options simplified options
-     *
-     * @return array extended options for use with getRequest
-     */
-    private function parseOptions(array $options)
-    {
-        // Should match default values for getRequest
-        $defaults = [
-            'headers' => [],
-            'body'    => null,
-            'version' => '1.1',
-        ];
+        if ($options['body'] !== null) {
+            $request = $request->withBody($this->streamFactory->createStream($options['body']));
+        }
 
-        return array_merge($defaults, $options);
+        return $request;
     }
 
     /**
@@ -604,26 +608,6 @@ final class Client implements ClientInterface
     private function getHttpClient()
     {
         return $this->http_client;
-    }
-
-    /**
-     * Set a request_factory
-     *
-     * @param RequestFactoryInterface $request_factory the request factory
-     */
-    private function setRequestFactory(RequestFactoryInterface $request_factory): void
-    {
-        $this->request_factory = $request_factory;
-    }
-
-    /**
-     * Get the request factory
-     *
-     * @return RequestFactoryInterface the request factory
-     */
-    private function getRequestFactory()
-    {
-        return $this->request_factory;
     }
 
     /**
