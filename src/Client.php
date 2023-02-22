@@ -560,10 +560,10 @@ final class Client implements ClientInterface
         );
 
         // Should match default values for getRequest
+        /** @var (null|array|string)[] */
         $defaultOptions = [
             'headers' => [],
             'body'    => null,
-            'version' => '1.1',
         ];
 
         $options = array_merge($defaultOptions, $options);
@@ -577,10 +577,6 @@ final class Client implements ClientInterface
 
         foreach ($headers as $name => $headerValue) {
             $request = $request->withAddedHeader($name, explode(',', $headerValue));
-        }
-
-        if ($options['version'] !== $defaultOptions['version']) {
-            $request = $request->withProtocolVersion($options['version']);
         }
 
         if ($options['body'] !== null) {
