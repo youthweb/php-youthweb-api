@@ -36,6 +36,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
 use Youthweb\Api\Authentication\Authenticator;
 use Youthweb\Api\Client;
+use Youthweb\Api\Exception\ErrorResponseException;
 use Youthweb\Api\Exception\UnauthorizedException;
 use Youthweb\Api\Resource\UsersInterface;
 use Youthweb\Api\ResourceFactoryInterface;
@@ -139,7 +140,7 @@ class ClientTest extends TestCase
     /**
      * @test
      */
-    public function testGetResource(): void
+    public function testGetResourceReturnsResource(): void
     {
         $resource = $this->createMock(UsersInterface::class);
 
@@ -163,7 +164,7 @@ class ClientTest extends TestCase
     /**
      * @test
      */
-    public function testGetUnknownResourceThrowsException(): void
+    public function testGetUnknownResourceThrowsInvalidArgumentException(): void
     {
         $resource_factory = $this->createMock(ResourceFactoryInterface::class);
         $resource_factory->expects($this->once())
@@ -187,7 +188,7 @@ class ClientTest extends TestCase
     /**
      * @test
      */
-    public function testAuthorizeWithoutCodeThrowsException(): void
+    public function testAuthorizeWithoutCodeThrowsInvalidArgumentException(): void
     {
         $client = $this->createClient(
             [
@@ -339,7 +340,7 @@ class ClientTest extends TestCase
     /**
      * @test
      */
-    public function testAuthorizeWithAuthCodeAndWrongStateThrowsException(): void
+    public function testAuthorizeWithAuthCodeAndWrongStateThrowsInvalidArgumentException(): void
     {
         $cache_item_state = $this->createMock(CacheItemInterface::class);
         $cache_item_state->expects($this->any())
@@ -468,7 +469,7 @@ class ClientTest extends TestCase
     /**
      * @test
      */
-    public function testAuthorizedGetRequestReturnsObject(): void
+    public function testAuthorizedGetRequestReturnsAccessable(): void
     {
         $request = $this->createMock(RequestInterface::class);
         $request->method('withAddedHeader')->willReturn($request);
@@ -529,7 +530,7 @@ class ClientTest extends TestCase
     /**
      * @test
      */
-    public function testGetUnauthorizedReturnsObject(): void
+    public function testGetUnauthorizedReturnsAccessable(): void
     {
         $request = $this->createMock(RequestInterface::class);
         $request->method('withAddedHeader')->willReturn($request);
@@ -569,7 +570,7 @@ class ClientTest extends TestCase
     /**
      * @test
      */
-    public function testPostUnauthorizedReturnsObject(): void
+    public function testPostUnauthorizedReturnsAccessable(): void
     {
         $request = $this->createMock(RequestInterface::class);
         $request->method('withAddedHeader')->willReturn($request);
@@ -610,7 +611,7 @@ class ClientTest extends TestCase
     /**
      * @test
      */
-    public function testGetRequestWithoutCredentialsThrowsException(): void
+    public function testGetRequestWithoutCredentialsThrowsUnauthorizedException(): void
     {
         $cache_item_access = $this->createMock(CacheItemInterface::class);
         $cache_item_access->expects($this->once())
@@ -657,7 +658,7 @@ class ClientTest extends TestCase
     /**
      * @test
      */
-    public function testHandleClientExceptionWithResponseException(): void
+    public function testGetRequestWithClientExceptionThrowsClientException(): void
     {
         $request = $this->createMock(RequestInterface::class);
         $request->method('withAddedHeader')->willReturn($request);
@@ -691,13 +692,10 @@ class ClientTest extends TestCase
             ->method('sendRequest')
             ->will($this->throwException($exception));
 
-        $resource_factory = $this->createMock(ResourceFactoryInterface::class);
-
         $client = $this->createClient(
             [],
             [
                 'http_client' => $httpClient,
-                'resource_factory' => $resource_factory,
                 'cache_provider' => $cache_provider,
                 'request_factory' => $requestFactory,
             ]
@@ -711,12 +709,21 @@ class ClientTest extends TestCase
     /**
      * @test
      */
-    public function testHandleClientExceptionWithDetailResponseException(): void
+    public function testServerErrorThrowsErrorResponseException(): void
     {
+        $request = $this->createMock(RequestInterface::class);
+        $request->method('withAddedHeader')->willReturn($request);
+
+        $requestFactory = $this->createMock(RequestFactoryInterface::class);
+        $requestFactory->expects($this->once())
+            ->method('createRequest')
+            ->willReturn($request);
+
         $cache_item_access = $this->createMock(CacheItemInterface::class);
         $cache_item_access->expects($this->once())
             ->method('isHit')
             ->willReturn(true);
+
         $cache_item_access->method('getKey')
             ->willReturn('php_youthweb_api.access_token');
 
@@ -727,36 +734,36 @@ class ClientTest extends TestCase
                 ['php_youthweb_api.access_token', $cache_item_access],
             ]));
 
-        $request = $this->createMock(RequestInterface::class);
-        $request->method('withAddedHeader')->willReturn($request);
+        $body = $this->createMock(StreamInterface::class);
+        $body->expects($this->once())
+            ->method('getContents')
+            ->willReturn('{"errors":[{"detail":"Server error"}]}');
 
-        $requestFactory = $this->createMock(RequestFactoryInterface::class);
-        $requestFactory->expects($this->once())
-            ->method('createRequest')
-            ->willReturn($request);
-
-        // We cannot create a mock for ClientExceptionInterface (or \Throwable)
-        // @link https://github.com/sebastianbergmann/phpunit/issues/4458
-        $exception = new class() extends Exception implements ClientExceptionInterface {};
+        $response = $this->createMock(ResponseInterface::class);
+        $response->expects($this->once())
+            ->method('getBody')
+            ->willReturn($body);
+        $response->expects($this->exactly(3))
+            ->method('getStatusCode')
+            ->willReturn(500);
 
         $httpClient = $this->createMock(HttpClientInterface::class);
         $httpClient->expects($this->once())
             ->method('sendRequest')
-            ->will($this->throwException($exception));
-
-        $resource_factory = $this->createMock(ResourceFactoryInterface::class);
+            ->willReturn($response);
 
         $client = $this->createClient(
             [],
             [
                 'http_client' => $httpClient,
-                'resource_factory' => $resource_factory,
                 'cache_provider' => $cache_provider,
                 'request_factory' => $requestFactory,
             ]
         );
 
-        $this->expectExceptionObject($exception);
+        $this->expectException(ErrorResponseException::class);
+        $this->expectExceptionMessage('Server error');
+        $this->expectExceptionCode(500);
 
         $client->get('foobar');
     }

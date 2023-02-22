@@ -31,8 +31,8 @@ $scope = ['user:read']; // See http://developer.youthweb.net/api_general_scopes.
 
 require 'vendor/autoload.php';
 
-$client = new Youthweb\Api\Client([
-    'api_version'   => '0.18',
+$client = new \Youthweb\Api\Client([
+    'api_version'   => '0.20',
     'client_id'     => $client_id,
     'client_secret' => $client_secret,
     'redirect_url'  => $redirect_url,
@@ -46,19 +46,22 @@ echo '<form method="get" action="'.$redirect_url.'">
 
 if ( isset($_GET['go']) )
 {
-    if ( ! $client->isAuthorized() )
-    {
-        header('Location: '.$client->getAuthorizationUrl());
+    try {
+        // (1) Try access the API
+        $me = $client->getResource('users')->showMe();
+    } catch (\Youthweb\Api\Exception\UnauthorizedException $th) {
+        // (2) We need to ask for permission first
+        header('Location: '.$th->getAuthorizationUrl());
         exit;
     }
 
-    $me = $client->getResource('users')->showMe();
-
+    // (4) We have access to the API \o/
     printf('<p>Hallo %s %s!</p>', $me->get('data.attributes.first_name'), $me->get('data.attributes.last_name'));
     printf('<p>Deine Email-Adresse: %s', $me->get('data.attributes.email'));
 }
 elseif ( isset($_GET['code']) )
 {
+    // (3) Here we are if we have a permission
     $client->authorize('authorization_code', [
         'code' => $_GET['code'],
         'state' => $_GET['state'],
@@ -87,4 +90,3 @@ Der Changelog ist [hier](CHANGELOG.md) zu finden und folgt den Empfehlungen von 
 - Zugriff auf `/events` Resourcen
 - Zugriff auf `/friends` Resourcen
 - Zugriff auf `/{object}/{id}/friends` Resourcen
-- Request Error Handling
