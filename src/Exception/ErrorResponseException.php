@@ -21,22 +21,23 @@ declare(strict_types=1);
 
 namespace Youthweb\Api\Exception;
 
+use Psr\Http\Message\ResponseInterface;
 use RuntimeException;
 
-final class UnauthorizedException extends RuntimeException
+class ErrorResponseException extends RuntimeException
 {
-    public static function fromAuthorizationUrl(string $message, string $authorizationUrl): self
+    public static function fromResponse(ResponseInterface $response, string $message): self
     {
-        $e = new self($message, 401);
-        $e->authorizationUrl = $authorizationUrl;
+        $e = new self($message, $response->getStatusCode());
+        $e->response = $response;
 
         return $e;
     }
 
-    private string $authorizationUrl;
+    private ResponseInterface $response;
 
-    public function getAuthorizationUrl(): string
+    public function getResponse(): ResponseInterface
     {
-        return $this->authorizationUrl;
+        return $this->response;
     }
 }

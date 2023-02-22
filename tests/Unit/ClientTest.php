@@ -28,6 +28,7 @@ use League\OAuth2\Client\Token\AccessTokenInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
+use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Client\ClientInterface as HttpClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\RequestInterface;
@@ -35,6 +36,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
 use Youthweb\Api\Authentication\Authenticator;
 use Youthweb\Api\Client;
+use Youthweb\Api\Exception\UnauthorizedException;
 use Youthweb\Api\Resource\UsersInterface;
 use Youthweb\Api\ResourceFactoryInterface;
 
@@ -201,8 +203,8 @@ class ClientTest extends TestCase
             []
         );
 
-        $this->expectException('Youthweb\Api\Exception\UnauthorizedException');
-        $this->expectExceptionMessage('');
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Argument #2 "$param" must have a "code" value.');
 
         $client->authorize('authorization_code');
     }
@@ -432,15 +434,22 @@ class ClientTest extends TestCase
         $cache_item_state->expects($this->any())
             ->method('isHit')
             ->willReturn(false);
-
         $cache_item_state->method('getKey')
-            ->willReturn('');
+            ->willReturn('php_youthweb_api.state');
+
+        $cache_item_access = $this->createMock(CacheItemInterface::class);
+        $cache_item_access->expects($this->any())
+            ->method('isHit')
+            ->willReturn(false);
+        $cache_item_access->method('getKey')
+            ->willReturn('php_youthweb_api.access_token');
 
         $cache_provider = $this->createMock(CacheItemPoolInterface::class);
-        $cache_provider->expects($this->exactly(1))
+        $cache_provider->expects($this->exactly(2))
             ->method('getItem')
             ->will($this->returnValueMap([
-                ['php_youthweb_api.access_token', $cache_item_state],
+                ['php_youthweb_api.access_token', $cache_item_access],
+                ['php_youthweb_api.state', $cache_item_state],
             ]));
 
         $httpClient = $this->createMock(HttpClientInterface::class);
@@ -611,15 +620,22 @@ class ClientTest extends TestCase
         $cache_item_access->expects($this->once())
             ->method('isHit')
             ->willReturn(false);
-
         $cache_item_access->method('getKey')
-            ->willReturn('');
+            ->willReturn('php_youthweb_api.access_token');
+
+        $cache_item_state = $this->createMock(CacheItemInterface::class);
+        $cache_item_state->expects($this->once())
+            ->method('isHit')
+            ->willReturn(false);
+        $cache_item_state->method('getKey')
+            ->willReturn('php_youthweb_api.state');
 
         $cache_provider = $this->createMock(CacheItemPoolInterface::class);
-        $cache_provider->expects($this->exactly(1))
+        $cache_provider->expects($this->exactly(2))
             ->method('getItem')
             ->will($this->returnValueMap([
                 ['php_youthweb_api.access_token', $cache_item_access],
+                ['php_youthweb_api.state', $cache_item_state],
             ]));
 
         $httpClient = $this->createMock(HttpClientInterface::class);
@@ -635,7 +651,7 @@ class ClientTest extends TestCase
             ]
         );
 
-        $this->expectException('Youthweb\Api\Exception\UnauthorizedException');
+        $this->expectException(UnauthorizedException::class);
         $this->expectExceptionMessage('Unauthorized');
         $this->expectExceptionCode(401);
 
@@ -664,27 +680,15 @@ class ClientTest extends TestCase
             ->willReturn('');
 
         $cache_provider = $this->createMock(CacheItemPoolInterface::class);
-        $cache_provider->expects($this->exactly(2))
+        $cache_provider->expects($this->exactly(1))
             ->method('getItem')
             ->will($this->returnValueMap([
                 ['php_youthweb_api.access_token', $cache_item_access],
             ]));
 
-        $body = $this->createMock(StreamInterface::class);
-        $body->expects($this->once())
-            ->method('getContents')
-            ->willReturn('{"errors":[{"status":"401","title":"Unauthorized"}]}');
-
-        $response = $this->createMock(ResponseInterface::class);
-        $response->expects($this->once())
-            ->method('getBody')
-            ->willReturn($body);
-
-        $response->expects($this->once())
-            ->method('getStatusCode')
-            ->willReturn(401);
-
-        $exception = new \GuzzleHttp\Exception\ClientException('The server responses with an unknown error.', $request, $response);
+        // We cannot create a mock for ClientExceptionInterface (or \Throwable)
+        // @link https://github.com/sebastianbergmann/phpunit/issues/4458
+        $exception = new class() extends Exception implements ClientExceptionInterface {};
 
         $httpClient = $this->createMock(HttpClientInterface::class);
         $httpClient->expects($this->once())
@@ -703,9 +707,7 @@ class ClientTest extends TestCase
             ]
         );
 
-        $this->expectException('Exception');
-        $this->expectExceptionMessage('Unauthorized');
-        $this->expectExceptionCode(401);
+        $this->expectExceptionObject($exception);
 
         $client->get('foobar');
     }
@@ -715,30 +717,15 @@ class ClientTest extends TestCase
      */
     public function testHandleClientExceptionWithDetailResponseException(): void
     {
-        $body = $this->createMock(StreamInterface::class);
-        $body->expects($this->once())
-            ->method('getContents')
-            ->willReturn('{"errors":[{"status":"401","title":"Unauthorized","detail":"Detailed error message"}]}');
-
-        $response = $this->createMock(ResponseInterface::class);
-        $response->expects($this->once())
-            ->method('getBody')
-            ->willReturn($body);
-
-        $response->expects($this->once())
-            ->method('getStatusCode')
-            ->willReturn(401);
-
         $cache_item_access = $this->createMock(CacheItemInterface::class);
         $cache_item_access->expects($this->once())
             ->method('isHit')
             ->willReturn(true);
-
         $cache_item_access->method('getKey')
-            ->willReturn('');
+            ->willReturn('php_youthweb_api.access_token');
 
         $cache_provider = $this->createMock(CacheItemPoolInterface::class);
-        $cache_provider->expects($this->exactly(2))
+        $cache_provider->expects($this->exactly(1))
             ->method('getItem')
             ->will($this->returnValueMap([
                 ['php_youthweb_api.access_token', $cache_item_access],
@@ -752,7 +739,9 @@ class ClientTest extends TestCase
             ->method('createRequest')
             ->willReturn($request);
 
-        $exception = new \GuzzleHttp\Exception\ClientException('error message', $request, $response);
+        // We cannot create a mock for ClientExceptionInterface (or \Throwable)
+        // @link https://github.com/sebastianbergmann/phpunit/issues/4458
+        $exception = new class() extends Exception implements ClientExceptionInterface {};
 
         $httpClient = $this->createMock(HttpClientInterface::class);
         $httpClient->expects($this->once())
@@ -771,9 +760,7 @@ class ClientTest extends TestCase
             ]
         );
 
-        $this->expectException('Exception');
-        $this->expectExceptionMessage('Detailed error message');
-        $this->expectExceptionCode(401);
+        $this->expectExceptionObject($exception);
 
         $client->get('foobar');
     }
@@ -783,7 +770,9 @@ class ClientTest extends TestCase
      */
     public function testHandleClientExceptionWithException(): void
     {
-        $exception = new Exception('error message', 0);
+        // We cannot create a mock for ClientExceptionInterface (or \Throwable)
+        // @link https://github.com/sebastianbergmann/phpunit/issues/4458
+        $exception = new class() extends Exception implements ClientExceptionInterface {};
 
         $httpClient = $this->createMock(HttpClientInterface::class);
         $httpClient->expects($this->once())
@@ -806,9 +795,7 @@ class ClientTest extends TestCase
             ]
         );
 
-        $this->expectException('Exception');
-        $this->expectExceptionMessage('The server responses with an unknown error.');
-        $this->expectExceptionCode(0);
+        $this->expectExceptionObject($exception);
 
         $client->getUnauthorized('foobar');
     }
