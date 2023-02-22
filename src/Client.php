@@ -600,8 +600,13 @@ final class Client implements ClientInterface
             return;
         }
 
+        try {
+            $document = $this->parseResponse($response);
+        } catch (Throwable $th) {
+            throw ErrorResponseException::fromResponse($response, 'The server responses with an unknown error.');
+        }
+
         $message = null;
-        $document = $this->parseResponse($response);
 
         // Get an error message from the json api body
         if ($document->has('errors.0')) {

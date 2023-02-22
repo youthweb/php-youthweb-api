@@ -737,7 +737,69 @@ class ClientTest extends TestCase
         $body = $this->createMock(StreamInterface::class);
         $body->expects($this->once())
             ->method('getContents')
-            ->willReturn('{"errors":[{"detail":"Server error"}]}');
+            ->willReturn('{"errors":[{"title":"Server error","detail":"Some more details about the server error."}]}');
+
+        $response = $this->createMock(ResponseInterface::class);
+        $response->expects($this->once())
+            ->method('getBody')
+            ->willReturn($body);
+        $response->expects($this->exactly(3))
+            ->method('getStatusCode')
+            ->willReturn(500);
+
+        $httpClient = $this->createMock(HttpClientInterface::class);
+        $httpClient->expects($this->once())
+            ->method('sendRequest')
+            ->willReturn($response);
+
+        $client = $this->createClient(
+            [],
+            [
+                'http_client' => $httpClient,
+                'cache_provider' => $cache_provider,
+                'request_factory' => $requestFactory,
+            ]
+        );
+
+        $this->expectException(ErrorResponseException::class);
+        $this->expectExceptionMessage('Some more details about the server error.');
+        $this->expectExceptionCode(500);
+
+        $client->get('foobar');
+    }
+
+    /**
+     * @test
+     */
+    public function testServerErrorWithoutDetailThrowsErrorResponseException(): void
+    {
+        $request = $this->createMock(RequestInterface::class);
+        $request->method('withAddedHeader')->willReturn($request);
+
+        $requestFactory = $this->createMock(RequestFactoryInterface::class);
+        $requestFactory->expects($this->once())
+            ->method('createRequest')
+            ->willReturn($request);
+
+        $cache_item_access = $this->createMock(CacheItemInterface::class);
+        $cache_item_access->expects($this->once())
+            ->method('isHit')
+            ->willReturn(true);
+
+        $cache_item_access->method('getKey')
+            ->willReturn('php_youthweb_api.access_token');
+
+        $cache_provider = $this->createMock(CacheItemPoolInterface::class);
+        $cache_provider->expects($this->exactly(1))
+            ->method('getItem')
+            ->will($this->returnValueMap([
+                ['php_youthweb_api.access_token', $cache_item_access],
+            ]));
+
+        $body = $this->createMock(StreamInterface::class);
+        $body->expects($this->once())
+            ->method('getContents')
+            ->willReturn('{"errors":[{"title":"Server error"}]}');
 
         $response = $this->createMock(ResponseInterface::class);
         $response->expects($this->once())
@@ -771,17 +833,8 @@ class ClientTest extends TestCase
     /**
      * @test
      */
-    public function testHandleClientExceptionWithException(): void
+    public function testServerErrorWithUnknownErrorThrowsErrorResponseException(): void
     {
-        // We cannot create a mock for ClientExceptionInterface (or \Throwable)
-        // @link https://github.com/sebastianbergmann/phpunit/issues/4458
-        $exception = new class() extends Exception implements ClientExceptionInterface {};
-
-        $httpClient = $this->createMock(HttpClientInterface::class);
-        $httpClient->expects($this->once())
-            ->method('sendRequest')
-            ->will($this->throwException($exception));
-
         $request = $this->createMock(RequestInterface::class);
         $request->method('withAddedHeader')->willReturn($request);
 
@@ -790,17 +843,184 @@ class ClientTest extends TestCase
             ->method('createRequest')
             ->willReturn($request);
 
+        $cache_item_access = $this->createMock(CacheItemInterface::class);
+        $cache_item_access->expects($this->once())
+            ->method('isHit')
+            ->willReturn(true);
+
+        $cache_item_access->method('getKey')
+            ->willReturn('php_youthweb_api.access_token');
+
+        $cache_provider = $this->createMock(CacheItemPoolInterface::class);
+        $cache_provider->expects($this->exactly(1))
+            ->method('getItem')
+            ->will($this->returnValueMap([
+                ['php_youthweb_api.access_token', $cache_item_access],
+            ]));
+
+        $body = $this->createMock(StreamInterface::class);
+        $body->expects($this->once())
+            ->method('getContents')
+            ->willReturn('{"errors":[]}');
+
+        $response = $this->createMock(ResponseInterface::class);
+        $response->expects($this->once())
+            ->method('getBody')
+            ->willReturn($body);
+        $response->expects($this->exactly(2))
+            ->method('getStatusCode')
+            ->willReturn(500);
+
+        $httpClient = $this->createMock(HttpClientInterface::class);
+        $httpClient->expects($this->once())
+            ->method('sendRequest')
+            ->willReturn($response);
+
         $client = $this->createClient(
             [],
             [
                 'http_client' => $httpClient,
+                'cache_provider' => $cache_provider,
                 'request_factory' => $requestFactory,
             ]
         );
 
-        $this->expectExceptionObject($exception);
+        $this->expectException(ErrorResponseException::class);
+        $this->expectExceptionMessage('The server responses with an unknown error.');
+        $this->expectExceptionCode(500);
 
-        $client->getUnauthorized('foobar');
+        $client->get('foobar');
+    }
+
+    /**
+     * @test
+     */
+    public function testServerErrorWithoutJsonApiThrowsErrorResponseException(): void
+    {
+        $request = $this->createMock(RequestInterface::class);
+        $request->method('withAddedHeader')->willReturn($request);
+
+        $requestFactory = $this->createMock(RequestFactoryInterface::class);
+        $requestFactory->expects($this->once())
+            ->method('createRequest')
+            ->willReturn($request);
+
+        $cache_item_access = $this->createMock(CacheItemInterface::class);
+        $cache_item_access->expects($this->once())
+            ->method('isHit')
+            ->willReturn(true);
+
+        $cache_item_access->method('getKey')
+            ->willReturn('php_youthweb_api.access_token');
+
+        $cache_provider = $this->createMock(CacheItemPoolInterface::class);
+        $cache_provider->expects($this->exactly(1))
+            ->method('getItem')
+            ->will($this->returnValueMap([
+                ['php_youthweb_api.access_token', $cache_item_access],
+            ]));
+
+        $body = $this->createMock(StreamInterface::class);
+        $body->expects($this->once())
+            ->method('getContents')
+            ->willReturn('Server Error!');
+
+        $response = $this->createMock(ResponseInterface::class);
+        $response->expects($this->once())
+            ->method('getBody')
+            ->willReturn($body);
+        $response->expects($this->exactly(2))
+            ->method('getStatusCode')
+            ->willReturn(500);
+
+        $httpClient = $this->createMock(HttpClientInterface::class);
+        $httpClient->expects($this->once())
+            ->method('sendRequest')
+            ->willReturn($response);
+
+        $client = $this->createClient(
+            [],
+            [
+                'http_client' => $httpClient,
+                'cache_provider' => $cache_provider,
+                'request_factory' => $requestFactory,
+            ]
+        );
+
+        $this->expectException(ErrorResponseException::class);
+        $this->expectExceptionMessage('The server responses with an unknown error.');
+        $this->expectExceptionCode(500);
+
+        $client->get('foobar');
+    }
+
+    /**
+     * @test
+     */
+    public function testUnauthorizedServerErrorThrowsUnauthorizedException(): void
+    {
+        $request = $this->createMock(RequestInterface::class);
+        $request->method('withAddedHeader')->willReturn($request);
+
+        $requestFactory = $this->createMock(RequestFactoryInterface::class);
+        $requestFactory->expects($this->once())
+            ->method('createRequest')
+            ->willReturn($request);
+
+        $cache_item_access = $this->createMock(CacheItemInterface::class);
+        $cache_item_access->expects($this->once())
+            ->method('isHit')
+            ->willReturn(true);
+        $cache_item_access->method('getKey')
+            ->willReturn('php_youthweb_api.access_token');
+
+        $cache_item_state = $this->createMock(CacheItemInterface::class);
+        $cache_item_state->expects($this->once())
+            ->method('isHit')
+            ->willReturn(true);
+        $cache_item_state->method('getKey')
+            ->willReturn('php_youthweb_api.state');
+
+        $cache_provider = $this->createMock(CacheItemPoolInterface::class);
+        $cache_provider->expects($this->exactly(3))
+            ->method('getItem')
+            ->will($this->returnValueMap([
+                ['php_youthweb_api.access_token', $cache_item_access],
+                ['php_youthweb_api.state', $cache_item_state],
+            ]));
+
+        $body = $this->createMock(StreamInterface::class);
+        $body->expects($this->once())
+            ->method('getContents')
+            ->willReturn('{"errors":[{"title":"Unauthorized"}]}');
+
+        $response = $this->createMock(ResponseInterface::class);
+        $response->expects($this->once())
+            ->method('getBody')
+            ->willReturn($body);
+        $response->expects($this->exactly(2))
+            ->method('getStatusCode')
+            ->willReturn(401);
+
+        $httpClient = $this->createMock(HttpClientInterface::class);
+        $httpClient->expects($this->once())
+            ->method('sendRequest')
+            ->willReturn($response);
+
+        $client = $this->createClient(
+            [],
+            [
+                'http_client' => $httpClient,
+                'cache_provider' => $cache_provider,
+                'request_factory' => $requestFactory,
+            ]
+        );
+
+        $this->expectException(UnauthorizedException::class);
+        $this->expectExceptionMessage('Unauthorized');
+        $this->expectExceptionCode(401);
+
+        $client->get('foobar');
     }
 
     /**
