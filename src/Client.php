@@ -606,7 +606,7 @@ final class Client implements ClientInterface
             throw ErrorResponseException::fromResponse($response, 'The server responses with an unknown error.');
         }
 
-        $message = null;
+        $message = 'The server responses with an unknown error.';
 
         // Get an error message from the json api body
         if ($document->has('errors.0')) {
@@ -617,10 +617,6 @@ final class Client implements ClientInterface
             } elseif ($error->has('title')) {
                 $message = $error->get('title');
             }
-        }
-
-        if (is_null($message)) {
-            $message = 'The server responses with an unknown error.';
         }
 
         // Delete the access token if a 401 error occured
