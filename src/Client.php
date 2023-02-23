@@ -21,17 +21,20 @@ declare(strict_types=1);
 
 namespace Youthweb\Api;
 
+use Art4\JsonApiClient\Accessable;
 use Art4\JsonApiClient\Helper\Parser as JsonApiParser;
 use Cache\Adapter\Void\VoidCachePool;
 use DateInterval;
 use DateTime;
 use Exception;
-use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Client as GuzzleHttpClient;
 use GuzzleHttp\Psr7\HttpFactory;
 use InvalidArgumentException;
 use League\OAuth2\Client\Token\AccessTokenInterface;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
+use Psr\Http\Client\ClientExceptionInterface;
+use Psr\Http\Client\ClientInterface as HttpClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -40,6 +43,7 @@ use Psr\Http\Message\UriFactoryInterface;
 use Throwable;
 use Youthweb\Api\Authentication\Authenticator;
 use Youthweb\Api\Authentication\NativeAuthenticator;
+use Youthweb\Api\Exception\ErrorResponseException;
 use Youthweb\Api\Exception\UnauthorizedException;
 use Youthweb\Api\Resource\ResourceInterface;
 use Youthweb\OAuth2\Client\Provider\Youthweb as Oauth2Provider;
@@ -73,15 +77,9 @@ final class Client implements ClientInterface
      */
     private $scope = [];
 
-    /**
-     * @var HttpClientInterface
-     */
-    private $http_client;
+    private HttpClientInterface $httpClient;
 
-    /**
-     * @var Authenticator
-     */
-    private $oauth2_provider;
+    private Authenticator $oauth2Provider;
 
     /**
      * @var CacheItemPoolInterface
@@ -169,14 +167,22 @@ final class Client implements ClientInterface
         }
 
         if (empty($collaborators['http_client'])) {
-            $collaborators['http_client'] = new HttpClient(
+            $collaborators['http_client'] = new GuzzleHttpClient(
                 [
                     // Guzzle config
                 ]
             );
         }
 
-        $this->setHttpClientInternally($collaborators['http_client']);
+        $this->httpClient = $collaborators['http_client'];
+
+        if (empty($collaborators['request_factory'])) {
+            $collaborators['request_factory'] = new HttpFactory();
+        }
+
+        $this->requestFactory = $collaborators['request_factory'];
+        $this->streamFactory = new HttpFactory();
+        $this->uriFactory = new HttpFactory();
 
         if (empty($collaborators['oauth2_provider'])) {
             $collaborators['oauth2_provider'] = new NativeAuthenticator(new Oauth2Provider([
@@ -189,21 +195,13 @@ final class Client implements ClientInterface
             ]));
         }
 
-        $this->setOauth2Provider($collaborators['oauth2_provider']);
+        $this->oauth2Provider = $collaborators['oauth2_provider'];
 
         if (empty($collaborators['cache_provider'])) {
             $collaborators['cache_provider'] = new VoidCachePool();
         }
 
         $this->setCacheProviderInternally($collaborators['cache_provider']);
-
-        if (empty($collaborators['request_factory'])) {
-            $collaborators['request_factory'] = new HttpFactory();
-        }
-
-        $this->requestFactory = $collaborators['request_factory'];
-        $this->streamFactory = new HttpFactory();
-        $this->uriFactory = new HttpFactory();
 
         if (empty($collaborators['resource_factory'])) {
             $collaborators['resource_factory'] = new ResourceFactory();
@@ -299,7 +297,7 @@ final class Client implements ClientInterface
     public function authorize(string $grant, array $params = [])
     {
         if (! isset($params['code'])) {
-            throw new UnauthorizedException();
+            throw new InvalidArgumentException('Argument #2 "$param" must have a "code" value.');
         }
 
         $state_item = $this->getCacheItem('state');
@@ -316,7 +314,7 @@ final class Client implements ClientInterface
         $this->deleteCacheItem($state_item);
 
         // Try to get an access token (using the authorization code grant)
-        $token = $this->getOauth2Provider()->getAccessToken($grant, [
+        $token = $this->oauth2Provider->getAccessToken($grant, [
             'code' => $params['code'],
         ]);
 
@@ -341,7 +339,7 @@ final class Client implements ClientInterface
 
         $options = array_merge($default_options, $options);
 
-        return $this->getOauth2Provider()->getAuthorizationUrl($options);
+        return $this->oauth2Provider->getAuthorizationUrl($options);
     }
 
     /**
@@ -356,7 +354,7 @@ final class Client implements ClientInterface
         $state_item = $this->getCacheItem('state');
 
         if (! $state_item->isHit()) {
-            $state = $this->getOauth2Provider()->getState();
+            $state = $this->oauth2Provider->getState();
 
             $state_item->set($state);
 
@@ -374,11 +372,11 @@ final class Client implements ClientInterface
      * @param string $path
      * @param array  $data
      *
-     * @throws UnauthorizedException contains the url to get an authorization code
-     *
-     * @return \Art4\JsonApiClient\Accessable
+     * @throws ClientExceptionInterface If anything went wrong on the http request
+     * @throws ErrorResponseException If the server responses with a status code >= 400
+     * @throws UnauthorizedException On 401 status code; contains the url to get an authorization code
      */
-    public function get(string $path, array $data = [])
+    public function get(string $path, array $data = []): Accessable
     {
         $data['headers']['Authorization'] = 'Bearer ' . $this->getAccessToken();
 
@@ -393,9 +391,11 @@ final class Client implements ClientInterface
      * @param string $path
      * @param array  $data
      *
-     * @return \Art4\JsonApiClient\Accessable
+     * @throws ClientExceptionInterface If anything went wrong on the http request
+     * @throws ErrorResponseException If the server responses with a status code >= 400
+     * @throws UnauthorizedException On 401 status code; contains the url to get an authorization code
      */
-    public function getUnauthorized(string $path, array $data = [])
+    public function getUnauthorized(string $path, array $data = []): Accessable
     {
         $request = $this->createRequest('GET', $this->getApiUrl() . $path, $data);
 
@@ -408,9 +408,11 @@ final class Client implements ClientInterface
      * @param string $path
      * @param array  $data
      *
-     * @return \Art4\JsonApiClient\Accessable
+     * @throws ClientExceptionInterface If anything went wrong on the http request
+     * @throws ErrorResponseException If the server responses with a status code >= 400
+     * @throws UnauthorizedException On 401 status code; contains the url to get an authorization code
      */
-    public function postUnauthorized(string $path, array $data = [])
+    public function postUnauthorized(string $path, array $data = []): Accessable
     {
         $request = $this->createRequest('POST', $this->getApiUrl() . $path, $data);
 
@@ -434,16 +436,6 @@ final class Client implements ClientInterface
     private function getApiUrl()
     {
         return $this->api_domain;
-    }
-
-    /**
-     * Set a http client
-     *
-     * @param HttpClientInterface $client the http client
-     */
-    private function setHttpClientInternally(HttpClientInterface $client): void
-    {
-        $this->http_client = $client;
     }
 
     /**
@@ -490,29 +482,9 @@ final class Client implements ClientInterface
     }
 
     /**
-     * Set a oauth2 provider
-     *
-     * @param Authenticator $oauth2_provider the oauth2 provider
-     */
-    private function setOauth2Provider(Authenticator $oauth2_provider): void
-    {
-        $this->oauth2_provider = $oauth2_provider;
-    }
-
-    /**
-     * Get the oauth2 provider
-     *
-     * @return Authenticator the oauth2 provider
-     */
-    private function getOauth2Provider(): Authenticator
-    {
-        return $this->oauth2_provider;
-    }
-
-    /**
      * Get the Bearer Token
      *
-     * @throws UnauthorizedException contains the url to get an authorization code
+     * @throws UnauthorizedException On 401 status code; contains the url to get an authorization code
      *
      * @return string The Bearer token, e.g. "jcx45..."
      */
@@ -526,23 +498,21 @@ final class Client implements ClientInterface
 
         $this->deleteCacheItem($access_token_item);
 
-        throw new UnauthorizedException('Unauthorized', 401);
+        throw UnauthorizedException::fromAuthorizationUrl('Unauthorized', $this->getAuthorizationUrl());
     }
 
     /**
      * @param RequestInterface $request The request to run
      *
-     * @throws \Exception If anything goes wrong on the request
-     *
-     * @return mixed
+     * @throws ClientExceptionInterface If anything went wrong on the http request
+     * @throws ErrorResponseException If the server responses with a status code >= 400
+     * @throws UnauthorizedException On 401 status code; contains the url to get an authorization code
      */
-    private function runRequest(RequestInterface $request)
+    private function runRequest(RequestInterface $request): Accessable
     {
-        try {
-            $response = $this->getHttpClient()->send($request);
-        } catch (\Exception $e) {
-            throw $this->handleClientException($e);
-        }
+        $response = $this->httpClient->sendRequest($request);
+
+        $this->throwExceptionOnServerErrors($response);
 
         return $this->parseResponse($response);
     }
@@ -590,24 +560,12 @@ final class Client implements ClientInterface
      * @param ResponseInterface $response
      *
      * @throws \Exception If anything goes wrong on the request
-     *
-     * @return \Art4\JsonApiClient\Accessable
      */
-    private function parseResponse(ResponseInterface $response)
+    private function parseResponse(ResponseInterface $response): Accessable
     {
         $body = $response->getBody()->getContents();
 
         return JsonApiParser::parseResponseString($body);
-    }
-
-    /**
-     * Returns the http client
-     *
-     * @return HttpClientInterface The Http client
-     */
-    private function getHttpClient()
-    {
-        return $this->http_client;
     }
 
     /**
@@ -631,47 +589,44 @@ final class Client implements ClientInterface
     }
 
     /**
-     * Handels a Exception from the Client
+     * Handels potential server errors in a response
      *
-     * @param Throwable $th The exception
-     *
-     * @return Throwable An exception for re-throwing
+     * @throws ErrorResponseException If the server responses with a status code >= 400
+     * @throws UnauthorizedException On 401 status code; contains the url to get an authorization code
      **/
-    private function handleClientException(Throwable $th)
+    private function throwExceptionOnServerErrors(ResponseInterface $response): void
     {
-        $message = null;
-        $response = null;
-
-        // Try to get the response
-        if ($th instanceof ClientException or is_callable([$th, 'getResponse'])) {
-            $response = $th->getResponse();
+        if ($response->getStatusCode() < 400) {
+            return;
         }
 
-        if (is_object($response) and $response instanceof ResponseInterface) {
+        try {
             $document = $this->parseResponse($response);
+        } catch (Throwable $th) {
+            throw ErrorResponseException::fromResponse($response, 'The server responses with an unknown error.');
+        }
 
-            // Get an error message from the json api body
-            if ($document->has('errors.0')) {
-                $error = $document->get('errors.0');
+        $message = 'The server responses with an unknown error.';
 
-                if ($error->has('detail')) {
-                    $message = $error->get('detail');
-                } elseif ($error->has('title')) {
-                    $message = $error->get('title');
-                }
+        // Get an error message from the json api body
+        if ($document->has('errors.0')) {
+            $error = $document->get('errors.0');
+
+            if ($error->has('detail')) {
+                $message = $error->get('detail');
+            } elseif ($error->has('title')) {
+                $message = $error->get('title');
             }
         }
 
-        if (is_null($message)) {
-            $message = 'The server responses with an unknown error.';
-        }
-
         // Delete the access token if a 401 error occured
-        if (strval($th->getCode()) === '401') {
+        if ($response->getStatusCode() === 401) {
             $access_token_item = $this->getCacheItem(self::CACHEKEY_ACCESS_TOKEN);
             $this->deleteCacheItem($access_token_item);
+
+            throw UnauthorizedException::fromAuthorizationUrl($message, $this->getAuthorizationUrl());
         }
 
-        return new Exception($message, $th->getCode(), $th);
+        throw ErrorResponseException::fromResponse($response, $message);
     }
 }

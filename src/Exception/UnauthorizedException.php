@@ -23,6 +23,20 @@ namespace Youthweb\Api\Exception;
 
 use RuntimeException;
 
-class UnauthorizedException extends RuntimeException
+final class UnauthorizedException extends RuntimeException
 {
+    public static function fromAuthorizationUrl(string $message, string $authorizationUrl): self
+    {
+        $e = new self($message, 401);
+        $e->authorizationUrl = $authorizationUrl;
+
+        return $e;
+    }
+
+    private string $authorizationUrl;
+
+    public function getAuthorizationUrl(): string
+    {
+        return $this->authorizationUrl;
+    }
 }

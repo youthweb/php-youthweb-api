@@ -19,26 +19,25 @@ declare(strict_types=1);
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-namespace Youthweb\Api;
+namespace Youthweb\Api\Exception;
 
-use Exception;
-use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use RuntimeException;
 
-/**
- * Http client interface
- */
-interface HttpClientInterface
+class ErrorResponseException extends RuntimeException
 {
-    /**
-     * Perform an HTTP request and return response
-     *
-     * @param RequestInterface $request Request to send
-     * @param array            $options Request obtions to apply to the given request and to the transfer
-     *
-     * @throws Exception if request failed (network problem, timeout, etc.)
-     *
-     * @return ResponseInterface
-     */
-    public function send(RequestInterface $request, array $options = []);
+    public static function fromResponse(ResponseInterface $response, string $message): self
+    {
+        $e = new self($message, $response->getStatusCode());
+        $e->response = $response;
+
+        return $e;
+    }
+
+    private ResponseInterface $response;
+
+    public function getResponse(): ResponseInterface
+    {
+        return $this->response;
+    }
 }
