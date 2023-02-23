@@ -25,7 +25,7 @@ use Art4\JsonApiClient\Accessable;
 use Art4\JsonApiClient\Helper\Parser as JsonApiParser;
 use Cache\Adapter\Void\VoidCachePool;
 use DateInterval;
-use DateTime;
+use DateTimeImmutable;
 use Exception;
 use GuzzleHttp\Client as GuzzleHttpClient;
 use GuzzleHttp\Psr7\HttpFactory;
@@ -55,6 +55,9 @@ use Youthweb\OAuth2\Client\Provider\Youthweb as Oauth2Provider;
  */
 final class Client implements ClientInterface
 {
+    /**
+     * @deprecated
+     */
     public const CACHEKEY_ACCESS_TOKEN = 'access_token';
 
     /**
@@ -81,10 +84,7 @@ final class Client implements ClientInterface
 
     private Authenticator $oauth2Provider;
 
-    /**
-     * @var CacheItemPoolInterface
-     */
-    private $cache_provider;
+    private CacheItemPoolInterface $cacheProvider;
 
     /**
      * @var string
@@ -201,7 +201,7 @@ final class Client implements ClientInterface
             $collaborators['cache_provider'] = new VoidCachePool();
         }
 
-        $this->setCacheProviderInternally($collaborators['cache_provider']);
+        $this->cacheProvider = $collaborators['cache_provider'];
 
         if (empty($collaborators['resource_factory'])) {
             $collaborators['resource_factory'] = new ResourceFactory();
@@ -237,7 +237,7 @@ final class Client implements ClientInterface
     {
         $key = $this->createCacheKey($key);
 
-        return $this->getCacheProviderInternally()->getItem($key);
+        return $this->cacheProvider->getItem($key);
     }
 
     /**
@@ -247,9 +247,7 @@ final class Client implements ClientInterface
      */
     public function saveCacheItem(CacheItemInterface $item): void
     {
-        $this->getCacheProviderInternally()->saveDeferred($item);
-
-        $this->getCacheProviderInternally()->commit();
+        $this->cacheProvider->save($item);
     }
 
     /**
@@ -259,7 +257,7 @@ final class Client implements ClientInterface
      */
     public function deleteCacheItem(CacheItemInterface $item): void
     {
-        $this->getCacheProviderInternally()->deleteItem($item->getKey());
+        $this->cacheProvider->deleteItem($item->getKey());
     }
 
     /**
@@ -300,18 +298,18 @@ final class Client implements ClientInterface
             throw new InvalidArgumentException('Argument #2 "$param" must have a "code" value.');
         }
 
-        $state_item = $this->getCacheItem('state');
+        $item = $this->getCacheItem('state');
 
         // Check state if present
         if (isset($params['state'])) {
-            if (! $state_item->isHit() or $state_item->get() !== $params['state']) {
-                $this->deleteCacheItem($state_item);
+            if (! $item->isHit() or $item->get() !== $params['state']) {
+                $this->deleteCacheItem($item);
 
                 throw new InvalidArgumentException('Invalid state');
             }
         }
 
-        $this->deleteCacheItem($state_item);
+        $this->deleteCacheItem($item);
 
         // Try to get an access token (using the authorization code grant)
         $token = $this->oauth2Provider->getAccessToken($grant, [
@@ -351,19 +349,19 @@ final class Client implements ClientInterface
      */
     public function getState()
     {
-        $state_item = $this->getCacheItem('state');
+        $item = $this->getCacheItem('state');
 
-        if (! $state_item->isHit()) {
+        if (! $item->isHit()) {
             $state = $this->oauth2Provider->getState();
 
-            $state_item->set($state);
+            $item->set($state);
 
             // Save state for 10 min
-            $state_item->expiresAfter(new DateInterval('PT10M'));
-            $this->saveCacheItem($state_item);
+            $item->expiresAfter(new DateInterval('PT10M'));
+            $this->saveCacheItem($item);
         }
 
-        return $state_item->get();
+        return $item->get();
     }
 
     /**
@@ -425,7 +423,7 @@ final class Client implements ClientInterface
     public function __destruct()
     {
         // Save deferred items
-        $this->getCacheProviderInternally()->commit();
+        $this->cacheProvider->commit();
     }
 
     /**
@@ -436,26 +434,6 @@ final class Client implements ClientInterface
     private function getApiUrl()
     {
         return $this->api_domain;
-    }
-
-    /**
-     * Set a cache provider
-     *
-     * @param CacheItemPoolInterface $cache_provider the cache provider
-     */
-    private function setCacheProviderInternally(CacheItemPoolInterface $cache_provider): void
-    {
-        $this->cache_provider = $cache_provider;
-    }
-
-    /**
-     * Get the cache provider
-     *
-     * @return CacheItemPoolInterface the cache provider
-     */
-    private function getCacheProviderInternally()
-    {
-        return $this->cache_provider;
     }
 
     /**
@@ -475,10 +453,11 @@ final class Client implements ClientInterface
      */
     private function saveAccessToken(AccessTokenInterface $token): void
     {
-        $access_token_item = $this->getCacheItem(self::CACHEKEY_ACCESS_TOKEN);
-        $access_token_item->set($token->getToken());
-        $access_token_item->expiresAt(new DateTime('@' . $token->getExpires()));
-        $this->saveCacheItem($access_token_item);
+        $item = $this->getCacheItem('access_token');
+        $item->set($token->getToken());
+        $item->expiresAt(new DateTimeImmutable('@' . $token->getExpires()));
+
+        $this->saveCacheItem($item);
     }
 
     /**
@@ -490,13 +469,13 @@ final class Client implements ClientInterface
      */
     private function getAccessToken()
     {
-        $access_token_item = $this->getCacheItem(self::CACHEKEY_ACCESS_TOKEN);
+        $item = $this->getCacheItem('access_token');
 
-        if ($access_token_item->isHit()) {
-            return $access_token_item->get();
+        if ($item->isHit()) {
+            return $item->get();
         }
 
-        $this->deleteCacheItem($access_token_item);
+        $this->deleteCacheItem($item);
 
         throw UnauthorizedException::fromAuthorizationUrl('Unauthorized', $this->getAuthorizationUrl());
     }
@@ -621,8 +600,8 @@ final class Client implements ClientInterface
 
         // Delete the access token if a 401 error occured
         if ($response->getStatusCode() === 401) {
-            $access_token_item = $this->getCacheItem(self::CACHEKEY_ACCESS_TOKEN);
-            $this->deleteCacheItem($access_token_item);
+            $item = $this->getCacheItem('access_token');
+            $this->deleteCacheItem($item);
 
             throw UnauthorizedException::fromAuthorizationUrl($message, $this->getAuthorizationUrl());
         }
