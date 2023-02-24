@@ -152,7 +152,9 @@ class ClientTest extends TestCase
 
         $client = $this->createClient(
             [],
-            ['resource_factory' => $resource_factory]
+            [
+                'resource_factory' => $resource_factory,
+            ]
         );
 
         $this->assertSame($resource, $client->getResource('users'));
@@ -241,8 +243,6 @@ class ClientTest extends TestCase
                 ['php_youthweb_api.access_token', $cache_item_access],
             ]));
 
-        $httpClient = $this->createMock(HttpClientInterface::class);
-
         $client = $this->createClient(
             [
                 'client_id'     => 'client_id',
@@ -250,7 +250,6 @@ class ClientTest extends TestCase
                 'redirect_url'  => 'https://example.org/callback',
             ],
             [
-                'http_client' => $httpClient,
                 'cache_provider' => $cache_provider,
                 'oauth2_provider' => $oauth2Provider,
             ]
@@ -307,8 +306,6 @@ class ClientTest extends TestCase
                 ['php_youthweb_api.state', $cache_item_state],
             ]));
 
-        $httpClient = $this->createMock(HttpClientInterface::class);
-
         $client = $this->createClient(
             [
                 'client_id'     => 'client_id',
@@ -316,7 +313,6 @@ class ClientTest extends TestCase
                 'redirect_url'  => 'https://example.org/callback',
             ],
             [
-                'http_client' => $httpClient,
                 'cache_provider' => $cache_provider,
                 'oauth2_provider' => $oauth2Provider,
             ]
@@ -352,8 +348,6 @@ class ClientTest extends TestCase
                 ['php_youthweb_api.state', $cache_item_state],
             ]));
 
-        $httpClient = $this->createMock(HttpClientInterface::class);
-
         $client = $this->createClient(
             [
                 'client_id'     => 'client_id',
@@ -361,7 +355,6 @@ class ClientTest extends TestCase
                 'redirect_url'  => 'https://example.org/callback',
             ],
             [
-                'http_client' => $httpClient,
                 'cache_provider' => $cache_provider,
             ]
         );
@@ -396,8 +389,6 @@ class ClientTest extends TestCase
                 ['php_youthweb_api.access_token', $cache_item_state],
             ]));
 
-        $httpClient = $this->createMock(HttpClientInterface::class);
-
         $client = $this->createClient(
             [
                 'client_id'     => 'client_id',
@@ -405,7 +396,6 @@ class ClientTest extends TestCase
                 'redirect_url'  => 'https://example.org/callback',
             ],
             [
-                'http_client' => $httpClient,
                 'cache_provider' => $cache_provider,
             ]
         );
@@ -440,8 +430,6 @@ class ClientTest extends TestCase
                 ['php_youthweb_api.state', $cache_item_state],
             ]));
 
-        $httpClient = $this->createMock(HttpClientInterface::class);
-
         $client = $this->createClient(
             [
                 'client_id'     => 'client_id',
@@ -449,7 +437,6 @@ class ClientTest extends TestCase
                 'redirect_url'  => 'https://example.org/callback',
             ],
             [
-                'http_client' => $httpClient,
                 'cache_provider' => $cache_provider,
             ]
         );
@@ -626,16 +613,10 @@ class ClientTest extends TestCase
                 ['php_youthweb_api.state', $cache_item_state],
             ]));
 
-        $httpClient = $this->createMock(HttpClientInterface::class);
-
-        $resource_factory = $this->createMock(ResourceFactoryInterface::class);
-
         $client = $this->createClient(
             [],
             [
-                'http_client' => $httpClient,
                 'cache_provider' => $cache_provider,
-                'resource_factory' => $resource_factory,
             ]
         );
 
@@ -676,7 +657,7 @@ class ClientTest extends TestCase
 
         // We cannot create a mock for ClientExceptionInterface (or \Throwable)
         // @link https://github.com/sebastianbergmann/phpunit/issues/4458
-        $exception = new class() extends Exception implements ClientExceptionInterface {};
+        $exception = new class () extends Exception implements ClientExceptionInterface {};
 
         $httpClient = $this->createMock(HttpClientInterface::class);
         $httpClient->expects($this->once())
