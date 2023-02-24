@@ -52,7 +52,7 @@ final class NativeAuthenticator implements Authenticator
      */
     public function getState(): string
     {
-        $state = $this->oauth2Provider->getState();
+        $state = (string) $this->oauth2Provider->getState();
 
         // Workaround, if no state was generated so far
         if ($state === '') {
@@ -60,7 +60,7 @@ final class NativeAuthenticator implements Authenticator
             $this->getAuthorizationUrl();
 
             // get the generated state
-            $state = $this->oauth2Provider->getState();
+            $state = (string) $this->oauth2Provider->getState();
         }
 
         return $state;

@@ -22,6 +22,7 @@ declare(strict_types=1);
 namespace Youthweb\Api\Tests\Unit\Cache;
 
 use Exception;
+use LogicException;
 use PHPUnit\Framework\TestCase;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
@@ -46,11 +47,8 @@ class NullCacheItemPoolTest extends TestCase
 
     public function testGetItemReturnsSameCacheItem(): void
     {
-        $item = $this->createMock(CacheItemInterface::class);
-        $item->method('getKey')->willReturn('name');
-
         $pool = new NullCacheItemPool();
-        $pool->save($item);
+        $item = $pool->getItem('name');
 
         $this->assertSame($item, $pool->getItem('name'));
     }
@@ -111,6 +109,16 @@ class NullCacheItemPoolTest extends TestCase
         $this->expectExceptionMessage('::deleteItems() is not implemented.');
 
         $pool->deleteItems([]);
+    }
+
+    public function testSaveThrowsLogicExcpetion(): void
+    {
+        $pool = new NullCacheItemPool();
+
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('A cache provider is needed for requesting protected API endpoints. Please provide an implementation of "Psr\Cache\CacheItemPoolInterface".');
+
+        $pool->save($this->createMock(CacheItemInterface::class));
     }
 
     public function testSaveDeferredIsNotImplemented(): void

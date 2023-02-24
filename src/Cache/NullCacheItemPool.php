@@ -22,6 +22,7 @@ declare(strict_types=1);
 namespace Youthweb\Api\Cache;
 
 use Exception;
+use LogicException;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Cache\InvalidArgumentException;
@@ -172,13 +173,10 @@ final class NullCacheItemPool implements CacheItemPoolInterface
      */
     public function save(CacheItemInterface $item): bool
     {
-        $key = $item->getKey();
-
-        $this->assertValidKey($key);
-
-        $this->items[$key] = $item;
-
-        return true;
+        throw new LogicException(sprintf(
+            'A cache provider is needed for requesting protected API endpoints. Please provide an implementation of "%s".',
+            CacheItemPoolInterface::class
+        ), 1);
     }
 
     /**
