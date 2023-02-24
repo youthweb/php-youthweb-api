@@ -23,7 +23,6 @@ namespace Youthweb\Api;
 
 use Art4\JsonApiClient\Accessable;
 use Art4\JsonApiClient\Helper\Parser as JsonApiParser;
-use Cache\Adapter\Void\VoidCachePool;
 use DateInterval;
 use DateTimeImmutable;
 use Exception;
@@ -43,6 +42,7 @@ use Psr\Http\Message\UriFactoryInterface;
 use Throwable;
 use Youthweb\Api\Authentication\Authenticator;
 use Youthweb\Api\Authentication\NativeAuthenticator;
+use Youthweb\Api\Cache\NullCacheItemPool;
 use Youthweb\Api\Exception\ErrorResponseException;
 use Youthweb\Api\Exception\UnauthorizedException;
 use Youthweb\Api\Resource\ResourceInterface;
@@ -198,7 +198,7 @@ final class Client implements ClientInterface
         $this->oauth2Provider = $collaborators['oauth2_provider'];
 
         if (empty($collaborators['cache_provider'])) {
-            $collaborators['cache_provider'] = new VoidCachePool();
+            $collaborators['cache_provider'] = new NullCacheItemPool();
         }
 
         $this->cacheProvider = $collaborators['cache_provider'];
@@ -415,15 +415,6 @@ final class Client implements ClientInterface
         $request = $this->createRequest('POST', $this->getApiUrl() . $path, $data);
 
         return $this->runRequest($request);
-    }
-
-    /**
-     * destructor
-     **/
-    public function __destruct()
-    {
-        // Save deferred items
-        $this->cacheProvider->commit();
     }
 
     /**

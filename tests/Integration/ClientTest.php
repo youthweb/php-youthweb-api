@@ -22,16 +22,17 @@ declare(strict_types=1);
 namespace Youthweb\Api\Tests\Integration;
 
 use Youthweb\Api\Client;
+use Youthweb\Api\ClientInterface;
 
 class ClientTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @test
      */
-    public function testCreateClientWithoutParameters(): void
+    public function testClientImplementsClientInterface(): void
     {
         $client = new Client();
 
-        $this->assertInstanceOf('Youthweb\Api\ClientInterface', $client);
+        $this->assertInstanceOf(ClientInterface::class, $client);
     }
 }
