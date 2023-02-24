@@ -227,8 +227,7 @@ class ClientTest extends TestCase
             ->willReturn(false);
 
         $cache_item_access->expects($this->once())
-            ->method('set')
-            ->willReturn('access_token');
+            ->method('set');
 
         $oauth2Provider = $this->createMock(Authenticator::class);
         $oauth2Provider->expects($this->once())
@@ -289,8 +288,7 @@ class ClientTest extends TestCase
             ->willReturn(false);
 
         $cache_item_access->expects($this->once())
-            ->method('set')
-            ->willReturn('access_token');
+            ->method('set');
 
         $oauth2Provider = $this->createMock(Authenticator::class);
         $oauth2Provider->expects($this->once())
