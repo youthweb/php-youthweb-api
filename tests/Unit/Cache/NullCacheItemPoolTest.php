@@ -25,6 +25,7 @@ use Exception;
 use PHPUnit\Framework\TestCase;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
+use Psr\Cache\InvalidArgumentException;
 use Youthweb\Api\Cache\NullCacheItemPool;
 
 class NullCacheItemPoolTest extends TestCase
@@ -52,6 +53,24 @@ class NullCacheItemPoolTest extends TestCase
         $pool->save($item);
 
         $this->assertSame($item, $pool->getItem('name'));
+    }
+
+    public function testGetItemWithEmptyKeyThrowsInvalidArgumentException(): void
+    {
+        $pool = new NullCacheItemPool();
+
+        $this->expectException(InvalidArgumentException::class);
+
+        $pool->getItem('');
+    }
+
+    public function testGetItemWithInvalidKeyThrowsInvalidArgumentException(): void
+    {
+        $pool = new NullCacheItemPool();
+
+        $this->expectException(InvalidArgumentException::class);
+
+        $pool->getItem('-');
     }
 
     public function testGetItemsIsNotImplemented(): void

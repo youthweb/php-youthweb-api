@@ -22,9 +22,9 @@ declare(strict_types=1);
 namespace Youthweb\Api\Cache;
 
 use Exception;
-use InvalidArgumentException;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
+use Psr\Cache\InvalidArgumentException;
 
 /**
  * This is a fake implementation of CacheItemPoolInterface
@@ -54,6 +54,8 @@ final class NullCacheItemPool implements CacheItemPoolInterface
      */
     public function getItem(string $key): CacheItemInterface
     {
+        $this->assertValidKey($key);
+
         if (! array_key_exists($key, $this->items)) {
             $this->items[$key] = new NullCacheItem($key);
         }
@@ -130,6 +132,8 @@ final class NullCacheItemPool implements CacheItemPoolInterface
      */
     public function deleteItem(string $key): bool
     {
+        $this->assertValidKey($key);
+
         if (array_key_exists($key, $this->items)) {
             unset($this->items[$key]);
 
@@ -168,7 +172,11 @@ final class NullCacheItemPool implements CacheItemPoolInterface
      */
     public function save(CacheItemInterface $item): bool
     {
-        $this->items[$item->getKey()] = $item;
+        $key = $item->getKey();
+
+        $this->assertValidKey($key);
+
+        $this->items[$key] = $item;
 
         return true;
     }
@@ -196,5 +204,17 @@ final class NullCacheItemPool implements CacheItemPoolInterface
     public function commit(): bool
     {
         throw new Exception(__METHOD__ . '() is not implemented.', 1);
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     */
+    private function assertValidKey(string $key): void
+    {
+        if ($key !== '' && ! preg_match('/[^a-zA-Z0-9_\.]/', $key)) {
+            return;
+        }
+
+        throw new class () extends Exception implements InvalidArgumentException {};
     }
 }
