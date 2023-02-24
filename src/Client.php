@@ -231,7 +231,7 @@ final class Client implements ClientInterface
      *
      * @param string $key The item key
      *
-     * @return \Psr\Cache\CacheItemInterface the cache item
+     * @return CacheItemInterface the cache item
      */
     public function getCacheItem(string $key)
     {
@@ -243,7 +243,7 @@ final class Client implements ClientInterface
     /**
      * Save a cache item
      *
-     * @param \Psr\Cache\CacheItemInterface $item The item
+     * @param CacheItemInterface $item The item
      */
     public function saveCacheItem(CacheItemInterface $item): void
     {
@@ -253,7 +253,7 @@ final class Client implements ClientInterface
     /**
      * Delete a cache item
      *
-     * @param \Psr\Cache\CacheItemInterface $item The item
+     * @param CacheItemInterface $item The item
      */
     public function deleteCacheItem(CacheItemInterface $item): void
     {
@@ -292,24 +292,24 @@ final class Client implements ClientInterface
      *
      * @return bool true, if a new access token was saved
      */
-    public function authorize(string $grant, array $params = [])
+    public function authorize(string $grant, array $params = []): bool
     {
         if (! isset($params['code'])) {
-            throw new InvalidArgumentException('Argument #2 "$param" must have a "code" value.');
+            throw new InvalidArgumentException(__METHOD__ . '(): Argument #2 "$param" must have a "code" value.');
         }
-
-        $item = $this->getCacheItem('state');
 
         // Check state if present
         if (isset($params['state'])) {
+            $item = $this->getCacheItem('state');
+
             if (! $item->isHit() or $item->get() !== $params['state']) {
                 $this->deleteCacheItem($item);
 
                 throw new InvalidArgumentException('Invalid state');
             }
-        }
 
-        $this->deleteCacheItem($item);
+            $this->deleteCacheItem($item);
+        }
 
         // Try to get an access token (using the authorization code grant)
         $token = $this->oauth2Provider->getAccessToken($grant, [
@@ -579,13 +579,13 @@ final class Client implements ClientInterface
             return;
         }
 
+        $message = 'The server responses with an unknown error.';
+
         try {
             $document = $this->parseResponse($response);
         } catch (Throwable $th) {
-            throw ErrorResponseException::fromResponse($response, 'The server responses with an unknown error.');
+            throw ErrorResponseException::fromResponse($response, $message);
         }
-
-        $message = 'The server responses with an unknown error.';
 
         // Get an error message from the json api body
         if ($document->has('errors.0')) {

@@ -219,16 +219,8 @@ class ClientTest extends TestCase
             ->method('getExpires')
             ->willReturn(1234567890);
 
-        $cache_item_state = $this->createMock(CacheItemInterface::class);
-        $cache_item_state->expects($this->any())
-            ->method('isHit')
-            ->willReturn(false);
-
-        $cache_item_state->method('getKey')
-            ->willReturn('');
-
         $cache_item_access = $this->createMock(CacheItemInterface::class);
-        $cache_item_access->expects($this->any())
+        $cache_item_access->expects($this->never())
             ->method('isHit')
             ->willReturn(false);
 
@@ -243,11 +235,10 @@ class ClientTest extends TestCase
             ->willReturn($access_token);
 
         $cache_provider = $this->createMock(CacheItemPoolInterface::class);
-        $cache_provider->expects($this->exactly(2))
+        $cache_provider->expects($this->exactly(1))
             ->method('getItem')
             ->will($this->returnValueMap([
                 ['php_youthweb_api.access_token', $cache_item_access],
-                ['php_youthweb_api.state', $cache_item_state],
             ]));
 
         $httpClient = $this->createMock(HttpClientInterface::class);
@@ -1056,11 +1047,8 @@ class ClientTest extends TestCase
 
         $cache_provider = $this->createMock(CacheItemPoolInterface::class);
         $cache_provider->expects($this->exactly(1))
-            ->method('saveDeferred')
+            ->method('save')
             ->with($cache_item);
-
-        $cache_provider->expects($this->exactly(2))
-            ->method('commit');
 
         $client = $this->createClient(
             [],
