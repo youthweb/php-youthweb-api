@@ -15,8 +15,8 @@
     "require": {
         "php": "^8.0",
         "art4/json-api-client": "^1.0",
-        "cache/void-adapter": "^1.1",
         "guzzlehttp/guzzle": "^7.2",
+        "psr/cache": "^2.0 || ^3.0",
         "psr/http-client": "^1.0",
         "psr/http-factory": "^1.0",
         "youthweb/oauth2-youthweb": "^1.2"

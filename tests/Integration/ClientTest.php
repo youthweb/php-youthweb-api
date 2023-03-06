@@ -21,17 +21,27 @@ declare(strict_types=1);
 
 namespace Youthweb\Api\Tests\Integration;
 
+use LogicException;
+use PHPUnit\Framework\TestCase;
 use Youthweb\Api\Client;
+use Youthweb\Api\ClientInterface;
 
-class ClientTest extends \PHPUnit\Framework\TestCase
+class ClientTest extends TestCase
 {
-    /**
-     * @test
-     */
-    public function testCreateClientWithoutParameters(): void
+    public function testClientImplementsClientInterface(): void
     {
         $client = new Client();
 
-        $this->assertInstanceOf('Youthweb\Api\ClientInterface', $client);
+        $this->assertInstanceOf(ClientInterface::class, $client);
+    }
+
+    public function testAuthorizedHttpRequestsWithoutCacheProviderThrowsException(): void
+    {
+        $client = new Client();
+
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('A cache provider is needed for requesting protected API endpoints. Please provide an implementation of "Psr\Cache\CacheItemPoolInterface".');
+
+        $client->get('/endpoint');
     }
 }
