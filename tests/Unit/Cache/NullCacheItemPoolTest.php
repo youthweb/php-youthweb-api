@@ -71,6 +71,21 @@ class NullCacheItemPoolTest extends TestCase
         $pool->getItem('-');
     }
 
+    public function testDeleteItemWithLoadedItemReturnsTrue(): void
+    {
+        $pool = new NullCacheItemPool();
+        $item = $pool->getItem('name');
+
+        $this->assertTrue($pool->deleteItem('name'));
+    }
+
+    public function testDeleteItemWithUnloadedItemReturnsFalse(): void
+    {
+        $pool = new NullCacheItemPool();
+
+        $this->assertFalse($pool->deleteItem('name'));
+    }
+
     public function testGetItemsIsNotImplemented(): void
     {
         $pool = new NullCacheItemPool();
