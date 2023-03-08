@@ -39,7 +39,7 @@ $config = Configuration::create(
     $redirect_url,
     $scope,
     $resourceOwnerId,
-)
+);
 
 // optional: set other options, providers, etc
 $config->setApiVersion('0.20');
