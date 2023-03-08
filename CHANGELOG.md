@@ -31,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 - **BREAKING:** The method `Youthweb\Api\ClientInterface::__construct()` was removed.
+- **BREAKING:** The deprecated constant `Youthweb\Api\Client::CACHEKEY_ACCESS_TOKEN` was removed.
 - **BREAKING:** The interface `Youthweb\Api\AuthenticatorInterface` was removed, use `Youthweb\Api\Authentication\Authenticator` instead.
 - **BREAKING:** The class `Youthweb\Api\YouthwebAuthenticator` was removed, use `Youthweb\Api\Authentication\NativeAuthenticator` instead.
 - **BREAKING:** The interface `Youthweb\Api\RequestFactoryInterface` was removed, use `Psr\Http\Message\RequestFactoryInterface` instead.

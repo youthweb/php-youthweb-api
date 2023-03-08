@@ -56,11 +56,6 @@ final class Client implements ClientInterface
         return new self($config);
     }
 
-    /**
-     * @deprecated
-     */
-    public const CACHEKEY_ACCESS_TOKEN = 'access_token';
-
     private string $apiVersion;
 
     private string $apiDomain;
