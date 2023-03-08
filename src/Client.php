@@ -268,7 +268,7 @@ final class Client implements ClientInterface
      */
     public function get(string $path, array $data = []): Accessable
     {
-        $headers = isset($data['headers']) ? $data['headers'] : [];
+        $headers = $data['headers'] ?? [];
 
         $headers['Authorization'] = 'Bearer ' . $this->getAccessToken();
 
@@ -289,7 +289,7 @@ final class Client implements ClientInterface
      */
     public function getUnauthorized(string $path, array $data = []): Accessable
     {
-        $headers = isset($data['headers']) ? $data['headers'] : [];
+        $headers = $data['headers'] ?? [];
 
         $request = $this->createRequest('GET', $this->getApiUrl() . $path, $headers, null);
 
@@ -308,7 +308,7 @@ final class Client implements ClientInterface
      */
     public function postUnauthorized(string $path, array $data = []): Accessable
     {
-        $headers = isset($data['headers']) ? $data['headers'] : [];
+        $headers = $data['headers'] ?? [];
         $body = isset($data['body']) ? strval($data['body']) : null;
 
         $request = $this->createRequest('POST', $this->getApiUrl() . $path, $headers, $body);
@@ -388,8 +388,6 @@ final class Client implements ClientInterface
 
     /**
      * Creates a PSR-7 request instance.
-     *
-     * @param array  $options
      */
     private function createRequest(string $method, string $url, array $headers, ?string $body): RequestInterface
     {

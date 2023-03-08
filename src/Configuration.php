@@ -49,12 +49,11 @@ final class Configuration
         string $redirectUrl,
         array $scope,
         string $resourceOwnerId,
-    ): static
-    {
+    ): static {
         $scopeValues = [];
 
         foreach ($scope as $value) {
-           $scopeValues[] = strval($value);
+            $scopeValues[] = strval($value);
         }
 
         return new self(
