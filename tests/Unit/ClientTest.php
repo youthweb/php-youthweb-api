@@ -33,9 +33,12 @@ use Psr\Http\Client\ClientInterface as HttpClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\StreamInterface;
+use Psr\Http\Message\UriFactoryInterface;
 use Youthweb\Api\Authentication\Authenticator;
 use Youthweb\Api\Client;
+use Youthweb\Api\Configuration;
 use Youthweb\Api\Exception\ErrorResponseException;
 use Youthweb\Api\Exception\UnauthorizedException;
 use Youthweb\Api\Resource\UsersInterface;
@@ -48,17 +51,48 @@ class ClientTest extends TestCase
      */
     private function createClient(array $options = [], array $collaborators = []): Client
     {
-        $default_collaborators = [
-            'http_client' => $this->createMock(HttpClientInterface::class),
-            'oauth2_provider' => $this->createMock(Authenticator::class),
-            'cache_provider' => $this->createMock(CacheItemPoolInterface::class),
-            'request_factory' => $this->createMock(RequestFactoryInterface::class),
-            'resource_factory' => $this->createMock(ResourceFactoryInterface::class),
-        ];
+        $options = array_merge(
+            [
+                'client_id'     => '',
+                'client_secret' => '',
+                'redirect_url'  => '',
+                'scope'         => [],
+            ],
+            $options,
+        );
 
-        $collaborators = array_merge($default_collaborators, $collaborators);
+        $collaborators = array_merge(
+            [
+                'http_client' => $this->createMock(HttpClientInterface::class),
+                'oauth2_provider' => $this->createMock(Authenticator::class),
+                'cache_provider' => $this->createMock(CacheItemPoolInterface::class),
+                'request_factory' => $this->createMock(RequestFactoryInterface::class),
+                'stream_factory' => $this->createMock(StreamFactoryInterface::class),
+                'uri_factory' => $this->createMock(UriFactoryInterface::class),
+                'resource_factory' => $this->createMock(ResourceFactoryInterface::class),
+            ],
+            $collaborators,
+        );
 
-        return new Client($options, $collaborators);
+        $config = Configuration::create(
+            $options['client_id'],
+            $options['client_secret'],
+            $options['redirect_url'],
+            $options['scope'],
+            'test-user',
+        );
+        $config->setApiVersion('1.0');
+        $config->setApiDomain('http://example.com');
+        $config->setAuthDomain('http://example.com');
+        $config->setHttpClient($collaborators['http_client']);
+        $config->setAuthenticator($collaborators['oauth2_provider']);
+        $config->setCacheItemPool($collaborators['cache_provider']);
+        $config->setRequestFactory($collaborators['request_factory']);
+        $config->setStreamFactory($collaborators['stream_factory']);
+        $config->setUriFactory($collaborators['uri_factory']);
+        $config->setResourceFactory($collaborators['resource_factory']);
+
+        return Client::fromConfig($config);
     }
 
     /**
@@ -81,7 +115,7 @@ class ClientTest extends TestCase
         $cache_provider->expects($this->exactly(1))
             ->method('getItem')
             ->will($this->returnValueMap([
-                ['php_youthweb_api.state', $cache_item_state],
+                ['php_youthweb_api.test-user.state', $cache_item_state],
             ]));
 
         $oauth2Provider = $this->createMock(Authenticator::class);
@@ -121,7 +155,7 @@ class ClientTest extends TestCase
         $cache_provider->expects($this->exactly(1))
             ->method('getItem')
             ->will($this->returnValueMap([
-                ['php_youthweb_api.state', $cache_item_state],
+                ['php_youthweb_api.test-user.state', $cache_item_state],
             ]));
 
         $oauth2Provider = $this->createMock(Authenticator::class);
@@ -197,7 +231,7 @@ class ClientTest extends TestCase
                 'client_id'     => 'client_id',
                 'client_secret' => 'client_secret',
                 'redirect_url'  => 'https://example.org/callback',
-                'scope'         => 'user:email',
+                'scope'         => ['user:email'],
             ],
             []
         );
@@ -239,7 +273,7 @@ class ClientTest extends TestCase
         $cache_provider->expects($this->exactly(1))
             ->method('getItem')
             ->will($this->returnValueMap([
-                ['php_youthweb_api.access_token', $cache_item_access],
+                ['php_youthweb_api.test-user.access_token', $cache_item_access],
             ]));
 
         $client = $this->createClient(
@@ -300,8 +334,8 @@ class ClientTest extends TestCase
         $cache_provider->expects($this->exactly(2))
             ->method('getItem')
             ->will($this->returnValueMap([
-                ['php_youthweb_api.access_token', $cache_item_access],
-                ['php_youthweb_api.state', $cache_item_state],
+                ['php_youthweb_api.test-user.access_token', $cache_item_access],
+                ['php_youthweb_api.test-user.state', $cache_item_state],
             ]));
 
         $client = $this->createClient(
@@ -343,7 +377,7 @@ class ClientTest extends TestCase
         $cache_provider->expects($this->exactly(1))
             ->method('getItem')
             ->will($this->returnValueMap([
-                ['php_youthweb_api.state', $cache_item_state],
+                ['php_youthweb_api.test-user.state', $cache_item_state],
             ]));
 
         $client = $this->createClient(
@@ -384,7 +418,7 @@ class ClientTest extends TestCase
         $cache_provider->expects($this->exactly(1))
             ->method('getItem')
             ->will($this->returnValueMap([
-                ['php_youthweb_api.access_token', $cache_item_state],
+                ['php_youthweb_api.test-user.access_token', $cache_item_state],
             ]));
 
         $client = $this->createClient(
@@ -411,21 +445,21 @@ class ClientTest extends TestCase
             ->method('isHit')
             ->willReturn(false);
         $cache_item_state->method('getKey')
-            ->willReturn('php_youthweb_api.state');
+            ->willReturn('php_youthweb_api.test-user.state');
 
         $cache_item_access = $this->createMock(CacheItemInterface::class);
         $cache_item_access->expects($this->any())
             ->method('isHit')
             ->willReturn(false);
         $cache_item_access->method('getKey')
-            ->willReturn('php_youthweb_api.access_token');
+            ->willReturn('php_youthweb_api.test-user.access_token');
 
         $cache_provider = $this->createMock(CacheItemPoolInterface::class);
         $cache_provider->expects($this->exactly(2))
             ->method('getItem')
             ->will($this->returnValueMap([
-                ['php_youthweb_api.access_token', $cache_item_access],
-                ['php_youthweb_api.state', $cache_item_state],
+                ['php_youthweb_api.test-user.access_token', $cache_item_access],
+                ['php_youthweb_api.test-user.state', $cache_item_state],
             ]));
 
         $client = $this->createClient(
@@ -463,7 +497,7 @@ class ClientTest extends TestCase
         $cache_provider->expects($this->once())
             ->method('getItem')
             ->will($this->returnValueMap([
-                ['php_youthweb_api.access_token', $cache_item_access],
+                ['php_youthweb_api.test-user.access_token', $cache_item_access],
             ]));
 
         $body = $this->createMock(StreamInterface::class);
@@ -594,21 +628,21 @@ class ClientTest extends TestCase
             ->method('isHit')
             ->willReturn(false);
         $cache_item_access->method('getKey')
-            ->willReturn('php_youthweb_api.access_token');
+            ->willReturn('php_youthweb_api.test-user.access_token');
 
         $cache_item_state = $this->createMock(CacheItemInterface::class);
         $cache_item_state->expects($this->once())
             ->method('isHit')
             ->willReturn(false);
         $cache_item_state->method('getKey')
-            ->willReturn('php_youthweb_api.state');
+            ->willReturn('php_youthweb_api.test-user.state');
 
         $cache_provider = $this->createMock(CacheItemPoolInterface::class);
         $cache_provider->expects($this->exactly(2))
             ->method('getItem')
             ->will($this->returnValueMap([
-                ['php_youthweb_api.access_token', $cache_item_access],
-                ['php_youthweb_api.state', $cache_item_state],
+                ['php_youthweb_api.test-user.access_token', $cache_item_access],
+                ['php_youthweb_api.test-user.state', $cache_item_state],
             ]));
 
         $client = $this->createClient(
@@ -650,7 +684,7 @@ class ClientTest extends TestCase
         $cache_provider->expects($this->exactly(1))
             ->method('getItem')
             ->will($this->returnValueMap([
-                ['php_youthweb_api.access_token', $cache_item_access],
+                ['php_youthweb_api.test-user.access_token', $cache_item_access],
             ]));
 
         // We cannot create a mock for ClientExceptionInterface (or \Throwable)
@@ -695,13 +729,13 @@ class ClientTest extends TestCase
             ->willReturn(true);
 
         $cache_item_access->method('getKey')
-            ->willReturn('php_youthweb_api.access_token');
+            ->willReturn('php_youthweb_api.test-user.access_token');
 
         $cache_provider = $this->createMock(CacheItemPoolInterface::class);
         $cache_provider->expects($this->exactly(1))
             ->method('getItem')
             ->will($this->returnValueMap([
-                ['php_youthweb_api.access_token', $cache_item_access],
+                ['php_youthweb_api.test-user.access_token', $cache_item_access],
             ]));
 
         $body = $this->createMock(StreamInterface::class);
@@ -757,13 +791,13 @@ class ClientTest extends TestCase
             ->willReturn(true);
 
         $cache_item_access->method('getKey')
-            ->willReturn('php_youthweb_api.access_token');
+            ->willReturn('php_youthweb_api.test-user.access_token');
 
         $cache_provider = $this->createMock(CacheItemPoolInterface::class);
         $cache_provider->expects($this->exactly(1))
             ->method('getItem')
             ->will($this->returnValueMap([
-                ['php_youthweb_api.access_token', $cache_item_access],
+                ['php_youthweb_api.test-user.access_token', $cache_item_access],
             ]));
 
         $body = $this->createMock(StreamInterface::class);
@@ -819,13 +853,13 @@ class ClientTest extends TestCase
             ->willReturn(true);
 
         $cache_item_access->method('getKey')
-            ->willReturn('php_youthweb_api.access_token');
+            ->willReturn('php_youthweb_api.test-user.access_token');
 
         $cache_provider = $this->createMock(CacheItemPoolInterface::class);
         $cache_provider->expects($this->exactly(1))
             ->method('getItem')
             ->will($this->returnValueMap([
-                ['php_youthweb_api.access_token', $cache_item_access],
+                ['php_youthweb_api.test-user.access_token', $cache_item_access],
             ]));
 
         $body = $this->createMock(StreamInterface::class);
@@ -881,13 +915,13 @@ class ClientTest extends TestCase
             ->willReturn(true);
 
         $cache_item_access->method('getKey')
-            ->willReturn('php_youthweb_api.access_token');
+            ->willReturn('php_youthweb_api.test-user.access_token');
 
         $cache_provider = $this->createMock(CacheItemPoolInterface::class);
         $cache_provider->expects($this->exactly(1))
             ->method('getItem')
             ->will($this->returnValueMap([
-                ['php_youthweb_api.access_token', $cache_item_access],
+                ['php_youthweb_api.test-user.access_token', $cache_item_access],
             ]));
 
         $body = $this->createMock(StreamInterface::class);
@@ -942,21 +976,21 @@ class ClientTest extends TestCase
             ->method('isHit')
             ->willReturn(true);
         $cache_item_access->method('getKey')
-            ->willReturn('php_youthweb_api.access_token');
+            ->willReturn('php_youthweb_api.test-user.access_token');
 
         $cache_item_state = $this->createMock(CacheItemInterface::class);
         $cache_item_state->expects($this->once())
             ->method('isHit')
             ->willReturn(true);
         $cache_item_state->method('getKey')
-            ->willReturn('php_youthweb_api.state');
+            ->willReturn('php_youthweb_api.test-user.state');
 
         $cache_provider = $this->createMock(CacheItemPoolInterface::class);
         $cache_provider->expects($this->exactly(3))
             ->method('getItem')
             ->will($this->returnValueMap([
-                ['php_youthweb_api.access_token', $cache_item_access],
-                ['php_youthweb_api.state', $cache_item_state],
+                ['php_youthweb_api.test-user.access_token', $cache_item_access],
+                ['php_youthweb_api.test-user.state', $cache_item_state],
             ]));
 
         $body = $this->createMock(StreamInterface::class);
@@ -1004,7 +1038,7 @@ class ClientTest extends TestCase
         $cache_provider->expects($this->exactly(1))
             ->method('getItem')
             ->will($this->returnValueMap([
-                ['php_youthweb_api.test_item', $cache_item],
+                ['php_youthweb_api.test-user.test_item', $cache_item],
             ]));
 
         $client = $this->createClient(
@@ -1047,12 +1081,12 @@ class ClientTest extends TestCase
         $cache_item = $this->createMock(CacheItemInterface::class);
         $cache_item->expects($this->exactly(1))
             ->method('getKey')
-            ->willReturn('php_youthweb_api.test_item');
+            ->willReturn('php_youthweb_api.test-user.test_item');
 
         $cache_provider = $this->createMock(CacheItemPoolInterface::class);
         $cache_provider->expects($this->exactly(1))
             ->method('deleteItem')
-            ->with('php_youthweb_api.test_item');
+            ->with('php_youthweb_api.test-user.test_item');
 
         $client = $this->createClient(
             [],

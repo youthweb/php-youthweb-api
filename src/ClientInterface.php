@@ -32,19 +32,6 @@ use Youthweb\Api\Resource\ResourceInterface;
 interface ClientInterface
 {
     /**
-     * Constructs the Client.
-     *
-     * @param array $options       an array of options to set on the client.
-     *                             Options include `api_version`, `api_domain`, `auth_domain`,
-     *                             `cache_namespace`, `client_id`, `client_secret` and `redirect_url`
-     * @param array $collaborators An array of collaborators that may be used to
-     *                             override this provider's default behavior. Collaborators include
-     *                             http_client`, `oauth2_provider`, `cache_provider`, `request_factory`
-     *                             and `resource_factory`.
-     */
-    public function __construct(array $options = [], array $collaborators = []);
-
-    /**
      * Get a cache item
      *
      * @param string $key The item key

@@ -35,21 +35,22 @@ $redirect_url = 'http://localhost/php-youthweb-api/login-button.php';
 
 require 'vendor/autoload.php';
 
-use League\Flysystem\Adapter\Local;
-use League\Flysystem\Filesystem;
-use Cache\Adapter\Filesystem\FilesystemCachePool;
 use Youthweb\Api\Exception\UnauthorizedException;
 
-$filesystemAdapter = new Local(__DIR__.'/');
-$filesystem        = new Filesystem($filesystemAdapter);
+$config = \Youthweb\Api\Configuration::create(
 
-$pool = new FilesystemCachePool($filesystem, 'cache');
+);
+$config->setCacheItemPool(new \Symfony\Component\Cache\Adapter\FilesystemAdapter());
 
-$client = new Youthweb\Api\Client([
-    'client_id'     => $client_id,
-    'client_secret' => $client_secret,
-    'redirect_url'  => $redirect_url,
-    'scope'         => ['user:read'],
+$client = \Youthweb\Api\Client::fromConfig($config);
+
+$config = Configuration::create(
+    $client_id,
+    $client_secret,
+    $redirect_url,
+    $scope,
+    ['user:read'],
+    'a24d4387-f4de-4318-929a-57d475162fd4', // A resource owner identifier to separate the caches
 ], [
     'cache_provider' => $pool,
 ]);
@@ -94,7 +95,9 @@ Dieses Beispiel berechnet die Prozentsatz der User, die ein Profilbild hochgelad
 require 'vendor/autoload.php';
 
 // Client laden
-$client = new \Youthweb\Api\Client();
+$client = \Youthweb\Api\Client::fromConfig(
+    \Youthweb\Api\Configuration::createUnauthorized()
+);
 
 // Account Statistiken laden
 $stats = $client->getResource('stats')->show('account');

@@ -25,19 +25,20 @@ use LogicException;
 use PHPUnit\Framework\TestCase;
 use Youthweb\Api\Client;
 use Youthweb\Api\ClientInterface;
+use Youthweb\Api\Configuration;
 
 class ClientTest extends TestCase
 {
     public function testClientImplementsClientInterface(): void
     {
-        $client = new Client();
+        $client = Client::fromConfig(Configuration::createUnauthorized());
 
         $this->assertInstanceOf(ClientInterface::class, $client);
     }
 
     public function testAuthorizedHttpRequestsWithoutCacheProviderThrowsException(): void
     {
-        $client = new Client();
+        $client = Client::fromConfig(Configuration::createUnauthorized());
 
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage('A cache provider is needed for requesting protected API endpoints. Please provide an implementation of "Psr\Cache\CacheItemPoolInterface".');
