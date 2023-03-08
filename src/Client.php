@@ -26,7 +26,6 @@ use Art4\JsonApiClient\Helper\Parser as JsonApiParser;
 use DateInterval;
 use DateTimeImmutable;
 use Exception;
-use GuzzleHttp\Client as GuzzleHttpClient;
 use GuzzleHttp\Psr7\HttpFactory;
 use InvalidArgumentException;
 use League\OAuth2\Client\Token\AccessTokenInterface;
@@ -41,12 +40,9 @@ use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\UriFactoryInterface;
 use Throwable;
 use Youthweb\Api\Authentication\Authenticator;
-use Youthweb\Api\Authentication\NativeAuthenticator;
-use Youthweb\Api\Cache\NullCacheItemPool;
 use Youthweb\Api\Exception\ErrorResponseException;
 use Youthweb\Api\Exception\UnauthorizedException;
 use Youthweb\Api\Resource\ResourceInterface;
-use Youthweb\OAuth2\Client\Provider\Youthweb as Oauth2Provider;
 
 /**
  * Simple PHP Youthweb client
@@ -55,30 +51,34 @@ use Youthweb\OAuth2\Client\Provider\Youthweb as Oauth2Provider;
  */
 final class Client implements ClientInterface
 {
+    public static function fromConfig(Configuration $config): static
+    {
+        return new self(
+            [
+                'api_version' => $config->getApiVersion(),
+                'api_domain' => $config->getApiDomain(),
+                'cache_namespace' => 'php_youthweb_api.' . $config->getResourceOwnerId() . '.',
+                'scope' => $config->getScope(),
+            ],
+            [
+                'http_client' => $config->getHttpClient(),
+                'oauth2_provider' => $config->getAuthenticator(),
+                'cache_provider' => $config->getCacheItemPool(),
+                'request_factory' => $config->getRequestFactory(),
+                'resource_factory' => $config->getResourceFactory(),
+            ],
+        );
+    }
+
     /**
      * @deprecated
      */
     public const CACHEKEY_ACCESS_TOKEN = 'access_token';
 
-    /**
-     * @var string
-     */
-    private $api_version = '0.18';
-
-    /**
-     * @var string
-     */
-    private $api_domain = 'https://api.youthweb.net';
-
-    /**
-     * @var string
-     */
-    private $auth_domain = 'https://youthweb.net';
-
-    /**
-     * @var array
-     */
-    private $scope = [];
+    private string $api_version = '0.18';
+    private string $api_domain = 'https://api.youthweb.net';
+    private array $scope = [];
+    private string $cache_namespace = 'php_youthweb_api.';
 
     private HttpClientInterface $httpClient;
 
@@ -87,14 +87,9 @@ final class Client implements ClientInterface
     private CacheItemPoolInterface $cacheProvider;
 
     /**
-     * @var string
+     * @var ResourceInterface[]
      */
-    private $cache_namespace = 'php_youthweb_api.';
-
-    /**
-     * @var array
-     */
-    private $resources = [];
+    private array $resources = [];
 
     private RequestFactoryInterface $requestFactory;
 
@@ -102,31 +97,7 @@ final class Client implements ClientInterface
 
     private UriFactoryInterface $uriFactory;
 
-    /**
-     * @var ResourceFactoryInterface
-     */
-    private $resource_factory;
-
-    /**
-     * @var string
-     *
-     * @since Youthweb-API 0.6
-     */
-    private $client_id;
-
-    /**
-     * @var string
-     *
-     * @since Youthweb-API 0.6
-     */
-    private $client_secret;
-
-    /**
-     * @var string
-     *
-     * @since Youthweb-API 0.6
-     */
-    private $redirect_url = '';
+    private ResourceFactoryInterface $resource_factory;
 
     /**
      * Constructs the Client.
@@ -136,19 +107,15 @@ final class Client implements ClientInterface
      *                             `cache_namespace`, `client_id`, `client_secret`, `redirect_url` and `scope`
      * @param array $collaborators An array of collaborators that may be used to
      *                             override this provider's default behavior. Collaborators include
-     *                             http_client`, `oauth2_provider`, `cache_provider`, `request_factory`
+     *                             `http_client`, `oauth2_provider`, `cache_provider`, `request_factory`
      *                             and `resource_factory`.
      */
-    public function __construct(array $options = [], array $collaborators = [])
+    private function __construct(array $options = [], array $collaborators = [])
     {
         $allowed_options = [
             'api_version',
             'api_domain',
-            'auth_domain',
             'cache_namespace',
-            'client_id',
-            'client_secret',
-            'redirect_url',
             'scope',
         ];
 
@@ -166,48 +133,13 @@ final class Client implements ClientInterface
             }
         }
 
-        if (empty($collaborators['http_client'])) {
-            $collaborators['http_client'] = new GuzzleHttpClient(
-                [
-                    // Guzzle config
-                ]
-            );
-        }
-
         $this->httpClient = $collaborators['http_client'];
-
-        if (empty($collaborators['request_factory'])) {
-            $collaborators['request_factory'] = new HttpFactory();
-        }
-
         $this->requestFactory = $collaborators['request_factory'];
         $this->streamFactory = new HttpFactory();
         $this->uriFactory = new HttpFactory();
-
-        if (empty($collaborators['oauth2_provider'])) {
-            $collaborators['oauth2_provider'] = new NativeAuthenticator(new Oauth2Provider([
-                'clientId'     => $this->client_id,
-                'clientSecret' => $this->client_secret,
-                'redirectUrl'  => $this->redirect_url,
-                'apiVersion'   => $this->api_version,
-                'apiDomain'    => $this->api_domain,
-                'authDomain'   => $this->auth_domain,
-            ]));
-        }
-
         $this->oauth2Provider = $collaborators['oauth2_provider'];
-
-        if (empty($collaborators['cache_provider'])) {
-            $collaborators['cache_provider'] = new NullCacheItemPool();
-        }
-
         $this->cacheProvider = $collaborators['cache_provider'];
-
-        if (empty($collaborators['resource_factory'])) {
-            $collaborators['resource_factory'] = new ResourceFactory();
-        }
-
-        $this->setResourceFactory($collaborators['resource_factory']);
+        $this->resource_factory = $collaborators['resource_factory'];
     }
 
     /**
@@ -220,7 +152,7 @@ final class Client implements ClientInterface
     public function getResource(string $name)
     {
         if (! isset($this->resources[$name])) {
-            $this->resources[$name] = $this->getResourceFactory()->createResource($name, $this);
+            $this->resources[$name] = $this->resource_factory->createResource($name, $this);
         }
 
         return $this->resources[$name];
@@ -536,26 +468,6 @@ final class Client implements ClientInterface
         $body = $response->getBody()->getContents();
 
         return JsonApiParser::parseResponseString($body);
-    }
-
-    /**
-     * Set a resource_factory
-     *
-     * @param ResourceFactoryInterface $resource_factory the resource factory
-     */
-    private function setResourceFactory(ResourceFactoryInterface $resource_factory): void
-    {
-        $this->resource_factory = $resource_factory;
-    }
-
-    /**
-     * Get the resource factory
-     *
-     * @return ResourceFactoryInterface the resource factory
-     */
-    private function getResourceFactory()
-    {
-        return $this->resource_factory;
     }
 
     /**

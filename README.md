@@ -28,16 +28,25 @@ $client_id = 'CB91ZullPa4ync4l';
 $client_secret = 'YC7CXuDXX9pF5SeTKs9enkoPjbV01QIs';
 $redirect_url = 'http://localhost/php-youthweb-api/login-button.php';
 $scope = ['user:read']; // See http://developer.youthweb.net/api_general_scopes.html
+//A resource owner identifier to separate the caches
+$resourceOwnerId = 'a24d4387-f4de-4318-929a-57d475162fd4'; // or '12345' or 'user@example.com'
 
 require 'vendor/autoload.php';
 
-$client = new \Youthweb\Api\Client([
-    'api_version'   => '0.20',
-    'client_id'     => $client_id,
-    'client_secret' => $client_secret,
-    'redirect_url'  => $redirect_url,
-    'scope'         => $scope,
-]);
+$config = Configuration::create(
+    $client_id,
+    $client_secret,
+    $redirect_url,
+    $scope,
+    $resourceOwnerId,
+)
+
+// optional: set other options, providers, etc
+$config->setApiVersion('0.20');
+$config->setCacheItemPool(new \Symfony\Component\Cache\Adapter\FilesystemAdapter());
+$config->setHttpClient(new \GuzzleHttp\Client());
+
+$client = \Youthweb\Api\Client::fromConfig($config);
 
 echo '<h1>Mit Youthweb einloggen</h1>';
 echo '<form method="get" action="'.$redirect_url.'">
