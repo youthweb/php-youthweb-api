@@ -33,7 +33,9 @@ use Psr\Http\Client\ClientInterface as HttpClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\StreamInterface;
+use Psr\Http\Message\UriFactoryInterface;
 use Youthweb\Api\Authentication\Authenticator;
 use Youthweb\Api\Client;
 use Youthweb\Api\Configuration;
@@ -65,6 +67,8 @@ class ClientTest extends TestCase
                 'oauth2_provider' => $this->createMock(Authenticator::class),
                 'cache_provider' => $this->createMock(CacheItemPoolInterface::class),
                 'request_factory' => $this->createMock(RequestFactoryInterface::class),
+                'stream_factory' => $this->createMock(StreamFactoryInterface::class),
+                'uri_factory' => $this->createMock(UriFactoryInterface::class),
                 'resource_factory' => $this->createMock(ResourceFactoryInterface::class),
             ],
             $collaborators,
@@ -77,10 +81,15 @@ class ClientTest extends TestCase
             $options['scope'],
             'test-user',
         );
+        $config->setApiVersion('1.0');
+        $config->setApiDomain('http://example.com');
+        $config->setAuthDomain('http://example.com');
         $config->setHttpClient($collaborators['http_client']);
         $config->setAuthenticator($collaborators['oauth2_provider']);
         $config->setCacheItemPool($collaborators['cache_provider']);
         $config->setRequestFactory($collaborators['request_factory']);
+        $config->setStreamFactory($collaborators['stream_factory']);
+        $config->setUriFactory($collaborators['uri_factory']);
         $config->setResourceFactory($collaborators['resource_factory']);
 
         return Client::fromConfig($config);
