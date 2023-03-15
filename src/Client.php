@@ -26,7 +26,6 @@ use Art4\JsonApiClient\Helper\Parser as JsonApiParser;
 use DateInterval;
 use DateTimeImmutable;
 use Exception;
-use GuzzleHttp\Psr7\HttpFactory;
 use InvalidArgumentException;
 use League\OAuth2\Client\Token\AccessTokenInterface;
 use Psr\Cache\CacheItemInterface;

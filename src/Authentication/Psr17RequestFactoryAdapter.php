@@ -88,11 +88,11 @@ final class Psr17RequestFactoryAdapter extends RequestFactory
                 $request = $request->withBody(
                     $this->psr17StreamFactory->createStream($body)
                 );
-            } else if (is_resource($body)) {
+            } elseif (is_resource($body)) {
                 $request = $request->withBody(
                     $this->psr17StreamFactory->createStreamFromResource($body)
                 );
-            } else if ($body instanceof StreamInterface) {
+            } elseif ($body instanceof StreamInterface) {
                 $request = $request->withBody($body);
             }
         }

@@ -60,7 +60,7 @@ final class Psr18GuzzleAdapter implements GuzzleHttpClientInterface
         throw new Exception(__METHOD__ . '() is not implemented.', 1);
     }
 
-    public function getConfig(?string $option = null)
+    public function getConfig(?string $option = null): void
     {
         throw new Exception(__METHOD__ . '() is not implemented.', 1);
     }
