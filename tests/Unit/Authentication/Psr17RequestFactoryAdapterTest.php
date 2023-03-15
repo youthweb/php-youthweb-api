@@ -82,6 +82,7 @@ class Psr17RequestFactoryAdapterTest extends TestCase
     {
         $streamFactory = $this->createMock(StreamFactoryInterface::class);
         $streamFactory->expects($this->never())->method('createStream');
+        $streamFactory->expects($this->never())->method('createStreamFromResource');
 
         $request = $this->createMock(RequestInterface::class);
         $request->method('withProtocolVersion')->willReturn($request);
@@ -97,7 +98,106 @@ class Psr17RequestFactoryAdapterTest extends TestCase
 
         $this->assertInstanceOf(
             RequestInterface::class,
-            $adapter->getRequest('GET', 'https://example.com', []),
+            $adapter->getRequest('POST', 'https://example.com', [], null),
+        );
+    }
+
+    public function testGetRequestWithEmptyStringCallsThePsr17StreamFactoryCorrectly(): void
+    {
+        $streamFactory = $this->createMock(StreamFactoryInterface::class);
+        $streamFactory->expects($this->never())->method('createStream');
+        $streamFactory->expects($this->never())->method('createStreamFromResource');
+
+        $request = $this->createMock(RequestInterface::class);
+        $request->method('withProtocolVersion')->willReturn($request);
+
+        $requestFactory = $this->createMock(RequestFactoryInterface::class);
+        $requestFactory->method('createRequest')->willReturn($request);
+
+        $adapter = Psr17RequestFactoryAdapter::createFromPsr17(
+            $requestFactory,
+            $streamFactory,
+            $this->createMock(UriFactoryInterface::class),
+        );
+
+        $this->assertInstanceOf(
+            RequestInterface::class,
+            $adapter->getRequest('POST', 'https://example.com', [], ''),
+        );
+    }
+
+    public function testGetRequestWithStringCallsThePsr17StreamFactoryCorrectly(): void
+    {
+        $streamFactory = $this->createMock(StreamFactoryInterface::class);
+        $streamFactory->expects($this->once())->method('createStream')->willReturn($this->createMock(StreamInterface::class));
+        $streamFactory->expects($this->never())->method('createStreamFromResource');
+
+        $request = $this->createMock(RequestInterface::class);
+        $request->method('withProtocolVersion')->willReturn($request);
+        $request->method('withBody')->willReturn($request);
+
+        $requestFactory = $this->createMock(RequestFactoryInterface::class);
+        $requestFactory->method('createRequest')->willReturn($request);
+
+        $adapter = Psr17RequestFactoryAdapter::createFromPsr17(
+            $requestFactory,
+            $streamFactory,
+            $this->createMock(UriFactoryInterface::class),
+        );
+
+        $this->assertInstanceOf(
+            RequestInterface::class,
+            $adapter->getRequest('POST', 'https://example.com', [], '{}'),
+        );
+    }
+
+    public function testGetRequestWithResourceCallsThePsr17StreamFactoryCorrectly(): void
+    {
+        $streamFactory = $this->createMock(StreamFactoryInterface::class);
+        $streamFactory->expects($this->never())->method('createStream');
+        $streamFactory->expects($this->once())->method('createStreamFromResource')->willReturn($this->createMock(StreamInterface::class));
+
+        $request = $this->createMock(RequestInterface::class);
+        $request->method('withProtocolVersion')->willReturn($request);
+        $request->method('withBody')->willReturn($request);
+
+        $requestFactory = $this->createMock(RequestFactoryInterface::class);
+        $requestFactory->method('createRequest')->willReturn($request);
+
+        $adapter = Psr17RequestFactoryAdapter::createFromPsr17(
+            $requestFactory,
+            $streamFactory,
+            $this->createMock(UriFactoryInterface::class),
+        );
+
+        $this->assertInstanceOf(
+            RequestInterface::class,
+            $adapter->getRequest('POST', 'https://example.com', [], fopen(__FILE__, 'r')),
+        );
+    }
+
+    public function testGetRequestWithStreamCallsThePsr17StreamFactoryCorrectly(): void
+    {
+        $streamFactory = $this->createMock(StreamFactoryInterface::class);
+        $streamFactory->expects($this->never())->method('createStream');
+        $streamFactory->expects($this->never())->method('createStreamFromResource');
+
+        $request = $this->createMock(RequestInterface::class);
+        $request->method('withProtocolVersion')->willReturn($request);
+        $request->method('withBody')->willReturn($request);
+
+        $requestFactory = $this->createMock(RequestFactoryInterface::class);
+        $requestFactory->method('createRequest')->willReturn($request);
+
+        $adapter = Psr17RequestFactoryAdapter::createFromPsr17(
+            $requestFactory,
+            $streamFactory,
+            $this->createMock(UriFactoryInterface::class),
+        );
+
+        $this->assertInstanceOf(
+            RequestInterface::class,
+            $adapter->getRequest('POST', 'https://example.com', [], $this->createMock(StreamInterface::class)),
         );
     }
 }
