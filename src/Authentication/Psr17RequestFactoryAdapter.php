@@ -25,6 +25,7 @@ use League\OAuth2\Client\Tool\RequestFactory;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\StreamFactoryInterface;
+use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriFactoryInterface;
 
 /**
@@ -91,6 +92,8 @@ final class Psr17RequestFactoryAdapter extends RequestFactory
                 $request = $request->withBody(
                     $this->psr17StreamFactory->createStreamFromResource($body)
                 );
+            } else if ($body instanceof StreamInterface) {
+                $request = $request->withBody($body);
             }
         }
 
