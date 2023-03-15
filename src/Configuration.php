@@ -30,6 +30,8 @@ use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\UriFactoryInterface;
 use Youthweb\Api\Authentication\Authenticator;
 use Youthweb\Api\Authentication\NativeAuthenticator;
+use Youthweb\Api\Authentication\Psr17RequestFactoryAdapter;
+use Youthweb\Api\Authentication\Psr18GuzzleAdapter;
 use Youthweb\Api\Cache\NullCacheItemPool;
 use Youthweb\OAuth2\Client\Provider\Youthweb as Oauth2Provider;
 
@@ -173,14 +175,24 @@ final class Configuration
     public function getAuthenticator(): Authenticator
     {
         if (! isset($this->authenticator)) {
-            $this->authenticator = new NativeAuthenticator(new Oauth2Provider([
-                'clientId'     => $this->clientId,
-                'clientSecret' => $this->clientSecret,
-                'redirectUrl'  => $this->redirectUrl,
-                'apiVersion'   => $this->apiVersion,
-                'apiDomain'    => $this->apiDomain,
-                'authDomain'   => $this->authDomain,
-            ]));
+            $this->authenticator = new NativeAuthenticator(new Oauth2Provider(
+                [
+                    'clientId'     => $this->clientId,
+                    'clientSecret' => $this->clientSecret,
+                    'redirectUrl'  => $this->redirectUrl,
+                    'apiVersion'   => $this->apiVersion,
+                    'apiDomain'    => $this->apiDomain,
+                    'authDomain'   => $this->authDomain,
+                ],
+                [
+                    'httpClient'     => new Psr18GuzzleAdapter($this->getHttpClient()),
+                    'requestFactory' => Psr17RequestFactoryAdapter::createFromPsr17(
+                        $this->getRequestFactory(),
+                        $this->getStreamFactory(),
+                        $this->getUriFactory(),
+                    ),
+                ],
+            ));
         }
         return $this->authenticator;
     }
