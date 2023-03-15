@@ -182,7 +182,7 @@ final class Configuration
                     'redirectUrl'  => $this->redirectUrl,
                     'apiVersion'   => $this->apiVersion,
                     'apiDomain'    => $this->apiDomain,
-                    'authDomain'   => $this->authDomain,
+                    'domain'       => $this->authDomain,
                 ],
                 [
                     'httpClient'     => new Psr18GuzzleAdapter($this->getHttpClient()),
